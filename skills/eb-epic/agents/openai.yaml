@@ -1,0 +1,4 @@
+interface:
+  display_name: "EB Epic"
+  short_description: "Product-first specs, tickets, and execution"
+  default_prompt: "Use $eb-epic to turn an epic request into specs, tickets, execution, and validation."
