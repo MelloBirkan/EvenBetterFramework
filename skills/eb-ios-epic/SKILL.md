@@ -9,7 +9,7 @@ description: iOS UX and Apple HIG workflow for large epics, multi-screen SwiftUI
 
 Use this skill as a staged, question-driven iOS UX workflow for epic-scale work. Optimize for coherent multi-screen user journeys, accessible interaction architecture, platform-native navigation, and traceability from Apple guidance to tickets and review findings.
 
-- Ask multiple-choice questions until the app or epic's audience, screen set, navigation model, accessibility strategy, and review scope are genuinely clear.
+- Ask multiple-choice questions until the app or epic's audience, screen set, navigation model, accessibility strategy, and review scope are genuinely clear. Before ticket breakdown, expect roughly 3-10 questions per phase on average, across multiple rounds when complexity warrants it; the cumulative pre-ticket interview can exceed 10 questions.
 - Never ask open-ended questions. Use concrete options with a recommended default when one is defensible.
 - Ground UX and technical recommendations in the current codebase before planning or reviewing implementation.
 - Keep artifacts in `.evenbetter/<epic-name>/`, reusing an existing EvenBetter epic folder when the target is clear.
@@ -27,7 +27,7 @@ For all interviews, clarification rounds, tradeoffs, and review disposition deci
 - Cursor or other agents with an ask-question tool: use the native structured question tool with mutually exclusive options.
 - Environments without structured question tooling: ask one concise closed question at a time and present numbered options only when current system instructions permit textual options.
 
-Keep each round focused. Multiple clarification rounds are expected. Do not proceed with an artifact while a high-impact UX, accessibility, navigation, platform-conformance, or architecture decision is unresolved.
+Keep each round focused. Multiple clarification rounds are expected. Use the first questions in a phase to close gaps and assumptions, then use later rounds to cover edge cases, failure states, accessibility risks, and platform tradeoffs. Do not proceed to ticket breakdown while a high-impact UX, accessibility, navigation, review-evidence, platform-conformance, or architecture decision is unresolved.
 
 ## Tool equivalents
 

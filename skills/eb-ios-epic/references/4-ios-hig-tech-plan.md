@@ -10,7 +10,7 @@ Create the technical plan that turns the iOS UX brief and screen flows into a Sw
 2. Inspect the codebase for app entry points, navigation, environment dependencies, theming, shared components, and minimum OS.
 3. Use `$swiftui-ui-patterns` references for app wiring, TabView, NavigationStack, sheets, split views, forms, controls, theming, async state, and previews.
 4. Use `official-sources.md` for Apple documentation links.
-5. Ask multiple-choice questions for unresolved architecture or UX implementation tradeoffs.
+5. Ask multiple-choice questions for unresolved architecture or UX implementation tradeoffs. Ask roughly 3-10 questions in this phase when needed to close state, navigation, accessibility, adaptivity, and review-evidence assumptions.
 6. Write `.evenbetter/<epic-name>/ios-hig-tech-plan.md`.
 
 ## Plan Template
@@ -54,3 +54,7 @@ Create the technical plan that turns the iOS UX brief and screen flows into a Sw
 - Prefer shared semantic theme tokens over raw colors.
 - Prefer previews and simulator screenshots for representative states.
 - Use App Intents only for user-valued system actions, not every screen.
+
+## Next Step
+
+Recommend `5-architecture-validation`. Do not route from the technical plan directly to `6-ticket-breakdown`; architecture validation is required before ticketing.

@@ -8,8 +8,9 @@ Convert the iOS UX brief, screen flows, and HIG technical plan into story-sized 
 
 1. Read `ios-ux-brief.md`, `screen-flows.md`, and `ios-hig-tech-plan.md`.
 2. Inspect current code if needed to identify integration points and likely files.
-3. Create `.evenbetter/<epic-name>/tickets/` if needed.
-4. Write `UX-TICKET-NNN.md` files in dependency order.
+3. Confirm `0-trigger-workflow`, `1-ios-ux-brief`, `2-screen-flows`, `3-ux-prd-validation`, `4-ios-hig-tech-plan`, and `5-architecture-validation` have closed material gaps and uncommunicated assumptions. If not, return to the relevant phase and ask more multiple-choice questions.
+4. Create `.evenbetter/<epic-name>/tickets/` if needed.
+5. Write `UX-TICKET-NNN.md` files in dependency order.
 
 ## Ticket Template
 

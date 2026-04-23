@@ -9,7 +9,7 @@ Create an HIG-aware, accessibility-first UX plan for a small iOS feature or sing
 1. Read the gathered requirements and inspect the current codebase for nearby SwiftUI patterns, navigation, styling, and shared components.
 2. Read `official-sources.md` and `question-patterns.md`.
 3. Use `$swiftui-ui-patterns` references as needed for navigation, sheets, forms, controls, theming, Dynamic Type, async state, or previews.
-4. Ask multiple-choice questions for unresolved UX decisions before drafting.
+4. Ask roughly 3-10 multiple-choice questions in this phase, across one or more rounds before drafting when complexity warrants it. Use early questions to close gaps and assumptions; use later questions to cover edge cases, failure states, accessibility risks, and screenshot/simulator evidence.
 5. Write `.evenbetter/<feature-name>/ios-ux-plan.md`.
 
 ## Plan Template
@@ -61,4 +61,4 @@ Use only sections relevant to the feature.
 
 ## Next Step
 
-Offer `3-ticket-breakdown` as the usual next step, or `2-plan-validation` when the feature has complex navigation, custom gestures, high accessibility risk, or uncertain HIG tradeoffs.
+Recommend `2-plan-validation` as the next step. Do not send the workflow straight from planning to `3-ticket-breakdown`. Before ticket breakdown, the user should have answered enough phase-level questions to close gaps and uncommunicated assumptions; this can exceed 10 total questions across the pre-ticket flow. proceed to `3-ticket-breakdown` only after validation and any applicable review are complete or explicitly not applicable.

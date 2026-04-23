@@ -10,7 +10,7 @@ Stress-test the HIG technical plan before ticketing or implementation.
 2. Inspect codebase constraints that could invalidate the plan.
 3. Use relevant local iOS skills for navigation, view structure, Liquid Glass, App Intents, or performance concerns.
 4. Validate the plan against the checklist below.
-5. Present findings by severity and ask closed disposition questions for unresolved tradeoffs.
+5. Present findings by severity and ask closed disposition questions for unresolved tradeoffs. Ask additional multiple-choice questions when validation exposes hidden assumptions, edge cases, or architectural gaps; this phase can reasonably add 3-10 questions before ticketing.
 6. Update `ios-hig-tech-plan.md` only after alignment.
 
 ## Validation Checklist
@@ -26,4 +26,4 @@ Stress-test the HIG technical plan before ticketing or implementation.
 
 ## Output
 
-Either confirm the plan is ready for `6-ticket-breakdown` or revise the plan with a short "Architecture Validation Updates" section.
+Either confirm the plan is ready for `6-ticket-breakdown` or revise the plan with a short "Architecture Validation Updates" section. Proceed to ticket breakdown only after the cumulative pre-ticket questions have closed all material gaps and uncommunicated assumptions.

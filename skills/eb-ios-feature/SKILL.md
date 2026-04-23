@@ -9,7 +9,7 @@ description: iOS UX and Apple HIG workflow for small features, single SwiftUI vi
 
 Use this skill as a staged, question-driven iOS UX workflow for feature-scale work. Optimize for accessible, platform-native, HIG-aligned SwiftUI features before implementation and during review.
 
-- Ask multiple-choice questions until the feature's user goal, interaction model, accessibility contract, and review scope are genuinely clear.
+- Ask multiple-choice questions until the feature's user goal, interaction model, accessibility contract, and review scope are genuinely clear. Before ticket breakdown, expect roughly 3-10 questions per phase on average, across multiple rounds when complexity warrants it; the cumulative pre-ticket interview can exceed 10 questions.
 - Never ask open-ended questions. Use concrete options with a recommended default when one is defensible.
 - Ground UX and technical recommendations in the current codebase before planning or reviewing implementation.
 - Keep artifacts in `.evenbetter/<feature-name>/`, reusing an existing EvenBetter feature folder when the target is clear.
@@ -27,7 +27,7 @@ For all interviews, clarification rounds, tradeoffs, and review disposition deci
 - Cursor or other agents with an ask-question tool: use the native structured question tool with mutually exclusive options.
 - Environments without structured question tooling: ask one concise closed question at a time and present numbered options only when current system instructions permit textual options.
 
-Keep each round focused. Multiple clarification rounds are expected. Do not proceed with an artifact while a high-impact UX, accessibility, navigation, or platform-conformance decision is unresolved.
+Keep each round focused. Multiple clarification rounds are expected. Use the first questions in a phase to close gaps and assumptions, then use later rounds to cover edge cases, failure states, accessibility risks, and platform tradeoffs. Do not proceed to ticket breakdown while a high-impact UX, accessibility, navigation, review-evidence, or platform-conformance decision is unresolved.
 
 ## Tool equivalents
 

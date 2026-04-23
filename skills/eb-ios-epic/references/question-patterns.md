@@ -5,10 +5,13 @@ Ask only questions that materially change the app/epic UX, accessibility strateg
 ## Format
 
 - Ask 1-3 questions per round.
+- Before ticket breakdown, aim for roughly 3-10 questions per phase on average across `0-trigger-workflow`, `1-ios-ux-brief`, `2-screen-flows`, `3-ux-prd-validation`, `4-ios-hig-tech-plan`, and `5-architecture-validation`.
+- Do not treat 10 as a total cap. The cumulative pre-ticket interview can exceed 10 questions when needed to close gaps and uncommunicated assumptions.
 - Use 2-3 mutually exclusive choices per question.
 - Put the recommended option first and label it as recommended when the tool supports labels.
 - Avoid "anything else?" or broad discovery questions.
 - If the user chooses "Other", convert their answer into a concrete assumption and continue with another closed question only if needed.
+- Use initial questions in each phase to close gaps and assumptions. Use later questions to cover edge cases, accessibility risks, failure states, destructive actions, cross-screen consistency, review evidence, and any assumptions the user has not explicitly confirmed.
 
 ## Epic Intake
 

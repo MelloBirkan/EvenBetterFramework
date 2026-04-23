@@ -8,8 +8,9 @@ Convert `ios-ux-plan.md` into story-sized UX implementation tickets.
 
 1. Read `.evenbetter/<feature-name>/ios-ux-plan.md`.
 2. Inspect current code if needed to identify integration points and likely files.
-3. Create `.evenbetter/<feature-name>/tickets/` if needed.
-4. Write `UX-TICKET-NNN.md` files in dependency order.
+3. Confirm `0-trigger-workflow`, `1-ux-plan`, `2-plan-validation`, and any applicable `5-ux-implementation-review` have closed material gaps and uncommunicated assumptions. If not, return to the relevant phase and ask more multiple-choice questions.
+4. Create `.evenbetter/<feature-name>/tickets/` if needed.
+5. Write `UX-TICKET-NNN.md` files in dependency order.
 
 ## Ticket Template
 
