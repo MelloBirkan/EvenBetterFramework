@@ -1,6 +1,6 @@
 # iOS SwiftUI Color And Theming Analysis
 
-Analyze only the `color-theming` domain. Never edit, write, delete, format, generate, or execute files inside `projectPath`; reads only.
+Analyze only the `color-theming` domain. Never edit, write, delete, format, generate, or execute source/project files inside `projectPath`; read files only. Report storage is handled by the top-level analyzer.
 
 ## Inputs
 

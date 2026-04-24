@@ -1,6 +1,6 @@
 # iOS SwiftUI Layout And Interaction Analysis
 
-Analyze only the `layout-interaction` domain. Never edit, write, delete, format, generate, or execute files inside `projectPath`; reads only.
+Analyze only the `layout-interaction` domain. Never edit, write, delete, format, generate, or execute source/project files inside `projectPath`; read files only. Report storage is handled by the top-level analyzer.
 
 ## Inputs
 

@@ -1,6 +1,6 @@
 # Coordinator Workflow
 
-This workflow coordinates a read-only design-guidelines compliance analysis for iOS SwiftUI projects. Never edit, write, delete, format, generate, or execute files inside `projectPath`; reads only.
+This workflow coordinates a source-safe design-guidelines compliance analysis for iOS SwiftUI projects. Never edit, delete, format, generate, or execute source/project files inside `projectPath`; read source files only. The only permitted write inside `projectPath` is the final JSON report at `.evenbetter/eb-analyze.json`.
 
 ## 1. Normalize Inputs
 
@@ -73,7 +73,7 @@ Inputs:
 - mode: <full|budget>
 - files: <relative path, line-indexed content, and metrics>
 
-Follow <domain reference>. Return only a JSON array of violation objects matching the shared schema for the active mode. Do not modify or write files. Do not include findings outside <domain>.
+Follow <domain reference>. Return only a JSON array of violation objects matching the shared schema for the active mode. Do not modify source/project files. Do not include findings outside <domain>.
 ```
 
 ## 5. Validate Domain Results
@@ -170,7 +170,7 @@ Avoid:
 - jargon-heavy implementation details
 - vague claims unsupported by the findings
 
-## 10. Output
+## 10. Store And Output
 
 Load `references/output-contract.md` and emit one JSON object matching it exactly. Use:
 
@@ -178,7 +178,15 @@ Load `references/output-contract.md` and emit one JSON object matching it exactl
 - `platform`: `swiftui`
 - `guidelines`: `Apple Human Interface Guidelines`
 
-Output JSON only, with no Markdown fences, commentary, or extra keys.
+Before emitting the JSON object, create `projectPath/.evenbetter/` if it does not exist and write the same JSON object to:
+
+```text
+projectPath/.evenbetter/eb-analyze.json
+```
+
+This report file is the only permitted write inside `projectPath`. Overwrite the file on each new analysis so it always represents the latest `eb-analyze` result.
+
+After storing the file, output JSON only, with no Markdown fences, commentary, or extra keys. The emitted JSON and stored JSON must be identical.
 
 ## 11. Compaction-Safe Invariants
 
@@ -192,5 +200,5 @@ If context is compacted, preserve these facts exactly:
 - schema field sets for `full` and `budget`
 - domain, severity, and dimension enums
 - aggregation and scoring contract
-- read-only discipline
+- source-safe discipline and the `.evenbetter/eb-analyze.json` report write
 - final output envelope keys

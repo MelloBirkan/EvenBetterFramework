@@ -1,13 +1,15 @@
 ---
 name: eb-analyze
-description: Read-only iOS SwiftUI design-guidelines compliance analyzer for Apple Human Interface Guidelines and WCAG 2.2. Use when given an absolute path to a SwiftUI iOS project and asked to audit typography, color and theming, components, layout and interaction, navigation and flow, or accessibility without modifying the target project.
+description: iOS SwiftUI design-guidelines compliance analyzer for Apple Human Interface Guidelines and WCAG 2.2. Use when given an absolute path to a SwiftUI iOS project and asked to audit typography, color and theming, components, layout and interaction, navigation and flow, or accessibility; reads source files without modifying them and stores the JSON report in the project's .evenbetter folder.
 ---
 
 # eb-analyze
 
 ## Overview
 
-Analyze an iOS SwiftUI project for Apple Human Interface Guidelines and WCAG 2.2 compliance. The analyzer is read-only: never edit, create, delete, format, generate, or execute files inside `projectPath`; only read source files and produce one JSON report.
+Analyze an iOS SwiftUI project for Apple Human Interface Guidelines and WCAG 2.2 compliance. The analyzer reads source files without modifying them, then stores the final JSON report at `projectPath/.evenbetter/eb-analyze.json`.
+
+Do not edit, delete, format, generate, or execute source/project files inside `projectPath`. The only permitted write inside `projectPath` is creating `.evenbetter/` if needed and writing the final report JSON to `.evenbetter/eb-analyze.json`.
 
 ## Inputs
 
@@ -59,7 +61,8 @@ After all six domain arrays return:
 3. Compute per-file scores and project-wide `overall_score`, `ui_score`, `ux_score`, and `a11y_score`.
 4. Compute `domain_summaries`.
 5. Produce a 3-5 sentence non-technical `executive_summary`.
-6. Emit exactly one JSON object matching `references/output-contract.md`.
+6. Store exactly that JSON object at `projectPath/.evenbetter/eb-analyze.json`, creating `.evenbetter/` if needed.
+7. Emit exactly the same JSON object matching `references/output-contract.md`.
 
 Budget mode uses the same final envelope but slimmer violation objects.
 
@@ -69,4 +72,5 @@ Budget mode uses the same final envelope but slimmer violation objects.
 - Use relative paths from `projectPath` for `file_path`.
 - Use 1-based `line_number` values.
 - Preserve the schema enums exactly.
-- Never modify or write inside `projectPath`.
+- Never modify source or project files inside `projectPath`.
+- The only permitted project write is `projectPath/.evenbetter/eb-analyze.json`.
