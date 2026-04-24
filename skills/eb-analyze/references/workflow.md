@@ -53,14 +53,14 @@ Preserve this inventory through any context compaction. Do not re-walk with diff
 
 Run all six domains against the same inventory:
 
-| Domain | Sub-skill path |
+| Domain | Domain reference |
 |---|---|
-| `typography` | `skills/iOS/typography/SKILL.md` |
-| `color-theming` | `skills/iOS/color-theming/SKILL.md` |
-| `components-patterns` | `skills/iOS/components-patterns/SKILL.md` |
-| `layout-interaction` | `skills/iOS/layout-interaction/SKILL.md` |
-| `navigation-flow` | `skills/iOS/navigation-flow/SKILL.md` |
-| `accessibility` | `skills/iOS/accessibility/SKILL.md` |
+| `typography` | `references/typography.md` |
+| `color-theming` | `references/color-theming.md` |
+| `components-patterns` | `references/components-patterns.md` |
+| `layout-interaction` | `references/layout-interaction.md` |
+| `navigation-flow` | `references/navigation-flow.md` |
+| `accessibility` | `references/accessibility.md` |
 
 If the host environment supports independent worker contexts, these analyses may run concurrently because they are read-only and independent. Otherwise run them sequentially in the table order.
 
@@ -73,7 +73,7 @@ Inputs:
 - mode: <full|budget>
 - files: <relative path, line-indexed content, and metrics>
 
-Follow <sub-skill path>. Return only a JSON array of violation objects matching the shared schema for the active mode. Do not modify or write files. Do not include findings outside <domain>.
+Follow <domain reference>. Return only a JSON array of violation objects matching the shared schema for the active mode. Do not modify or write files. Do not include findings outside <domain>.
 ```
 
 ## 5. Validate Domain Results
@@ -188,7 +188,7 @@ If context is compacted, preserve these facts exactly:
 - `mode`
 - skip-directory list
 - ordered SwiftUI file inventory
-- six domain names and sub-skill paths
+- six domain names and reference paths
 - schema field sets for `full` and `budget`
 - domain, severity, and dimension enums
 - aggregation and scoring contract

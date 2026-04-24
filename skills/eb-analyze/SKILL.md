@@ -23,6 +23,7 @@ Load these files only when their phase runs:
 - `references/workflow.md`: Full coordinator workflow, domain dispatch, aggregation, scoring, executive summary style, and compaction-safe invariants.
 - `references/schema.md`: Violation object schema for `full` and `budget` modes.
 - `references/output-contract.md`: Final JSON report envelope and field definitions.
+- Domain rule modules: `references/typography.md`, `references/color-theming.md`, `references/components-patterns.md`, `references/layout-interaction.md`, `references/navigation-flow.md`, and `references/accessibility.md`.
 
 ## Platform Detection
 
@@ -38,14 +39,14 @@ Then stop.
 
 ## Domain Analysis
 
-Run all six iOS SwiftUI domains. If the host environment supports independent worker contexts, the domains may run concurrently. Otherwise run them sequentially. Each domain is self-contained and must output only a JSON array of violation objects.
+Run all six iOS SwiftUI domains. If the host environment supports independent worker contexts, the domains may run concurrently. Otherwise run them sequentially. Each domain module is self-contained and must output only a JSON array of violation objects.
 
-- `typography`: load `skills/iOS/typography/SKILL.md`
-- `color-theming`: load `skills/iOS/color-theming/SKILL.md`
-- `components-patterns`: load `skills/iOS/components-patterns/SKILL.md`
-- `layout-interaction`: load `skills/iOS/layout-interaction/SKILL.md`
-- `navigation-flow`: load `skills/iOS/navigation-flow/SKILL.md`
-- `accessibility`: load `skills/iOS/accessibility/SKILL.md`
+- `typography`: load `references/typography.md`
+- `color-theming`: load `references/color-theming.md`
+- `components-patterns`: load `references/components-patterns.md`
+- `layout-interaction`: load `references/layout-interaction.md`
+- `navigation-flow`: load `references/navigation-flow.md`
+- `accessibility`: load `references/accessibility.md`
 
 Pass each domain the normalized `projectPath`, `mode`, and the discovered SwiftUI file list with relative paths and line-indexed contents. The domain must not inspect unrelated platforms or emit findings outside its own `domain` value.
 

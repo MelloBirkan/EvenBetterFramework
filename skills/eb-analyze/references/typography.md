@@ -1,8 +1,3 @@
----
-name: eb-analyze-ios-typography
-description: Read-only typography compliance analysis for iOS SwiftUI projects against Apple Human Interface Guidelines, SwiftUI text APIs, and WCAG accessibility expectations.
----
-
 # iOS SwiftUI Typography Analysis
 
 Analyze only the `typography` domain. Never edit, write, delete, format, generate, or execute files inside `projectPath`; reads only.
@@ -13,7 +8,7 @@ Analyze only the `typography` domain. Never edit, write, delete, format, generat
 - `mode`: `full` or `budget`.
 - `files`: SwiftUI `.swift` file inventory with relative paths, line-indexed text, and metrics.
 
-If this sub-skill is run standalone without a file inventory, perform the same read-only discovery as the top-level analyzer: skip `node_modules`, `.build`, `.git`, `Pods`, `DerivedData`, `.swiftpm`, `build`, and `.xcodeproj` internals; collect `.swift` files; require at least one `import SwiftUI`.
+If this domain reference is used standalone without a file inventory, perform the same read-only discovery as the top-level analyzer: skip `node_modules`, `.build`, `.git`, `Pods`, `DerivedData`, `.swiftpm`, `build`, and `.xcodeproj` internals; collect `.swift` files; require at least one `import SwiftUI`.
 
 ## Finding Discipline
 

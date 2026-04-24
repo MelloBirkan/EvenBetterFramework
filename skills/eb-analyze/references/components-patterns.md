@@ -1,8 +1,3 @@
----
-name: eb-analyze-ios-components-patterns
-description: Read-only component and interaction-pattern compliance analysis for iOS SwiftUI projects against Apple Human Interface Guidelines and SwiftUI component APIs.
----
-
 # iOS SwiftUI Components And Patterns Analysis
 
 Analyze only the `components-patterns` domain. Never edit, write, delete, format, generate, or execute files inside `projectPath`; reads only.
@@ -13,7 +8,7 @@ Analyze only the `components-patterns` domain. Never edit, write, delete, format
 - `mode`: `full` or `budget`.
 - `files`: SwiftUI `.swift` file inventory with relative paths, line-indexed text, and metrics.
 
-If this sub-skill is run standalone without a file inventory, perform read-only discovery: skip `node_modules`, `.build`, `.git`, `Pods`, `DerivedData`, `.swiftpm`, `build`, and `.xcodeproj` internals; collect `.swift` files; require at least one `import SwiftUI`.
+If this domain reference is used standalone without a file inventory, perform read-only discovery: skip `node_modules`, `.build`, `.git`, `Pods`, `DerivedData`, `.swiftpm`, `build`, and `.xcodeproj` internals; collect `.swift` files; require at least one `import SwiftUI`.
 
 ## Finding Discipline
 

@@ -1,8 +1,3 @@
----
-name: eb-analyze-ios-color-theming
-description: Read-only color and theming compliance analysis for iOS SwiftUI projects against Apple Human Interface Guidelines, SwiftUI color APIs, and WCAG 2.2 contrast requirements.
----
-
 # iOS SwiftUI Color And Theming Analysis
 
 Analyze only the `color-theming` domain. Never edit, write, delete, format, generate, or execute files inside `projectPath`; reads only.
@@ -13,7 +8,7 @@ Analyze only the `color-theming` domain. Never edit, write, delete, format, gene
 - `mode`: `full` or `budget`.
 - `files`: SwiftUI `.swift` file inventory with relative paths, line-indexed text, and metrics.
 
-If this sub-skill is run standalone without a file inventory, perform read-only discovery: skip `node_modules`, `.build`, `.git`, `Pods`, `DerivedData`, `.swiftpm`, `build`, and `.xcodeproj` internals; collect `.swift` files; require at least one `import SwiftUI`.
+If this domain reference is used standalone without a file inventory, perform read-only discovery: skip `node_modules`, `.build`, `.git`, `Pods`, `DerivedData`, `.swiftpm`, `build`, and `.xcodeproj` internals; collect `.swift` files; require at least one `import SwiftUI`.
 
 ## Finding Discipline
 
