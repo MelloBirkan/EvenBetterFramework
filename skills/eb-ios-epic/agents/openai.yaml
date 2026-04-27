@@ -1,4 +1,0 @@
-interface:
-  display_name: "EB iOS Epic"
-  short_description: "iOS UX/HIG app and epic workflows"
-  default_prompt: "Use $eb-ios-epic to plan or review a multi-screen iOS epic or app for UX, accessibility, Apple HIG, and SwiftUI best practices."

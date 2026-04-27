@@ -1,4 +1,0 @@
-interface:
-  display_name: "EB iOS Feature"
-  short_description: "iOS UX/HIG planning and review"
-  default_prompt: "Use $eb-ios-feature to plan or review a small iOS feature for UX, accessibility, Apple HIG, and SwiftUI best practices."
