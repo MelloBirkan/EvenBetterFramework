@@ -1,4 +1,0 @@
-interface:
-  display_name: "EB Feature"
-  short_description: "Feature plans, tickets, and validation"
-  default_prompt: "Use $evenbetter-feature to gather feature requirements, create a plan, break it into tickets, and validate implementation."

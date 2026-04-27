@@ -229,7 +229,7 @@ Once issues are addressed:
 
 ## Next Step
 
-Suggest the user proceed with `$evenbetter-feature 3-ticket-breakdown` to break the plan into implementation tickets.
+Suggest the user proceed with `$evenbetter-general-feature 3-ticket-breakdown` to break the plan into implementation tickets.
 
 ## Acceptance Criteria
 

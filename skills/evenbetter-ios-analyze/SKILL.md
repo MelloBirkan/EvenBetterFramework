@@ -1,9 +1,9 @@
 ---
-name: evenbetter-analyze
+name: evenbetter-ios-analyze
 description: iOS SwiftUI design-guidelines compliance analyzer for Apple Human Interface Guidelines and WCAG 2.2. Use when given an absolute path to a SwiftUI iOS project and asked to audit typography, color and theming, components, layout and interaction, navigation and flow, or accessibility; reads source files without modifying them and stores the JSON report in the project's .evenbetter folder.
 ---
 
-# evenbetter-analyze
+# evenbetter-ios-analyze
 
 ## Overview
 

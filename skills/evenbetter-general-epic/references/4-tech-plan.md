@@ -122,8 +122,8 @@ Note: Draft only these 3 sections. DO NOT draft any other sections.
 ## Next Step
 
 Present the following options to the user:
-1. `$evenbetter-epic 6-ticket-breakdown` — break the plan into implementation tickets (required next step)
-2. `$evenbetter-epic 5-architecture-validation` — stress-test the architecture before committing to implementation (optional intermediate step)
+1. `$evenbetter-general-epic 6-ticket-breakdown` — break the plan into implementation tickets (required next step)
+2. `$evenbetter-general-epic 5-architecture-validation` — stress-test the architecture before committing to implementation (optional intermediate step)
 
 ## Acceptance Criteria
 

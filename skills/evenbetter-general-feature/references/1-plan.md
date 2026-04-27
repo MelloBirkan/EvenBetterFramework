@@ -166,8 +166,8 @@ Note: Draft only the relevant sections. DO NOT draft sections that aren't applic
 ## Next Step
 
 Present the following options to the user:
-1. `$evenbetter-feature 3-ticket-breakdown` — break the plan into implementation tickets (required next step)
-2. `$evenbetter-feature 2-plan-validation` — stress-test the plan's critical decisions before committing to implementation (optional intermediate step)
+1. `$evenbetter-general-feature 3-ticket-breakdown` — break the plan into implementation tickets (required next step)
+2. `$evenbetter-general-feature 2-plan-validation` — stress-test the plan's critical decisions before committing to implementation (optional intermediate step)
 
 ## Acceptance Criteria
 

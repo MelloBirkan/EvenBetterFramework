@@ -104,7 +104,7 @@ Once issues are addressed:
 
 ## Next Step
 
-Suggest the user proceed with `$evenbetter-epic 4-tech-plan` to design the technical architecture.
+Suggest the user proceed with `$evenbetter-general-epic 4-tech-plan` to design the technical architecture.
 
 ## Acceptance Criteria
 

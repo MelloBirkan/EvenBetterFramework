@@ -217,7 +217,7 @@ Once issues are addressed:
 
 ## Next Step
 
-Suggest the user proceed with `$evenbetter-epic 6-ticket-breakdown` to break the plan into implementation tickets.
+Suggest the user proceed with `$evenbetter-general-epic 6-ticket-breakdown` to break the plan into implementation tickets.
 
 ## Acceptance Criteria
 

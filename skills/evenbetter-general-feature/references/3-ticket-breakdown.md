@@ -53,5 +53,5 @@ Use a mermaid diagram to visualize ticket dependencies for quick reference.
 ## Next Step
 
 Present the following options to the user:
-1. `$evenbetter-feature 4-execute` — begin implementation of the tickets (required next step)
-2. `$evenbetter-feature 7-cross-artifact-validation` — validate consistency across the plan and tickets before executing (optional intermediate step)
+1. `$evenbetter-general-feature 4-execute` — begin implementation of the tickets (required next step)
+2. `$evenbetter-general-feature 7-cross-artifact-validation` — validate consistency across the plan and tickets before executing (optional intermediate step)

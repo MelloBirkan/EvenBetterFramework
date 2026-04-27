@@ -115,8 +115,8 @@ Structure each flow as:
 ## Next Step
 
 Present the following options to the user:
-1. `$evenbetter-epic 4-tech-plan` — proceed to technical architecture (required next step)
-2. `$evenbetter-epic 3-prd-validation` — validate that requirements are clear and complete before moving to technical work (optional intermediate step)
+1. `$evenbetter-general-epic 4-tech-plan` — proceed to technical architecture (required next step)
+2. `$evenbetter-general-epic 3-prd-validation` — validate that requirements are clear and complete before moving to technical work (optional intermediate step)
 
 ## Acceptance Criteria
 

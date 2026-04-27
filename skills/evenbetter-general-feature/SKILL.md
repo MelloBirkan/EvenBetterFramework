@@ -1,13 +1,13 @@
 ---
-name: evenbetter-feature
-description: Feature-focused workflow for smaller scoped work. Use when the user wants to gather feature requirements, create or revise an adaptive feature plan, break it into implementation tickets, execute tickets, validate implementation against the plan, or check plan and ticket consistency. Trigger on feature workflow, feature planning, ticket breakdown, implementation validation, revise requirements, cross-artifact validation, or former slash-command style requests such as feature stages.
+name: evenbetter-general-feature
+description: Platform-agnostic feature workflow for smaller scoped work. Use when the user wants to gather feature requirements, create or revise an adaptive feature plan, break it into implementation tickets, execute tickets, validate implementation against the plan, or check plan and ticket consistency without a platform-specific design system such as Apple HIG or Material Design 3. Trigger on general feature workflow, feature planning, ticket breakdown, implementation validation, revise requirements, cross-artifact validation, or former slash-command style requests such as feature stages.
 ---
 
-# evenbetter-feature
+# evenbetter-general-feature
 
 ## Operating model
 
-Use this skill as a staged, question-driven feature workflow. The goal is shared understanding before artifacts, not speed.
+Use this skill as a staged, question-driven feature workflow for platform-agnostic product and engineering work. The goal is shared understanding before artifacts, not speed.
 
 - Ask questions until the feature requirement, plan, or validation decision is genuinely clear.
 - Surface assumptions explicitly before committing them to artifacts.
@@ -15,7 +15,7 @@ Use this skill as a staged, question-driven feature workflow. The goal is shared
 - Treat the feature plan as the source of truth and tickets as derivatives.
 - Load only the reference for the current stage, then follow that stage precisely.
 
-Former slash-command names in the references are aliases. Interpret `/feature:1-plan` as "use `$evenbetter-feature` with stage `1-plan`."
+Former slash-command names in the references are aliases. Interpret `/feature:1-plan` as "use `$evenbetter-general-feature` with stage `1-plan`."
 
 ## Question tooling
 

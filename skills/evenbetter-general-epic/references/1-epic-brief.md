@@ -64,7 +64,7 @@ Keep the Epic Brief compact, under 50 lines. No UI flows, UI specifics, or techn
 
 ## Next Step
 
-Suggest the user proceed with `$evenbetter-epic 2-core-flows` to design the user journeys.
+Suggest the user proceed with `$evenbetter-general-epic 2-core-flows` to design the user journeys.
 
 ## Acceptance Criteria
 

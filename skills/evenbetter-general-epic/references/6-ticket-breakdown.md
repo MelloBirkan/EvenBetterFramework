@@ -53,6 +53,6 @@ Use a mermaid diagram to visualize ticket dependencies for quick reference.
 ## Next Step
 
 Present the following options to the user:
-1. `$evenbetter-epic 7-execute` — begin implementation of the tickets (required next step)
-2. `$evenbetter-epic 10-cross-artifact-validation` — validate consistency across all specs and tickets before executing (optional intermediate step)
+1. `$evenbetter-general-epic 7-execute` — begin implementation of the tickets (required next step)
+2. `$evenbetter-general-epic 10-cross-artifact-validation` — validate consistency across all specs and tickets before executing (optional intermediate step)
 

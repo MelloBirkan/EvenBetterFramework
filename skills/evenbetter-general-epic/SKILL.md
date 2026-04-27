@@ -1,13 +1,13 @@
 ---
-name: evenbetter-epic
-description: Product-first epic workflow for larger scoped work. Use when the user wants to clarify an epic, write an epic brief, design core flows, validate product requirements, create a technical plan, validate architecture, break specs into tickets, execute tickets, validate implementation, revise requirements, or check cross-spec consistency. Trigger on epic workflow, epic brief, core flows, PRD validation, tech plan, architecture validation, ticket breakdown, implementation validation, revise requirements, cross-artifact validation, or former epic slash-command stage requests.
+name: evenbetter-general-epic
+description: Platform-agnostic product-first epic workflow for larger scoped work. Use when the user wants to clarify an epic, write an epic brief, design core flows, validate product requirements, create a technical plan, validate architecture, break specs into tickets, execute tickets, validate implementation, revise requirements, or check cross-spec consistency without a platform-specific design system such as Apple HIG or Material Design 3. Trigger on general epic workflow, epic brief, core flows, PRD validation, tech plan, architecture validation, ticket breakdown, implementation validation, revise requirements, cross-artifact validation, or former epic slash-command stage requests.
 ---
 
-# evenbetter-epic
+# evenbetter-general-epic
 
 ## Operating model
 
-Use this skill as a staged, question-driven product and engineering workflow. The goal is shared understanding before artifacts, with product decisions flowing into technical decisions.
+Use this skill as a staged, question-driven product and engineering workflow for platform-agnostic work. The goal is shared understanding before artifacts, with product decisions flowing into technical decisions.
 
 - Ask questions until the problem, user journeys, technical approach, or validation decision is genuinely clear.
 - Surface assumptions explicitly before committing them to artifacts.
@@ -15,7 +15,7 @@ Use this skill as a staged, question-driven product and engineering workflow. Th
 - Treat the Epic Brief, Core Flows, and Tech Plan as source specs; tickets derive from those specs.
 - Load only the reference for the current stage, then follow that stage precisely.
 
-Former slash-command names in the references are aliases. Interpret `/epic:4-tech-plan` as "use `$evenbetter-epic` with stage `4-tech-plan`."
+Former slash-command names in the references are aliases. Interpret `/epic:4-tech-plan` as "use `$evenbetter-general-epic` with stage `4-tech-plan`."
 
 ## Question tooling
 

@@ -1,4 +1,4 @@
-# 7 execute
+# 4 execute
 
 > Converted from a former Claude Code command. Apply the question-tool and tool-equivalence rules from the parent SKILL.md; keep Claude `AskUserQuestion` support and use Codex `request_user_input` when available.
 
@@ -9,11 +9,11 @@ Execution orchestrator who manages the implementation lifecycle from handoff to 
 **Focus on:**
 
 - Systematic progression through tickets with proper dependency ordering
-- Continuous validation against specs during execution
+- Continuous validation against the Plan during execution
 - Proactive detection of implementation drift or misalignment
 - Creating fixup or amendment tickets in case of drift, or missing implementation
 - Balancing automation with user involvement for critical decisions
-- Maintaining spec-implementation coherence across the epic
+- Maintaining Plan-implementation coherence across the epic
 
 ## Core Philosophy
 
@@ -25,7 +25,7 @@ Execution is not fire-and-forget. It's a supervised process where:
 - Significant approach changes require user alignment, not autonomous pivots
 - Tickets progress systematically with clear completion criteria
 
-The goal is efficient, correct implementation that stays aligned with specs.
+The goal is efficient, correct implementation that stays aligned with the Plan.
 
 ## Tools
 
@@ -37,7 +37,7 @@ The goal is efficient, correct implementation that stays aligned with specs.
 
 ## Artifacts
 
-All artifacts live in `.evenbetter/<epic-folder>/`. Scan `.evenbetter/` to find the epic folder. If multiple exist, use Claude `AskUserQuestion` or Codex `request_user_input` when available to ask which epic to work on. Read specs and tickets from `.evenbetter/<epic-folder>/`.
+All artifacts live in `.evenbetter/<feature-folder>/`. Scan `.evenbetter/` to find the feature folder. If multiple exist, use Claude `AskUserQuestion` or Codex `request_user_input` when available to ask which one to work on. Read the plan and tickets from `.evenbetter/<feature-folder>/`.
 
 ## Processing User Request
 
@@ -79,8 +79,8 @@ For each ticket in the batch, use the `Agent` tool to spawn an execution agent.
 
 **Constructing the Agent prompt:**
 
-- Read the ticket file (`.evenbetter/<epic-folder>/tickets/TICKET-NNN.md`) and include its full content
-- Include relevant spec content as context (Epic Brief, Tech Plan, Core Flows)
+- Read the ticket file (`.evenbetter/<feature-folder>/tickets/TICKET-NNN.md`) and include its full content
+- Include the relevant Plan sections as context
 - Specify the requirements and acceptance criteria from the ticket
 - For parallel executions, establish clear scope boundaries so different agents don't overlap or interfere with each other's work
 
@@ -92,7 +92,7 @@ Once execution results are returned, review and validate each completed ticket.
 
 **What to Review:**
 
-- The plan if it was generated to understand the approach taken. Verify it aligns with the requirements and specs.
+- The plan if it was generated to understand the approach taken. Verify it aligns with the requirements and Plan.
 - The diff of the code changes when:
     - The plan was not generated
     - The ticket involves critical functionality
@@ -100,13 +100,13 @@ Once execution results are returned, review and validate each completed ticket.
 
 **Validation Through Two Lenses:**
 
-**Product Lens (Epic Brief, Core Flows):**
+**Product Lens (Problem & Context, User Experience sections of the Plan):**
 
 - These represent the user's vision and product-level decisions
 - Alignment here is critical and non-negotiable
-- Deviations from documented product requirements must be addressed
+- Deviations from documented requirements must be addressed
 
-**Technical Lens (Tech Plan):**
+**Technical Lens (Technical Approach section of the Plan):**
 
 - These represent the implementation approach discussed during planning
 - Some flexibility is acceptable as implementation details emerge during coding
@@ -114,9 +114,9 @@ Once execution results are returned, review and validate each completed ticket.
 
 **Categorize Findings:**
 
-- **Well Implemented**: Meets acceptance criteria, aligned with specs
+- **Well Implemented**: Meets acceptance criteria, aligned with Plan
 - **Minor Issues**: Small fixes needed, doesn't block progress
-- **Technical Drift**: Deviated from tech plan but technically sound
+- **Technical Drift**: Deviated from Plan but technically sound
 - **Product Misalignment**: Deviated from product requirements
 - **Major Drift**: Fundamental issues requiring user involvement
 
@@ -142,10 +142,10 @@ Based on validation findings:
 
 - Stop and involve the user
 - Present the drift detected with specific examples
-- Explain the discrepancy between spec and implementation
+- Explain the discrepancy between Plan and implementation
 - Ask the user whether to:
     - Adjust the implementation approach
-    - Update specs to reflect new understanding
+    - Update the Plan to reflect new understanding
     - Take a different direction
 - Wait for user decision before proceeding
 
@@ -163,7 +163,7 @@ Once all tickets are executed and validated:
 
 - Summarize what was implemented across all tickets
 - Confirm all tickets are marked Done with acceptance criteria met
-- Note any spec updates made during execution
+- Note any Plan updates made during execution
 - Note any deferred items or follow-up work identified
 - Suggest running implementation-validation for final end-to-end review
 
@@ -173,14 +173,14 @@ Once all tickets are executed and validated:
 - Plans are reviewed before accepting implementations
 - Drift is detected early and corrected promptly
 - User is involved only for significant decisions
-- Specs stay in sync with implementation reality
+- The Plan stays in sync with implementation reality
 - Tickets are marked Done only when validated
 - Acceptance criteria are updated with implementation notes
-- The epic maintains coherence between specs and implementation
+- The epic maintains coherence between Plan and implementation
 
 ## Next Step
 
-Once all tickets are executed and validated, suggest the user run `$evenbetter-epic 8-implementation-validation` for a final end-to-end review of the implementation against specs.
+Once all tickets are executed and validated, suggest the user run `$evenbetter-general-feature 5-implementation-validation` for a final end-to-end review of the implementation against the Plan.
 
 ## What to Avoid
 
@@ -190,4 +190,5 @@ Once all tickets are executed and validated, suggest the user run `$evenbetter-e
 - Making major approach changes without user alignment
 - Skipping verification of complex tickets
 - Proceeding to dependent tickets when dependencies have issues
-- Letting implementation diverge from the specs
+- Letting implementation diverge from the Plan
+

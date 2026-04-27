@@ -184,7 +184,7 @@ Before emitting the JSON object, create `projectPath/.evenbetter/` if it does no
 projectPath/.evenbetter/eb-analyze.json
 ```
 
-This report file is the only permitted write inside `projectPath`. Overwrite the file on each new analysis so it always represents the latest `evenbetter-analyze` result.
+This report file is the only permitted write inside `projectPath`. Overwrite the file on each new analysis so it always represents the latest `evenbetter-ios-analyze` result.
 
 After storing the file, output JSON only, with no Markdown fences, commentary, or extra keys. The emitted JSON and stored JSON must be identical.
 

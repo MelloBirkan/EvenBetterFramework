@@ -39,13 +39,15 @@ The user's current request or stage arguments
 ## Processing User Request
 
 1. Internalize the user's request above. Use interview questions to resolve ambiguous requirements, fill in missing details, etc. Multiple rounds of clarification are expected. Reach alignment and shared understanding with the user.
-2. Once clarified, present a very concise summary of the agreed requirements.
-3. Create the epic folder at `.evenbetter/<epic-name>/` where `<epic-name>` is a short, descriptive kebab-case name derived from the epic (e.g., `.evenbetter/team-metrics-dashboard/`). Create `.evenbetter/` first if it doesn't exist. This folder is where all artifacts for this epic will live (epic-brief, core-flows, tech-plan, tickets/).
-Note: This step is for REQUIREMENT GATHERING and EPIC FOLDER CREATION only. No spec artifacts are created here.
+2. Assess the nature of the work — does this involve product-level decisions (user experience, new flows, behavior changes visible to users) or is it purely technical (refactoring, performance, infrastructure, bug fixes)?
+3. Once clarified, present a very concise summary of the agreed requirements.
+4. Create the feature folder at `.evenbetter/<feature-name>/` where `<feature-name>` is a short, descriptive kebab-case name derived from the work (e.g., `.evenbetter/auth-session-refactor/`). Create `.evenbetter/` first if it doesn't exist. This folder is where all artifacts for this work will live (plan.md, tickets/).
+
+Note: This step is for REQUIREMENT GATHERING and FOLDER CREATION only. No spec artifacts are created here.
 
 ## Next Step
 
-Suggest the user proceed with `$evenbetter-epic 1-epic-brief` to define the problem and scope.
+Suggest the user proceed with `$evenbetter-general-feature 1-plan` to create the plan.
 
 ## Acceptance Criteria
 
