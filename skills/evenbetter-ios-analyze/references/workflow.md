@@ -1,6 +1,6 @@
 # Coordinator Workflow
 
-This workflow coordinates a source-safe design-guidelines compliance analysis for iOS SwiftUI projects. Never edit, delete, format, generate, or execute source/project files inside `projectPath`; read source files only. The only permitted write inside `projectPath` is the final JSON report at `.evenbetter/eb-analyze.json`.
+This workflow coordinates a source-safe design-guidelines compliance analysis for iOS SwiftUI projects. Never edit, delete, format, generate, or execute source/project files inside `projectPath`; read source files only. The only permitted write inside `projectPath` is the final JSON report at `.evenbetter/analyze.json`.
 
 ## 1. Normalize Inputs
 
@@ -181,14 +181,20 @@ Load `references/output-contract.md` and emit one JSON object matching it exactl
 Before emitting the JSON object, create `projectPath/.evenbetter/` if it does not exist and write the same JSON object to:
 
 ```text
-projectPath/.evenbetter/eb-analyze.json
+projectPath/.evenbetter/analyze.json
 ```
 
 This report file is the only permitted write inside `projectPath`. Overwrite the file on each new analysis so it always represents the latest `evenbetter-ios-analyze` result.
 
 After storing the file, output JSON only, with no Markdown fences, commentary, or extra keys. The emitted JSON and stored JSON must be identical.
 
-## 11. Compaction-Safe Invariants
+## 11. Optional Validator Handoff
+
+If `skills/evenbetter-validate/SKILL.md` exists in the workspace and the user or host requests validation, invoke `$evenbetter-validate` as a separate skill against the same `projectPath` after `.evenbetter/analyze.json` is written. Keep the validation output separate at `.evenbetter/evenbetter-validate.json`; do not merge validator results into the analyzer JSON envelope.
+
+For JSON-only analyzer runs, do not append validator commentary to stdout. The analyzer output must remain the exact `analyze.json` object.
+
+## 12. Compaction-Safe Invariants
 
 If context is compacted, preserve these facts exactly:
 
@@ -200,5 +206,5 @@ If context is compacted, preserve these facts exactly:
 - schema field sets for `full` and `budget`
 - domain, severity, and dimension enums
 - aggregation and scoring contract
-- source-safe discipline and the `.evenbetter/eb-analyze.json` report write
+- source-safe discipline and the `.evenbetter/analyze.json` report write
 - final output envelope keys

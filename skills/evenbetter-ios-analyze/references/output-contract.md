@@ -1,6 +1,6 @@
 # Output Contract
 
-Create `projectPath/.evenbetter/` if needed, write the final report JSON to `projectPath/.evenbetter/eb-analyze.json`, then emit the same single JSON object on stdout in `full` mode:
+Create `projectPath/.evenbetter/` if needed, write the final report JSON to `projectPath/.evenbetter/analyze.json`, then emit the same single JSON object on stdout in `full` mode:
 
 ```json
 {
@@ -70,4 +70,4 @@ Create `projectPath/.evenbetter/` if needed, write the final report JSON to `pro
 
 ## JSON-Only Rule
 
-The final response must contain only the JSON object. Do not wrap it in Markdown fences, add commentary, or include partial diagnostic output. The stored file at `.evenbetter/eb-analyze.json` and the emitted JSON must be identical.
+The final response must contain only the JSON object. Do not wrap it in Markdown fences, add commentary, or include partial diagnostic output. The stored file at `.evenbetter/analyze.json` and the emitted JSON must be identical.

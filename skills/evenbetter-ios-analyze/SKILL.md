@@ -7,9 +7,9 @@ description: iOS SwiftUI design-guidelines compliance analyzer for Apple Human I
 
 ## Overview
 
-Analyze an iOS SwiftUI project for Apple Human Interface Guidelines and WCAG 2.2 compliance. The analyzer reads source files without modifying them, then stores the final JSON report at `projectPath/.evenbetter/eb-analyze.json`.
+Analyze an iOS SwiftUI project for Apple Human Interface Guidelines and WCAG 2.2 compliance. The analyzer reads source files without modifying them, then stores the final JSON report at `projectPath/.evenbetter/analyze.json`.
 
-Do not edit, delete, format, generate, or execute source/project files inside `projectPath`. The only permitted write inside `projectPath` is creating `.evenbetter/` if needed and writing the final report JSON to `.evenbetter/eb-analyze.json`.
+Do not edit, delete, format, generate, or execute source/project files inside `projectPath`. The only permitted write inside `projectPath` is creating `.evenbetter/` if needed and writing the final report JSON to `.evenbetter/analyze.json`.
 
 ## Inputs
 
@@ -61,7 +61,7 @@ After all six domain arrays return:
 3. Compute per-file scores and project-wide `overall_score`, `ui_score`, `ux_score`, and `a11y_score`.
 4. Compute `domain_summaries`.
 5. Produce a 3-5 sentence non-technical `executive_summary`.
-6. Store exactly that JSON object at `projectPath/.evenbetter/eb-analyze.json`, creating `.evenbetter/` if needed.
+6. Store exactly that JSON object at `projectPath/.evenbetter/analyze.json`, creating `.evenbetter/` if needed.
 7. Emit exactly the same JSON object matching `references/output-contract.md`.
 
 Budget mode uses the same final envelope but slimmer violation objects.
@@ -73,4 +73,4 @@ Budget mode uses the same final envelope but slimmer violation objects.
 - Use 1-based `line_number` values.
 - Preserve the schema enums exactly.
 - Never modify source or project files inside `projectPath`.
-- The only permitted project write is `projectPath/.evenbetter/eb-analyze.json`.
+- The only permitted project write is `projectPath/.evenbetter/analyze.json`.
