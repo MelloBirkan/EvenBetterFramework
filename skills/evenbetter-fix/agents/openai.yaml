@@ -1,0 +1,4 @@
+interface:
+  display_name: "EB Fix"
+  short_description: "Orchestrate remediation from audit findings"
+  default_prompt: "Use $evenbetter-fix to scope and orchestrate fixes from EvenBetter analyze or validate findings."
