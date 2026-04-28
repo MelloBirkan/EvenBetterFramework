@@ -1,6 +1,8 @@
 # Coordinator Workflow
 
-This workflow coordinates a source-safe design-guidelines compliance analysis for iOS SwiftUI projects. Never edit, delete, format, generate, or execute source/project files inside `projectPath`; read source files only. The only permitted write inside `projectPath` is the final JSON report at `.evenbetter/analyze.json`.
+This workflow coordinates a source-safe design-guidelines compliance analysis for iOS SwiftUI projects. Never edit, delete, format, generate, or execute source/project files inside `projectPath`; read source files only. The only permitted writes inside `projectPath` are numbered analyzer reports, `manifest.json`, and documented legacy report migration inside `.evenbetter/`.
+
+EvenBetter assumes serial execution. Before writing any report or manifest update, reread `projectPath/.evenbetter/manifest.json` from disk.
 
 ## 1. Normalize Inputs
 
@@ -49,7 +51,31 @@ Create a stable in-memory inventory:
 
 Preserve this inventory through any context compaction. Do not re-walk with different skip rules later in the same analysis.
 
-## 4. Run The Six Domains
+## 4. Prepare Report History
+
+Create `projectPath/.evenbetter/` if needed, then determine the next analyzer run number.
+
+1. If `manifest.json` exists, parse it and treat it as the source of truth for known runs.
+2. If `manifest.json` is missing but `analyze-*.json` exists, scan the numbered reports, infer `currentRun` from the highest number, and write a manifest before continuing.
+3. If `manifest.json` is missing and legacy `analyze.json` exists, auto-migrate it:
+   - Treat it as run 1.
+   - Write the same report to `analyze-1.json`.
+   - Add missing `run`, violation `id`, and violation `state` fields when possible.
+   - Initialize `manifest.json` with run 1.
+   - Use run 2 for the new analysis.
+4. If no history exists, use run 1.
+
+For the new run, set:
+
+- `run.number`: the selected run number `N`.
+- `run.createdAt`: current UTC ISO-8601 timestamp with `Z`.
+- `run.previousRun`: previous manifest `currentRun`, or null.
+- `run.supersedes`: the previous analyzer filename when one exists; otherwise an empty array.
+- `run.status`: `pending_validation`.
+
+Keep old reports indefinitely. Do not delete or overwrite `analyze-{N}.json`, `evenbetter-validate-{N}.json`, or legacy `analyze.json`.
+
+## 5. Run The Six Domains
 
 Run all six domains against the same inventory:
 
@@ -73,16 +99,16 @@ Inputs:
 - mode: <full|budget>
 - files: <relative path, line-indexed content, and metrics>
 
-Follow <domain reference>. Return only a JSON array of violation objects matching the shared schema for the active mode. Do not modify source/project files. Do not include findings outside <domain>.
+Follow <domain reference>. Return only a JSON array of violation objects matching the shared schema for the active mode except for analyzer-added id and state. Do not modify source/project files. Do not include findings outside <domain>.
 ```
 
-## 5. Validate Domain Results
+## 6. Validate And Enrich Domain Results
 
 For each domain JSON array:
 
 1. Parse as JSON.
 2. Reject or correct non-array wrapper text.
-3. Validate each object against `references/schema.md`.
+3. Validate each object against `references/schema.md`, allowing `id` and `state` to be added by the analyzer after domain output.
 4. Require `domain` to match the domain context.
 5. Require `severity` to be `error`, `warning`, or `info`.
 6. Require `dimension` to be `ui`, `ux`, or `accessibility`.
@@ -90,8 +116,14 @@ For each domain JSON array:
 8. Require `line_number` to be a positive 1-based integer.
 9. In `budget` mode, remove `why_fix`, `fix_code`, and `auto_fixable` if present.
 10. In `full` mode, discard findings that cannot provide all required full-mode fields.
+11. Generate `id` for each remaining violation using `references/schema.md`.
+12. Add default `state` for each new violation.
+13. For a matching violation ID found in previous analyzer reports, copy the latest prior `state` into the new violation so fixed, rejected, and deferred decisions persist across runs.
+14. If the analyzer can confidently identify a duplicate of an earlier violation with a different ID, set `state.status` to `duplicate_of` and `state.duplicateOf` to the earlier ID.
 
-## 6. Aggregate Violations
+When copying prior state, latest run wins. Never overwrite a prior report's `violations[]` content during analysis; only the fixer may mutate prior violation `state` after a user decision or completed fix.
+
+## 7. Aggregate Violations
 
 1. Concatenate the six arrays.
 2. Sort violations by `file_path`, then `line_number`, then `rule_id`.
@@ -101,7 +133,7 @@ For each domain JSON array:
 6. Compute `total_violations` from the concatenated array.
 7. Compute `critical_count` as the count of violations where `severity` is `error`.
 
-## 7. Domain Summaries
+## 8. Domain Summaries
 
 Emit exactly six `domain_summaries[]` entries in this order:
 
@@ -121,7 +153,7 @@ For each domain, count:
 
 Use zeros for domains with no findings.
 
-## 8. Scoring Heuristics
+## 9. Scoring Heuristics
 
 All scores are integers from 0 to 100. A clean file scores 100. A file with many severe findings can score near 0.
 
@@ -152,7 +184,7 @@ For project-wide scores:
 
 When evidence suggests a severe accessibility blocker affects a central shared component, keep the score holistic: allow the project accessibility score to drop more than raw counts alone would imply.
 
-## 9. Executive Summary Style
+## 10. Executive Summary Style
 
 Write 3-5 sentences for a non-technical stakeholder.
 
@@ -170,31 +202,42 @@ Avoid:
 - jargon-heavy implementation details
 - vague claims unsupported by the findings
 
-## 10. Store And Output
+## 11. Store Report And Manifest
 
-Load `references/output-contract.md` and emit one JSON object matching it exactly. Use:
+Load `references/output-contract.md` and emit one analyzer report object matching it exactly. Use:
 
+- `run`: metadata from the prepared report history
 - `project_path`: the input `projectPath`
 - `platform`: `swiftui`
 - `guidelines`: `Apple Human Interface Guidelines`
 
-Before emitting the JSON object, create `projectPath/.evenbetter/` if it does not exist and write the same JSON object to:
+Before emitting the JSON object, reread `projectPath/.evenbetter/manifest.json` and write the analyzer report to:
 
 ```text
-projectPath/.evenbetter/analyze.json
+projectPath/.evenbetter/analyze-{N}.json
 ```
 
-This report file is the only permitted write inside `projectPath`. Overwrite the file on each new analysis so it always represents the latest `evenbetter-ios-analyze` result.
+Then update `projectPath/.evenbetter/manifest.json`:
 
-After storing the file, output JSON only, with no Markdown fences, commentary, or extra keys. The emitted JSON and stored JSON must be identical.
+- `version`: `1`
+- `currentRun`: `N`
+- `latest.analyze`: `analyze-{N}.json`
+- `latest.validate`: preserve the newest validation report path across all runs, or null when no validation report exists
+- `runs[]`: add or replace the entry for run `N`
+- `runs[].validate`: null until the validator writes `evenbetter-validate-{N}.json`
+- `runs[].validated`: false until validation succeeds
+- `runs[].status`: `pending_validation`
+- `runs[].summary`: counts of violation `state.status` values in `analyze-{N}.json`
 
-## 11. Optional Validator Handoff
+The emitted JSON and stored analyzer JSON must be identical. The manifest is written as a side effect and is not included in stdout.
 
-If `skills/evenbetter-validate/SKILL.md` exists in the workspace and the user or host requests validation, invoke `$evenbetter-validate` as a separate skill against the same `projectPath` after `.evenbetter/analyze.json` is written. Keep the validation output separate at `.evenbetter/evenbetter-validate.json`; do not merge validator results into the analyzer JSON envelope.
+## 12. Optional Validator Handoff
 
-For JSON-only analyzer runs, do not append validator commentary to stdout. The analyzer output must remain the exact `analyze.json` object.
+If `skills/evenbetter-validate/SKILL.md` exists in the workspace and the user or host requests validation, invoke `$evenbetter-validate` as a separate skill against the same `projectPath` after `.evenbetter/analyze-{N}.json` and `.evenbetter/manifest.json` are written. Keep the validation output separate at `.evenbetter/evenbetter-validate-{N}.json`; do not merge validator results into the analyzer JSON envelope.
 
-## 12. Compaction-Safe Invariants
+For JSON-only analyzer runs, do not append validator commentary to stdout. The analyzer output must remain the exact `analyze-{N}.json` object.
+
+## 13. Compaction-Safe Invariants
 
 If context is compacted, preserve these facts exactly:
 
@@ -202,9 +245,13 @@ If context is compacted, preserve these facts exactly:
 - `mode`
 - skip-directory list
 - ordered SwiftUI file inventory
+- `.evenbetter/manifest.json` is the source of truth for report history
+- analyzer reports are numbered as `.evenbetter/analyze-{N}.json`
+- legacy `.evenbetter/analyze.json` is auto-migrated only when no manifest exists
 - six domain names and reference paths
 - schema field sets for `full` and `budget`
-- domain, severity, and dimension enums
+- domain, severity, dimension, state, and run status enums
+- stable violation ID inputs and SHA-256 prefix rule
 - aggregation and scoring contract
-- source-safe discipline and the `.evenbetter/analyze.json` report write
+- source-safe discipline and the numbered report plus manifest writes
 - final output envelope keys
