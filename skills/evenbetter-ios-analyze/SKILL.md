@@ -7,9 +7,9 @@ description: iOS SwiftUI design-guidelines compliance analyzer for Apple Human I
 
 ## Overview
 
-Analyze an iOS SwiftUI project for Apple Human Interface Guidelines and WCAG 2.2 compliance. The analyzer reads source files without modifying them, then stores the final JSON report at `projectPath/.evenbetter/analyze.json`.
+Analyze an iOS SwiftUI project for Apple Human Interface Guidelines and WCAG 2.2 compliance. The analyzer reads source files without modifying them, then stores each final JSON report at `projectPath/.evenbetter/analyze-{N}.json` and updates `projectPath/.evenbetter/manifest.json`.
 
-Do not edit, delete, format, generate, or execute source/project files inside `projectPath`. The only permitted write inside `projectPath` is creating `.evenbetter/` if needed and writing the final report JSON to `.evenbetter/analyze.json`.
+Do not edit, delete, format, generate, or execute source/project files inside `projectPath`. The only permitted writes inside `projectPath` are creating `.evenbetter/` if needed, auto-migrating a legacy `.evenbetter/analyze.json` into numbered history, writing the final report JSON to `.evenbetter/analyze-{N}.json`, and updating `.evenbetter/manifest.json`.
 
 ## Inputs
 
@@ -57,12 +57,15 @@ Pass each domain the normalized `projectPath`, `mode`, and the discovered SwiftU
 After all six domain arrays return:
 
 1. Validate every violation against `references/schema.md`.
-2. Group violations by `file_path`.
-3. Compute per-file scores and project-wide `overall_score`, `ui_score`, `ux_score`, and `a11y_score`.
-4. Compute `domain_summaries`.
-5. Produce a 3-5 sentence non-technical `executive_summary`.
-6. Store exactly that JSON object at `projectPath/.evenbetter/analyze.json`, creating `.evenbetter/` if needed.
-7. Emit exactly the same JSON object matching `references/output-contract.md`.
+2. Add stable `id` and default `state` fields to every violation.
+3. Load `.evenbetter/manifest.json` when present and carry forward the latest prior state for matching violation IDs.
+4. Group violations by `file_path`.
+5. Compute per-file scores and project-wide `overall_score`, `ui_score`, and `a11y_score`.
+6. Compute `domain_summaries`.
+7. Produce a 3-5 sentence non-technical `executive_summary`.
+8. Store exactly that JSON object at `projectPath/.evenbetter/analyze-{N}.json`, creating `.evenbetter/` if needed.
+9. Update `.evenbetter/manifest.json` with run `N`, latest analyzer path, validation status, and state summary.
+10. Emit exactly the same analyzer report JSON object matching `references/output-contract.md`.
 
 Budget mode uses the same final envelope but slimmer violation objects.
 
@@ -72,5 +75,7 @@ Budget mode uses the same final envelope but slimmer violation objects.
 - Use relative paths from `projectPath` for `file_path`.
 - Use 1-based `line_number` values.
 - Preserve the schema enums exactly.
+- Generate stable violation IDs from `rule_id`, relative `file_path`, line or symbol anchor, and normalized summary text.
+- Include `run` metadata and violation `state` objects exactly as defined in `references/output-contract.md` and `references/schema.md`.
 - Never modify source or project files inside `projectPath`.
-- The only permitted project write is `projectPath/.evenbetter/analyze.json`.
+- The only permitted project writes are numbered analyzer reports, `manifest.json`, and documented legacy report migration inside `projectPath/.evenbetter/`.

@@ -1,11 +1,14 @@
 # Output Contract
 
-Write the final validation report to `projectPath/.evenbetter/evenbetter-validate.json` and emit the same JSON object when running headless:
+Write the final validation report to `projectPath/.evenbetter/evenbetter-validate-{N}.json`, where `N` matches the analyzer run being validated, and emit the same JSON object when running headless:
 
 ```json
 {
   "project_path": "/abs/path",
-  "input_report": "/abs/path/.evenbetter/analyze.json",
+  "input_report": "/abs/path/.evenbetter/analyze-3.json",
+  "validates": "analyze-3.json",
+  "analyzer_run": 3,
+  "createdAt": "2026-04-28T12:40:00Z",
   "confidence_threshold": 0.7,
   "total_high_input": 0,
   "kept_count": 0,
@@ -20,6 +23,25 @@ Write the final validation report to `projectPath/.evenbetter/evenbetter-validat
 }
 ```
 
+## Run Pairing
+
+| Field | Type | Description |
+|---|---|---|
+| `input_report` | string | Absolute path to `.evenbetter/analyze-{N}.json`. |
+| `validates` | string | Analyzer report filename, e.g. `analyze-3.json`. |
+| `analyzer_run` | integer | Analyzer run number `N`; must match both report filenames. |
+| `createdAt` | string | UTC ISO-8601 timestamp with `Z`. |
+
+The validator must update `.evenbetter/manifest.json` after a successful write so the matching `runs[]` entry has:
+
+- `validate: "evenbetter-validate-{N}.json"`
+- `validated: true`
+- `status: "validated"` unless the run was already marked `fixed` or `partially_fixed`
+- `summary` recomputed from the paired analyzer report's violation states
+- `latest.validate: "evenbetter-validate-{N}.json"` when this is the newest validation report by `createdAt`
+
+It may also update `analyze-{N}.json` `run.status` to `validated`. It must not rewrite analyzer violation objects except for preserving existing state when the file is touched for the run status update.
+
 ## Result Object
 
 Each item in `kept`, `downgraded`, or `dropped` must include:
@@ -29,7 +51,7 @@ Each item in `kept`, `downgraded`, or `dropped` must include:
 | `decision` | string | `kept`, `downgraded`, or `dropped`. |
 | `confidence` | number | Validator confidence from `0.0` to `1.0`. |
 | `reasoning` | string | Concise evidence-based explanation. |
-| `original_violation` | object | The complete original analyzer violation. |
+| `original_violation` | object | The complete original analyzer violation, including `id` and `state`. |
 | `source_context` | object | `{ "file_path": string, "line_start": integer, "line_end": integer, "excerpt": string }`. |
 | `corpus_clause` | object | `{ "rule_id": string, "reference_file": string, "heading": string, "text": string }`. |
 | `url_verification` | object | JSON emitted by `scripts/verify_url.py`. |
@@ -61,9 +83,8 @@ Every item in `kept` must satisfy:
 | Field | Type | Description |
 |---|---|---|
 | `project_path` | string | Absolute `projectPath` received as input. |
-| `input_report` | string | Absolute path to `.evenbetter/analyze.json`. |
 | `confidence_threshold` | number | Threshold used for `kept` decisions. |
-| `total_high_input` | integer | Count of input violations where `severity` is `error`. |
+| `total_high_input` | integer | Count of input violations where `severity` is `error` and state is actionable. |
 | `kept_count` | integer | Number of retained high-severity findings. |
 | `downgraded_count` | integer | Number of high-severity inputs downgraded to warning. |
 | `dropped_count` | integer | Number of high-severity inputs removed. |
@@ -71,6 +92,10 @@ Every item in `kept` must satisfy:
 | `mean_confidence` | number | Mean confidence across processed findings, rounded to four decimals. |
 | `time_per_finding_ms` | number | Mean validation time per processed finding, rounded to one decimal. |
 
+## Backwards Compatibility
+
+If no `manifest.json` exists but `.evenbetter/analyze.json` exists, perform the analyzer legacy migration first: write `analyze-1.json`, add missing `run`, `id`, and `state` fields when possible, initialize `manifest.json`, and validate run 1. Do not treat `.evenbetter/analyze.json` as the latest report once the manifest exists.
+
 ## JSON-Only Rule
 
-When invoked headless, output only the JSON object. Do not wrap it in Markdown fences, add commentary, or include partial diagnostic output.
+When invoked headless, output only the validation report object. Do not wrap it in Markdown fences, add commentary, or include partial diagnostic output. The manifest is written as a side effect and is not included in stdout.

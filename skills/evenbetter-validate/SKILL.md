@@ -1,6 +1,6 @@
 ---
 name: evenbetter-validate
-description: Read-only validator for EvenBetter iOS analyzer reports. Use to validate audit results, check evenbetter-analyze findings for hallucination, verify high-severity violations, recompute confidence, verify guideline URLs, and write .evenbetter/evenbetter-validate.json from .evenbetter/analyze.json.
+description: Validator for numbered EvenBetter iOS analyzer reports. Use to validate audit results, check evenbetter-analyze findings for hallucination, verify high-severity violations, recompute confidence, verify guideline URLs, and write .evenbetter/evenbetter-validate-{N}.json from .evenbetter/analyze-{N}.json using .evenbetter/manifest.json.
 ---
 
 # evenbetter-validate
@@ -13,12 +13,14 @@ Validate high-severity EvenBetter iOS analyzer findings with a second-pass evide
 
 - `projectPath` (required): Absolute path to the analyzed SwiftUI project.
 - `confidence_threshold` (optional): Float from `0.0` to `1.0`. Default to `0.7`.
+- `run` (optional): Analyzer run number to validate. Default is the latest unvalidated analyzer run in `.evenbetter/manifest.json`.
+- `revalidate` (optional): Boolean. Default `false`; when `true`, allow replacing `evenbetter-validate-{N}.json` for an already validated run.
 
 If `projectPath` is missing or not absolute, return a JSON error object with an `error` key and stop.
 
 ## Source Safety
 
-Do not edit, delete, format, generate, or execute source/project files inside `projectPath`. The only permitted write inside `projectPath` is creating `.evenbetter/` if needed and writing the final validation report to `.evenbetter/evenbetter-validate.json`.
+Do not edit, delete, format, generate, or execute source/project files inside `projectPath`. The only permitted writes inside `projectPath` are creating `.evenbetter/` if needed, writing the final validation report to `.evenbetter/evenbetter-validate-{N}.json`, updating `.evenbetter/manifest.json`, and setting `run.status` in `.evenbetter/analyze-{N}.json` to `validated`.
 
 ## Required References
 
@@ -31,7 +33,9 @@ Load only what the current phase needs:
 
 ## Validation Scope
 
-Read `projectPath/.evenbetter/analyze.json`. Validate only violations where `severity` is `error`; this is the current analyzer's high-severity class.
+Read `projectPath/.evenbetter/manifest.json` and select the analyzer run to validate. By default, validate only the newest run whose manifest entry has `validated: false` or no paired `validate` file. If `run` is provided, validate that analyzer run; if it already has a paired validation report, require `revalidate: true`.
+
+Read `projectPath/.evenbetter/analyze-{N}.json` for the selected run. Validate only violations where `severity` is `error` and `state.status` is not `fixed`, `rejected`, or `duplicate_of`; this is the current analyzer's high-severity class.
 
 For each high-severity finding:
 
@@ -45,11 +49,13 @@ When the host supports isolated subagents, run the judgment in a fresh validator
 
 ## Output Rules
 
-- Write one JSON object to `projectPath/.evenbetter/evenbetter-validate.json`.
+- Write one JSON object to `projectPath/.evenbetter/evenbetter-validate-{N}.json`.
 - Emit the same JSON object on stdout when running headless.
 - Use `kept`, `downgraded`, and `dropped` arrays exactly as defined in `references/output-contract.md`.
 - Keep only findings with `confidence >= confidence_threshold`, valid source evidence, resolved corpus clause, coherent reasoning, and a verified source URL.
 - Include `drop_reason` for every dropped finding.
+- Include `validates: "analyze-{N}.json"` and `analyzer_run: N`.
+- Update `.evenbetter/manifest.json` so run `N` has `validate: "evenbetter-validate-{N}.json"` and `validated: true`.
 - Do not wrap JSON in Markdown fences or add prose to JSON-only outputs.
 
 Load `references/workflow.md` next.
