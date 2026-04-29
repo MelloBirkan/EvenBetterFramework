@@ -1,0 +1,14 @@
+{
+  "name": "evenbetter-android",
+  "description": "Placeholder plugin for future EvenBetter Android and Material Design skills.",
+  "author": {
+    "name": "EvenBetter"
+  },
+  "repository": "https://github.com/MelloBirkan/evenbetter-claude-marketplace",
+  "keywords": [
+    "evenbetter",
+    "android",
+    "material-design",
+    "kotlin"
+  ]
+}

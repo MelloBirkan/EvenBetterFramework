@@ -1,0 +1,19 @@
+{
+  "name": "evenbetter",
+  "description": "EvenBetter Claude Code plugins for platform-specific product, UX, and implementation workflows.",
+  "owner": {
+    "name": "EvenBetter"
+  },
+  "plugins": [
+    {
+      "name": "evenbetter-ios",
+      "source": "./plugins/evenbetter-ios",
+      "description": "EvenBetter iOS, SwiftUI, Apple HIG, accessibility, analysis, validation, and remediation skills."
+    },
+    {
+      "name": "evenbetter-android",
+      "source": "./plugins/evenbetter-android",
+      "description": "Placeholder for future EvenBetter Android and Material Design skills."
+    }
+  ]
+}

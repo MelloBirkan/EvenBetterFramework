@@ -1,0 +1,15 @@
+{
+  "name": "evenbetter-ios",
+  "description": "EvenBetter skills for iOS product workflows, SwiftUI implementation, Apple HIG, accessibility, analysis, validation, and remediation.",
+  "author": {
+    "name": "EvenBetter"
+  },
+  "repository": "https://github.com/MelloBirkan/evenbetter-claude-marketplace",
+  "keywords": [
+    "evenbetter",
+    "ios",
+    "swiftui",
+    "accessibility",
+    "hig"
+  ]
+}
