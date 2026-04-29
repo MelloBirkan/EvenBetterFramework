@@ -10,7 +10,7 @@ Review the implemented or existing feature surface against `ios-ux-plan.md`, ava
 2. Read `review-checklist.md` and `official-sources.md`.
 3. Inspect changed code with `git diff` or the files named by the user/tickets.
 4. Review screenshots when available. If screenshots are missing and visual evidence matters, ask for specific states from `question-patterns.md`.
-5. Use `/evenbetter-ios:swiftui-view-refactor`, `/evenbetter-ios:swiftui-ui-patterns`, `/evenbetter-ios:swiftui-liquid-glass`, `/evenbetter-ios:ios-debugger-agent`, or `/evenbetter-ios:swiftui-performance-audit` when their domain is relevant.
+5. Use `swiftui-view-refactor`, `swiftui-ui-patterns`, `swiftui-liquid-glass`, `ios-debugger-agent`, or `swiftui-performance-audit` when their domain is relevant.
 6. Write `.evenbetter/<feature-name>/ios-ux-review.md` for formal reviews.
 7. Ask closed disposition questions for findings that need product or timing decisions. When review exposes hidden assumptions or missing states before ticketing, ask enough additional multiple-choice questions to close them; 3-10 questions in this phase is normal for complex screens.
 

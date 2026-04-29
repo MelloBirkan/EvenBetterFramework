@@ -1,0 +1,20 @@
+{
+  "name": "evenbetter",
+  "interface": {
+    "displayName": "EvenBetter"
+  },
+  "plugins": [
+    {
+      "name": "evenbetter-ios",
+      "source": {
+        "source": "local",
+        "path": "./plugins/evenbetter-ios"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

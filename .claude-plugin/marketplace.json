@@ -1,8 +1,9 @@
 {
   "name": "evenbetter",
-  "description": "EvenBetter Claude Code plugin marketplace for iOS product, UX, and implementation workflows.",
+  "description": "EvenBetter plugin marketplace for iOS product, UX, and implementation workflows.",
   "owner": {
-    "name": "EvenBetter"
+    "name": "EvenBetter",
+    "url": "https://github.com/MelloBirkan/EvenBetterFramework"
   },
   "plugins": [
     {

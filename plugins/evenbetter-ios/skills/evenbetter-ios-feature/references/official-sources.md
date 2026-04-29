@@ -34,12 +34,12 @@ Use this file when planning or reviewing iOS UX, accessibility, Apple HIG confor
 
 ## Local iOS Skills
 
-- `/evenbetter-ios:swiftui-ui-patterns`: layout, navigation, sheets, forms, controls, theming, Dynamic Type, and component patterns.
-- `/evenbetter-ios:swiftui-view-refactor`: SwiftUI view decomposition, MV-first structure, state ownership, and accessibility modifier review.
-- `/evenbetter-ios:swiftui-liquid-glass`: iOS 26+ Liquid Glass design and API usage.
-- `/evenbetter-ios:ios-debugger-agent`: simulator, screenshots, UI hierarchy, logs, and runtime behavior.
-- `/evenbetter-ios:ios-app-intents`: Siri, Shortcuts, Spotlight, widgets, controls, and system action surfaces.
-- `/evenbetter-ios:swiftui-performance-audit`: SwiftUI performance when UX is affected by lag, hangs, or heavy rendering.
+- `swiftui-ui-patterns`: layout, navigation, sheets, forms, controls, theming, Dynamic Type, and component patterns.
+- `swiftui-view-refactor`: SwiftUI view decomposition, MV-first structure, state ownership, and accessibility modifier review.
+- `swiftui-liquid-glass`: iOS 26+ Liquid Glass design and API usage.
+- `ios-debugger-agent`: simulator, screenshots, UI hierarchy, logs, and runtime behavior.
+- `ios-app-intents`: Siri, Shortcuts, Spotlight, widgets, controls, and system action surfaces.
+- `swiftui-performance-audit`: SwiftUI performance when UX is affected by lag, hangs, or heavy rendering.
 
 ## Working Rules
 

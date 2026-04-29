@@ -233,7 +233,7 @@ The emitted JSON and stored analyzer JSON must be identical. The manifest is wri
 
 ## 12. Optional Validator Handoff
 
-If `skills/evenbetter-validate/SKILL.md` exists in the workspace and the user or host requests validation, invoke `/evenbetter-ios:evenbetter-validate` as a separate skill against the same `projectPath` after `.evenbetter/analyze-{N}.json` and `.evenbetter/manifest.json` are written. Keep the validation output separate at `.evenbetter/evenbetter-validate-{N}.json`; do not merge validator results into the analyzer JSON envelope.
+If `skills/evenbetter-validate/SKILL.md` exists in the workspace and the user or host requests validation, invoke `evenbetter-validate` as a separate skill against the same `projectPath` after `.evenbetter/analyze-{N}.json` and `.evenbetter/manifest.json` are written. Keep the validation output separate at `.evenbetter/evenbetter-validate-{N}.json`; do not merge validator results into the analyzer JSON envelope.
 
 For JSON-only analyzer runs, do not append validator commentary to stdout. The analyzer output must remain the exact `analyze-{N}.json` object.
 

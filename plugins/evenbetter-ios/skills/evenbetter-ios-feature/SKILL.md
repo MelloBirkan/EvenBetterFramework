@@ -16,7 +16,7 @@ Use this skill as a staged, question-driven iOS UX workflow for feature-scale wo
 - Treat `ios-ux-plan.md` as the UX source of truth. Tickets derive from the plan.
 - Load only the reference for the current stage plus `official-sources.md`, `question-patterns.md`, or `review-checklist.md` when needed.
 
-Former slash-command names may be aliases. Interpret `/ios-feature:1-ux-plan` as "use `/evenbetter-ios:evenbetter-ios-feature` with stage `1-ux-plan`."
+Former slash-command names may be aliases. Interpret `/ios-feature:1-ux-plan` as "use `evenbetter-ios-feature` with stage `1-ux-plan`."
 
 ## Question tooling
 
@@ -72,12 +72,12 @@ Infer the stage from the user request. If the user gives no stage and there is n
 
 ## iOS skill integration
 
-- Use `/evenbetter-ios:swiftui-ui-patterns` for SwiftUI layout, navigation, sheets, forms, controls, theming, Dynamic Type, and component patterns.
-- Use `/evenbetter-ios:swiftui-view-refactor` when review or execution needs smaller views, MV-first structure, state cleanup, or accessibility modifiers.
-- Use `/evenbetter-ios:swiftui-liquid-glass` when iOS 26+ Liquid Glass APIs or HIG Liquid Glass guidance affect the feature.
-- Use `/evenbetter-ios:ios-debugger-agent` when simulator screenshots, UI hierarchy, runtime behavior, or accessibility inspection are needed and supported.
-- Use `/evenbetter-ios:ios-app-intents` when feature actions should appear in Siri, Shortcuts, Spotlight, widgets, controls, or other system surfaces.
-- Use `/evenbetter-ios:swiftui-performance-audit` only when UX issues involve sluggish scrolling, heavy views, hangs, or render-performance regressions.
+- Use `swiftui-ui-patterns` for SwiftUI layout, navigation, sheets, forms, controls, theming, Dynamic Type, and component patterns.
+- Use `swiftui-view-refactor` when review or execution needs smaller views, MV-first structure, state cleanup, or accessibility modifiers.
+- Use `swiftui-liquid-glass` when iOS 26+ Liquid Glass APIs or HIG Liquid Glass guidance affect the feature.
+- Use `ios-debugger-agent` when simulator screenshots, UI hierarchy, runtime behavior, or accessibility inspection are needed and supported.
+- Use `ios-app-intents` when feature actions should appear in Siri, Shortcuts, Spotlight, widgets, controls, or other system surfaces.
+- Use `swiftui-performance-audit` only when UX issues involve sluggish scrolling, heavy views, hangs, or render-performance regressions.
 
 ## Research rules
 

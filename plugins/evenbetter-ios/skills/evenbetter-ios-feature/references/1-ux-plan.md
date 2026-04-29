@@ -8,7 +8,7 @@ Create an HIG-aware, accessibility-first UX plan for a small iOS feature or sing
 
 1. Read the gathered requirements and inspect the current codebase for nearby SwiftUI patterns, navigation, styling, and shared components.
 2. Read `official-sources.md` and `question-patterns.md`.
-3. Use `/evenbetter-ios:swiftui-ui-patterns` references as needed for navigation, sheets, forms, controls, theming, Dynamic Type, async state, or previews.
+3. Use `swiftui-ui-patterns` references as needed for navigation, sheets, forms, controls, theming, Dynamic Type, async state, or previews.
 4. Ask roughly 3-10 multiple-choice questions in this phase, across one or more rounds before drafting when complexity warrants it. Use early questions to close gaps and assumptions; use later questions to cover edge cases, failure states, accessibility risks, and screenshot/simulator evidence.
 5. Write `.evenbetter/<feature-name>/ios-ux-plan.md`.
 

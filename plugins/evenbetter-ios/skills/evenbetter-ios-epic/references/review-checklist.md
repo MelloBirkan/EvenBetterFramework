@@ -41,10 +41,10 @@ Use this checklist for `8-ux-implementation-review` and whenever a user asks for
 - Prefer SwiftUI-native app architecture: TabView, NavigationStack, NavigationSplitView, sheets, and environment injection where appropriate.
 - Preserve per-tab navigation history when the app uses tabs.
 - Centralize shared route and sheet mapping when the flow spans multiple screens.
-- Keep feature screens decomposed; use `/evenbetter-ios:swiftui-view-refactor` for large views or unstable state.
-- Use `/evenbetter-ios:swiftui-ui-patterns` for app wiring, navigation, sheets, forms, controls, theming, async state, and previews.
-- Gate iOS 26+ Liquid Glass with availability and use `/evenbetter-ios:swiftui-liquid-glass` for review.
-- Use `/evenbetter-ios:ios-app-intents` when system surfaces are in scope.
+- Keep feature screens decomposed; use `swiftui-view-refactor` for large views or unstable state.
+- Use `swiftui-ui-patterns` for app wiring, navigation, sheets, forms, controls, theming, async state, and previews.
+- Gate iOS 26+ Liquid Glass with availability and use `swiftui-liquid-glass` for review.
+- Use `ios-app-intents` when system surfaces are in scope.
 
 ## Output
 
