@@ -1,6 +1,6 @@
 # EvenBetter Claude Code Marketplace
 
-EvenBetter Claude Code Marketplace is a GitHub-hosted plugin marketplace for distributing platform-specific EvenBetter skills through Claude Code. The MVP starts with installable iOS and Android plugins under the `evenbetter` marketplace name.
+EvenBetter Claude Code Marketplace is a GitHub-hosted plugin marketplace for distributing platform-specific EvenBetter skills through Claude Code. The MVP currently ships only the iOS plugin under the `evenbetter` marketplace name.
 
 ## Install
 
@@ -14,12 +14,6 @@ Install the iOS plugin:
 
 ```text
 /plugin install evenbetter-ios@evenbetter
-```
-
-Install the Android plugin:
-
-```text
-/plugin install evenbetter-android@evenbetter
 ```
 
 After installing, reload plugins in the current Claude Code session:
@@ -67,13 +61,9 @@ Contains the current iOS-focused EvenBetter skill set:
 
 The source skill packages remain in the repository's original `skills/` tree. The plugin copies live under `plugins/evenbetter-ios/skills/` so Claude Code can install them as a self-contained plugin. Repo-local `agents/openai.yaml` helper metadata is intentionally not shipped in the Claude Code plugin copy.
 
-### `evenbetter-android`
-
-The Android plugin is installable as an MVP placeholder, but Android-specific skills are still pending. Its `skills/` directory is present and documented so future Android skills can be added without changing the marketplace shape.
-
 ## MVP Limitations
 
-- Android skills are not implemented yet.
+- Android distribution is intentionally omitted from this MVP until Android-specific skills exist.
 - The marketplace currently uses local plugin paths, which require adding the marketplace from a git repository or local directory. Direct URL-based marketplace installation is not suitable for these relative plugin paths.
 - No commands, agents, hooks, MCP servers, LSP servers, monitors, or themes are declared for this MVP.
 - iOS skills were copied from the current repository state; maintainers should keep the plugin copy synchronized when source skills change.
@@ -90,7 +80,6 @@ The Android plugin is installable as an MVP placeholder, but Android-specific sk
 ```bash
 claude plugin validate .
 claude --plugin-dir ./plugins/evenbetter-ios
-claude --plugin-dir ./plugins/evenbetter-android
 ```
 
 ## Documentation Basis
