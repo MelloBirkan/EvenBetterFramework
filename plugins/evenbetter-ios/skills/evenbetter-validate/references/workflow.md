@@ -62,15 +62,12 @@ For each high-severity finding:
 2. Reject path traversal or files outside `projectPath`.
 3. Read the source file without modifying it.
 4. Capture a source excerpt using 1-based line numbers: include five lines before and five lines after `line_number`, clamped to file bounds.
-5. Resolve the corpus clause from the current analyzer references:
-   - `typography` -> `skills/evenbetter-ios-analyze/references/typography.md`
-   - `color-theming` -> `skills/evenbetter-ios-analyze/references/color-theming.md`
-   - `components-patterns` -> `skills/evenbetter-ios-analyze/references/components-patterns.md`
-   - `layout-interaction` -> `skills/evenbetter-ios-analyze/references/layout-interaction.md`
-   - `navigation-flow` -> `skills/evenbetter-ios-analyze/references/navigation-flow.md`
-   - `accessibility` -> `skills/evenbetter-ios-analyze/references/accessibility.md`
-6. In the selected reference, find the heading that starts with `### <rule_id>`. Use that heading and its bullet block until the next `###` heading as the clause.
-7. If the clause cannot be found, classify the finding as `dropped` with `drop_reason: "clause_not_found"`.
+5. Read the plugin corpus index at `../../corpus/index.json`.
+6. Find the index entry where `clause_id` equals `violation.rule_id`.
+7. Resolve `reference_path = ../../<entry.file_path>` from this skill directory. Reject missing files or paths outside the `evenbetter-ios` plugin.
+8. In the selected corpus file, find the H2 heading that starts with `## <rule_id>`. Use that heading and its clause block until the next `##` heading as the corpus clause.
+9. Attach index metadata to the corpus clause: `clause_id`, `source_url`, `retrieved`, and `corpus_version`.
+10. If the index entry or markdown clause cannot be found, classify the finding as `dropped` with `drop_reason: "clause_not_found"`.
 
 ## 5. Verify The Guideline URL
 
