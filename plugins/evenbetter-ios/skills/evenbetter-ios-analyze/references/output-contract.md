@@ -1,6 +1,6 @@
 # Output Contract
 
-Create `projectPath/.evenbetter/` if needed, write the final analyzer report JSON to `projectPath/.evenbetter/analyze-{N}.json`, update `projectPath/.evenbetter/manifest.json`, then emit the same analyzer report object on stdout in `full` mode.
+Create `projectPath/.evenbetter/` if needed, write the final analyzer report JSON to `projectPath/.evenbetter/analyze-{N}.json`, update `projectPath/.evenbetter/manifest.json`, then reply with a concise summary. Do not include the analyzer report JSON body in the chat response after a successful run.
 
 `N` is the next sequential analyzer run number. Start at `1`, or use `max(existing analyze-*.json, manifest.currentRun) + 1` when history exists.
 
@@ -171,6 +171,16 @@ Before writing a report or manifest update, reread the current manifest from dis
 
 Old reports are kept indefinitely. Pruning and archival are out of scope for this skill.
 
-## JSON-Only Rule
+## Chat Summary Rule
 
-The final response must contain only the analyzer report JSON object. Do not wrap it in Markdown fences, add commentary, or include partial diagnostic output. The stored file at `.evenbetter/analyze-{N}.json` and the emitted JSON must be identical. The manifest is written as a side effect and is not included in stdout.
+The final response for a successful analyzer run must be concise and human-readable. The stored file at `.evenbetter/analyze-{N}.json` is the complete analyzer report JSON artifact; do not paste, fence, or otherwise include the JSON body in chat. The manifest is written as a side effect and is not included in the chat response.
+
+Use this response shape:
+
+```text
+Analysis complete.
+- Wrote: .evenbetter/analyze-{N}.json
+- Findings: <total> total (<error> error, <warning> warning, <info> info)
+```
+
+Compute `<total>` from `total_violations`, `<error>` from `critical_count` or summed `domain_summaries[].error_count`, and `<warning>` / `<info>` from summed `domain_summaries`.

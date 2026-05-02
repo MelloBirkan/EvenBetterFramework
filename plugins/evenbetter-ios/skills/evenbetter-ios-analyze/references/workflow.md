@@ -205,14 +205,14 @@ Avoid:
 
 ## 11. Store Report And Manifest
 
-Load `references/output-contract.md` and emit one analyzer report object matching it exactly. Use:
+Load `references/output-contract.md` and produce one analyzer report object matching it exactly. Use:
 
 - `run`: metadata from the prepared report history
 - `project_path`: the input `projectPath`
 - `platform`: `swiftui`
 - `guidelines`: `Apple Human Interface Guidelines`
 
-Before emitting the JSON object, reread `projectPath/.evenbetter/manifest.json` and write the analyzer report to:
+Before writing the JSON object, reread `projectPath/.evenbetter/manifest.json` and write the analyzer report to:
 
 ```text
 projectPath/.evenbetter/analyze-{N}.json
@@ -230,13 +230,23 @@ Then update `projectPath/.evenbetter/manifest.json`:
 - `runs[].status`: `pending_validation`
 - `runs[].summary`: counts of violation `state.status` values in `analyze-{N}.json`
 
-The emitted JSON and stored analyzer JSON must be identical. The manifest is written as a side effect and is not included in stdout.
+The stored analyzer JSON remains the complete machine-readable artifact. The chat response must not include that JSON body.
+
+Reply with this concise summary only:
+
+```text
+Analysis complete.
+- Wrote: .evenbetter/analyze-{N}.json
+- Findings: <total> total (<error> error, <warning> warning, <info> info)
+```
+
+Compute `<total>` from `total_violations`, `<error>` from `critical_count` or summed `domain_summaries[].error_count`, and `<warning>` / `<info>` from summed `domain_summaries`.
 
 ## 12. Optional Validator Handoff
 
 If `skills/evenbetter-validate/SKILL.md` exists in the workspace and the user or host requests validation, invoke `evenbetter-validate` as a separate skill against the same `projectPath` after `.evenbetter/analyze-{N}.json` and `.evenbetter/manifest.json` are written. Keep the validation output separate at `.evenbetter/evenbetter-validate-{N}.json`; do not merge validator results into the analyzer JSON envelope.
 
-For JSON-only analyzer runs, do not append validator commentary to stdout. The analyzer output must remain the exact `analyze-{N}.json` object.
+For analyzer runs that also request validation, keep the analyzer summary separate from validator output. Do not append validator commentary to the analyzer summary.
 
 ## 13. Compaction-Safe Invariants
 
