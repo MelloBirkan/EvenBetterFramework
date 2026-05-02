@@ -7,7 +7,7 @@ description: iOS SwiftUI design-guidelines compliance analyzer for Apple Human I
 
 ## Overview
 
-Analyze an iOS SwiftUI project for Apple Human Interface Guidelines and WCAG 2.2 compliance. The analyzer reads source files without modifying them, then stores each final JSON report at `projectPath/.evenbetter/analyze-{N}.json` and updates `projectPath/.evenbetter/manifest.json`.
+Analyze an iOS SwiftUI project for Apple Human Interface Guidelines and WCAG 2.2 compliance. The analyzer reads source files without modifying them, then stores each final JSON report at `projectPath/.evenbetter/analyze-{N}.json` and updates `projectPath/.evenbetter/manifest.json`. After a successful run, do not include the JSON report body in the chat response; reply only with a brief summary that names the written report path and finding counts.
 
 Do not edit, delete, format, generate, or execute source/project files inside `projectPath`. The only permitted writes inside `projectPath` are creating `.evenbetter/` if needed, auto-migrating a legacy `.evenbetter/analyze.json` into numbered history, writing the final report JSON to `.evenbetter/analyze-{N}.json`, and updating `.evenbetter/manifest.json`.
 
@@ -66,13 +66,22 @@ After all six domain arrays return:
 7. Produce a 3-5 sentence non-technical `executive_summary`.
 8. Store exactly that JSON object at `projectPath/.evenbetter/analyze-{N}.json`, creating `.evenbetter/` if needed.
 9. Update `.evenbetter/manifest.json` with run `N`, latest analyzer path, validation status, and state summary.
-10. Emit exactly the same analyzer report JSON object matching `references/output-contract.md`.
+10. Reply with a concise human-readable summary matching `references/output-contract.md`. Do not include the analyzer report JSON body in the chat response.
 
 Budget mode uses the same final envelope but slimmer violation objects.
 
 ## Output Rules
 
-- Output JSON only, with no Markdown fences and no explanatory prose.
+- For successful analysis runs, write results to `.evenbetter/analyze-{N}.json` and `.evenbetter/manifest.json`; do not echo the analyzer JSON body in chat.
+- Reply with this concise summary shape:
+
+```text
+Analysis complete.
+- Wrote: .evenbetter/analyze-{N}.json
+- Findings: <total> total (<error> error, <warning> warning, <info> info)
+```
+
+- Compute `<total>` from `total_violations`, `<error>` from `critical_count` or summed `domain_summaries[].error_count`, and `<warning>` / `<info>` from summed `domain_summaries`.
 - Use relative paths from `projectPath` for `file_path`.
 - Use 1-based `line_number` values.
 - Preserve the schema enums exactly.
