@@ -40,7 +40,7 @@ Read `projectPath/.evenbetter/analyze-{N}.json` for the selected run. Validate o
 For each high-severity finding:
 
 1. Re-read the cited Swift file and nearby lines.
-2. Re-load the analyzer rule clause that matches `rule_id`.
+2. Resolve the corpus clause for `rule_id` through `../../corpus/index.json`, then read the matching H2 section from the indexed corpus markdown file.
 3. Verify `guideline_reference.url` with `scripts/verify_url.py`.
 4. Independently judge whether the cited code violates the rule.
 5. Emit `confidence`, `reasoning`, and `decision`.

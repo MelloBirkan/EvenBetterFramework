@@ -25,7 +25,8 @@ Load these files only when their phase runs:
 - `references/workflow.md`: Full coordinator workflow, domain dispatch, aggregation, scoring, executive summary style, and compaction-safe invariants.
 - `references/schema.md`: Violation object schema for `full` and `budget` modes.
 - `references/output-contract.md`: Final JSON report envelope and field definitions.
-- Domain rule modules: `references/typography.md`, `references/color-theming.md`, `references/components-patterns.md`, `references/layout-interaction.md`, `references/navigation-flow.md`, and `references/accessibility.md`.
+- Domain corpus modules: `../../corpus/ios/typography.md`, `../../corpus/ios/color-theming.md`, `../../corpus/ios/components-patterns.md`, `../../corpus/ios/layout-interaction.md`, `../../corpus/ios/navigation-flow.md`, and `../../corpus/ios/accessibility.md`.
+- Corpus index: `../../corpus/index.json` for stable clause metadata.
 
 ## Platform Detection
 
@@ -43,14 +44,14 @@ Then stop.
 
 Run all six iOS SwiftUI domains. If the host environment supports independent worker contexts, the domains may run concurrently. Otherwise run them sequentially. Each domain module is self-contained and must output only a JSON array of violation objects.
 
-- `typography`: load `references/typography.md`
-- `color-theming`: load `references/color-theming.md`
-- `components-patterns`: load `references/components-patterns.md`
-- `layout-interaction`: load `references/layout-interaction.md`
-- `navigation-flow`: load `references/navigation-flow.md`
-- `accessibility`: load `references/accessibility.md`
+- `typography`: load `../../corpus/ios/typography.md`
+- `color-theming`: load `../../corpus/ios/color-theming.md`
+- `components-patterns`: load `../../corpus/ios/components-patterns.md`
+- `layout-interaction`: load `../../corpus/ios/layout-interaction.md`
+- `navigation-flow`: load `../../corpus/ios/navigation-flow.md`
+- `accessibility`: load `../../corpus/ios/accessibility.md`
 
-Pass each domain the normalized `projectPath`, `mode`, and the discovered SwiftUI file list with relative paths and line-indexed contents. The domain must not inspect unrelated platforms or emit findings outside its own `domain` value.
+Pass each domain the normalized `projectPath`, `mode`, and the discovered SwiftUI file list with relative paths and line-indexed contents. The domain must use only clauses from its corpus file, emit `rule_id` values matching corpus H2 clause IDs, and must not inspect unrelated platforms or emit findings outside its own `domain` value.
 
 ## Aggregation
 

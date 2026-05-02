@@ -53,7 +53,7 @@ Each item in `kept`, `downgraded`, or `dropped` must include:
 | `reasoning` | string | Concise evidence-based explanation. |
 | `original_violation` | object | The complete original analyzer violation, including `id` and `state`. |
 | `source_context` | object | `{ "file_path": string, "line_start": integer, "line_end": integer, "excerpt": string }`. |
-| `corpus_clause` | object | `{ "rule_id": string, "reference_file": string, "heading": string, "text": string }`. |
+| `corpus_clause` | object | `{ "clause_id": string, "reference_file": string, "heading": string, "text": string, "source_url": string, "retrieved": string, "corpus_version": string }`. |
 | `url_verification` | object | JSON emitted by `scripts/verify_url.py`. |
 
 Items in `downgraded` must also include:

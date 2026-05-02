@@ -134,7 +134,7 @@ Only analyzer, validator, and fixer skills may mutate `state`. Analyzer creates 
 - No extra fields beyond the active mode object shape.
 - Enum values must match exactly.
 - `id` must start with `v_` and must be generated from the stable ID rule above.
-- `rule_id` must follow `<PREFIX><DIMENSION>-<NNN>`, where `<DIMENSION>` is `UI`, `UX`, or `A11Y`.
+- `rule_id` must follow `<PREFIX>-<DIMENSION>-<NNN>`, where `<DIMENSION>` is `UI`, `UX`, or `A11Y`, and must match a clause ID in `../../corpus/index.json`.
 - `line_number` must be a positive 1-based integer.
 - `code_snippet` must be the offending code, not a paraphrase.
 - `guideline_reference.url` must be a verified Apple HIG, developer.apple.com, or WCAG URL.

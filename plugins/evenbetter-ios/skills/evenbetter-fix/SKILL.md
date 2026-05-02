@@ -88,6 +88,8 @@ Convert each selected finding into a traceable work item before grouping:
 - `guideline_reference` and corpus clause/source details when available.
 - Validator `decision`, `confidence`, `reasoning`, and `downgraded_severity` when available.
 
+When normalizing work items, load `../../corpus/index.json` when it exists and enrich each `rule_id` with matching `clause_id`, `corpus_version`, `source_url`, `retrieved`, `reference_file`, and `anchor`. If the index is unavailable, continue from the report's `guideline_reference` and note the missing corpus metadata in the final verification gap.
+
 For validator reports, the original analyzer violation usually lives under `original_violation`; preserve the validator wrapper and the original violation so the final summary can trace both.
 
 Reject path traversal. Resolve source files as `projectPath / file_path` and ensure the result stays inside `projectPath`. Resolve report paths as `projectPath/.evenbetter / filename` and ensure they stay inside `.evenbetter/`.
