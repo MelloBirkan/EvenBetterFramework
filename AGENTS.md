@@ -82,11 +82,12 @@ Fixer behavior:
 
 ## Validation Commands
 
-Run these cheap checks after marketplace or skill edits:
+Always run these checks after marketplace, skill, or corpus edits:
 
 ```bash
 jq . .claude-plugin/marketplace.json \
   .agents/plugins/marketplace.json \
+  plugins/evenbetter-ios/corpus/index.json \
   plugins/evenbetter-ios/.claude-plugin/plugin.json \
   plugins/evenbetter-ios/.codex-plugin/plugin.json
 ```
@@ -98,6 +99,31 @@ for skill in skills/* plugins/evenbetter-ios/skills/*; do
   rg -n "^name: $name$" "$skill/SKILL.md" >/dev/null || echo "name mismatch: $skill"
 done
 ```
+
+For corpus or skill changes, always verify the maintained derived index manually:
+
+```bash
+rg -o "^## [A-Z0-9]+-(UI|UX|A11Y)-[0-9]{3}" plugins/evenbetter-ios/corpus/ios/*.md \
+  | sed -E "s/^.*## ([A-Z0-9]+-(UI|UX|A11Y)-[0-9]{3})$/\1/" \
+  | sort > /tmp/evenbetter-corpus-ids.txt
+
+jq -r ".[].clause_id" plugins/evenbetter-ios/corpus/index.json \
+  | sort > /tmp/evenbetter-index-ids.txt
+
+diff -u /tmp/evenbetter-corpus-ids.txt /tmp/evenbetter-index-ids.txt
+```
+
+Then check every skill-cited clause ID exists in `plugins/evenbetter-ios/corpus/index.json`:
+
+```bash
+rg -o "[A-Z0-9]+-(UI|UX|A11Y)-[0-9]{3}" skills plugins/evenbetter-ios/skills \
+  | sed -E "s/^.*:([A-Z0-9]+-(UI|UX|A11Y)-[0-9]{3})$/\1/" \
+  | sort -u > /tmp/evenbetter-skill-ids.txt
+
+comm -23 /tmp/evenbetter-skill-ids.txt /tmp/evenbetter-index-ids.txt
+```
+
+The `comm -23` output must be empty. Also inspect each changed corpus clause and matching `index.json` entry to confirm `severity`, `dimension`, `platform`, `source_url`, `retrieved`, and `file_path` stayed synchronized.
 
 ```bash
 git diff --check

@@ -84,7 +84,7 @@ Keep IDs stable. If a rule is renamed but its detection meaning remains the same
 - Use one source URL per clause and record the retrieval date.
 - Prefer Apple HIG, Apple Developer, or W3C WCAG sources.
 - Keep examples short and SwiftUI-specific.
-- Regenerate `index.json` with `python3 scripts/build_corpus_index.py`.
-- Run `python3 scripts/build_corpus_index.py --check --validate-skill-refs` before committing.
+- Update `index.json` whenever clause metadata changes.
+- Run the corpus consistency checks documented in the repository `AGENTS.md` before committing.
 
 Conceptually, the taxonomy supports traceability from mobile usability criteria and accessibility standards into concrete SwiftUI checks, including the kind of design-heuristic structure discussed by Hoehle and Venkatesh and mobile accessibility mappings such as WCAG2Mobile.
