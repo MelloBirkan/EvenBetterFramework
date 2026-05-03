@@ -1,0 +1,16 @@
+{
+  "name": "evenbetter-general",
+  "description": "EvenBetter platform-agnostic feature and epic planning, ticketing, execution, and validation workflow skills.",
+  "author": {
+    "name": "EvenBetter",
+    "url": "https://github.com/MelloBirkan/EvenBetterFramework"
+  },
+  "repository": "https://github.com/MelloBirkan/EvenBetterFramework",
+  "keywords": [
+    "evenbetter",
+    "general",
+    "workflow",
+    "planning",
+    "tickets"
+  ]
+}

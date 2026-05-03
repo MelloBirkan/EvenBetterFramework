@@ -4,16 +4,12 @@
 
 EvenBetter is a curated-skills framework and plugin marketplace, not a single app or runtime. This repository distributes skill packages for Claude Code and Codex from one GitHub-hosted marketplace.
 
-The installable iOS plugin source of truth is:
+The installable plugin skill sources of truth are:
 
 - `plugins/evenbetter-ios/skills/`
+- `plugins/evenbetter-general/skills/`
 
-The root `skills/` directory contains repo-local platform-agnostic workflow skills:
-
-- `skills/evenbetter-general-feature/`
-- `skills/evenbetter-general-epic/`
-
-Do not maintain a parallel copy of installable iOS plugin skills under root `skills/`. If an iOS skill ships to users, edit it under `plugins/evenbetter-ios/skills/`.
+Do not maintain parallel copies of installable plugin skills under root `skills/`. If a skill ships to users, edit it under the matching plugin in `plugins/*/skills/`.
 
 ## Marketplace Metadata
 
@@ -21,10 +17,12 @@ Marketplace files:
 
 - Claude Code marketplace: `.claude-plugin/marketplace.json`
 - Codex marketplace: `.agents/plugins/marketplace.json`
-- Claude Code plugin manifest: `plugins/evenbetter-ios/.claude-plugin/plugin.json`
-- Codex plugin manifest: `plugins/evenbetter-ios/.codex-plugin/plugin.json`
+- Claude Code iOS plugin manifest: `plugins/evenbetter-ios/.claude-plugin/plugin.json`
+- Codex iOS plugin manifest: `plugins/evenbetter-ios/.codex-plugin/plugin.json`
+- Claude Code general plugin manifest: `plugins/evenbetter-general/.claude-plugin/plugin.json`
+- Codex general plugin manifest: `plugins/evenbetter-general/.codex-plugin/plugin.json`
 
-Keep marketplace entries pointed at `./plugins/evenbetter-ios`.
+Keep marketplace entries pointed at `./plugins/evenbetter-ios` and `./plugins/evenbetter-general`.
 
 Only `plugin.json` belongs inside `.claude-plugin/` and `.codex-plugin/`. Plugin components such as `skills/`, `agents/`, scripts, commands, hooks, MCP servers, or assets belong at the plugin root or inside the relevant skill package.
 
@@ -89,11 +87,13 @@ jq . .claude-plugin/marketplace.json \
   .agents/plugins/marketplace.json \
   plugins/evenbetter-ios/corpus/index.json \
   plugins/evenbetter-ios/.claude-plugin/plugin.json \
-  plugins/evenbetter-ios/.codex-plugin/plugin.json
+  plugins/evenbetter-ios/.codex-plugin/plugin.json \
+  plugins/evenbetter-general/.claude-plugin/plugin.json \
+  plugins/evenbetter-general/.codex-plugin/plugin.json
 ```
 
 ```bash
-for skill in skills/* plugins/evenbetter-ios/skills/*; do
+for skill in plugins/evenbetter-ios/skills/* plugins/evenbetter-general/skills/*; do
   [ -d "$skill" ] || continue
   name="$(basename "$skill")"
   rg -n "^name: $name$" "$skill/SKILL.md" >/dev/null || echo "name mismatch: $skill"
@@ -116,7 +116,7 @@ diff -u /tmp/evenbetter-corpus-ids.txt /tmp/evenbetter-index-ids.txt
 Then check every skill-cited clause ID exists in `plugins/evenbetter-ios/corpus/index.json`:
 
 ```bash
-rg -o "[A-Z0-9]+-(UI|UX|A11Y)-[0-9]{3}" skills plugins/evenbetter-ios/skills \
+rg -o "[A-Z0-9]+-(UI|UX|A11Y)-[0-9]{3}" plugins/evenbetter-ios/skills plugins/evenbetter-general/skills \
   | sed -E "s/^.*:([A-Z0-9]+-(UI|UX|A11Y)-[0-9]{3})$/\1/" \
   | sort -u > /tmp/evenbetter-skill-ids.txt
 

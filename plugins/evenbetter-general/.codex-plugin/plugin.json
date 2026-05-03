@@ -1,0 +1,35 @@
+{
+  "name": "evenbetter-general",
+  "description": "EvenBetter platform-agnostic feature and epic planning, ticketing, execution, and validation workflow skills.",
+  "author": {
+    "name": "EvenBetter",
+    "url": "https://github.com/MelloBirkan/EvenBetterFramework"
+  },
+  "homepage": "https://github.com/MelloBirkan/EvenBetterFramework",
+  "repository": "https://github.com/MelloBirkan/EvenBetterFramework",
+  "keywords": [
+    "evenbetter",
+    "general",
+    "workflow",
+    "planning",
+    "tickets"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "EvenBetter General",
+    "shortDescription": "Platform-agnostic feature and epic workflow skills.",
+    "longDescription": "Curated EvenBetter skills for platform-agnostic feature planning, epic planning, ticket breakdown, implementation execution, and validation.",
+    "developerName": "EvenBetter",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/MelloBirkan/EvenBetterFramework",
+    "defaultPrompt": [
+      "Use EvenBetter General to plan a feature.",
+      "Use EvenBetter General to break an epic into tickets."
+    ],
+    "brandColor": "#10A37F"
+  }
+}
