@@ -1,8 +1,8 @@
 # EvenBetter Plugin Marketplace
 
-EvenBetter Plugin Marketplace is a GitHub-hosted marketplace for distributing curated EvenBetter skills as installable plugins. The MVP ships one plugin, `evenbetter-ios`, for iOS product workflows, SwiftUI implementation, Apple HIG review, accessibility, analysis, validation, and remediation.
+EvenBetter Plugin Marketplace is a GitHub-hosted marketplace for distributing curated EvenBetter skills as installable plugins. The MVP ships `evenbetter-ios` for iOS product workflows, SwiftUI implementation, Apple HIG review, accessibility, analysis, validation, and remediation, plus `evenbetter-general` for platform-agnostic feature and epic workflows.
 
-The marketplace currently targets both Claude Code and Codex. Both platforms install the same plugin payload from `plugins/evenbetter-ios/skills/`; only the platform metadata files differ.
+The marketplace currently targets both Claude Code and Codex. Both platforms install the same plugin payloads from `plugins/evenbetter-ios/skills/` and `plugins/evenbetter-general/skills/`; only the platform metadata files differ.
 
 ## Install in Claude Code
 
@@ -18,13 +18,19 @@ Install the iOS plugin:
 /plugin install evenbetter-ios@evenbetter
 ```
 
+Install the general workflow plugin:
+
+```text
+/plugin install evenbetter-general@evenbetter
+```
+
 Reload plugins in the current Claude Code session after installing or updating:
 
 ```text
 /reload-plugins
 ```
 
-Claude Code namespaces plugin skills by plugin name, so installed skills appear under names such as `/evenbetter-ios:evenbetter-ios-feature` and `/evenbetter-ios:swiftui-ui-patterns`.
+Claude Code namespaces plugin skills by plugin name, so installed skills appear under names such as `/evenbetter-ios:evenbetter-ios-feature`, `/evenbetter-ios:swiftui-ui-patterns`, and `/evenbetter-general:evenbetter-general-feature`.
 
 ## Install in Codex
 
@@ -38,6 +44,7 @@ Then install from Codex:
 
 ```text
 Codex Desktop -> Plugins -> evenbetter -> evenbetter-ios -> Add to Codex
+Codex Desktop -> Plugins -> evenbetter -> evenbetter-general -> Add to Codex
 ```
 
 Or from the Codex CLI:
@@ -47,7 +54,7 @@ codex
 /plugins
 ```
 
-In the plugin browser, choose the `evenbetter` marketplace, open `evenbetter-ios`, and select `Install plugin`.
+In the plugin browser, choose the `evenbetter` marketplace, open `evenbetter-ios` or `evenbetter-general`, and select `Install plugin`.
 
 After installation, start a new thread and either ask Codex directly or invoke the plugin or one of its bundled skills with `@`.
 
@@ -58,6 +65,7 @@ Claude Code:
 ```text
 /plugin marketplace update evenbetter
 /plugin update evenbetter-ios@evenbetter
+/plugin update evenbetter-general@evenbetter
 /reload-plugins
 ```
 
@@ -80,6 +88,13 @@ For the Claude Code marketplace, this MVP intentionally omits explicit `version`
   plugins/
     marketplace.json
 plugins/
+  evenbetter-general/
+    .claude-plugin/
+      plugin.json
+    .codex-plugin/
+      plugin.json
+    skills/
+      ...
   evenbetter-ios/
     .claude-plugin/
       plugin.json
@@ -89,9 +104,9 @@ plugins/
       ...
 ```
 
-The plugin content source of truth is `plugins/evenbetter-ios/skills/`.
+The plugin content sources of truth are `plugins/evenbetter-ios/skills/` and `plugins/evenbetter-general/skills/`.
 
-Do not maintain a parallel copy of installable iOS plugin skills under the repository root. If a skill should ship to users, edit it inside `plugins/evenbetter-ios/skills/`.
+Do not maintain parallel copies of installable plugin skills under the repository root. If a skill should ship to users, edit it inside the matching `plugins/*/skills/` directory.
 
 ## Plugin Contents
 
@@ -110,6 +125,11 @@ Do not maintain a parallel copy of installable iOS plugin skills under the repos
 - `swiftui-ui-patterns`
 - `swiftui-view-refactor`
 
+`evenbetter-general` contains:
+
+- `evenbetter-general-feature`
+- `evenbetter-general-epic`
+
 ## MVP Limitations
 
 - Android distribution is intentionally omitted until Android-specific skills exist.
@@ -120,11 +140,15 @@ Do not maintain a parallel copy of installable iOS plugin skills under the repos
 
 ## Maintainer Workflow
 
-1. Edit installable iOS skills in `plugins/evenbetter-ios/skills/`.
+1. Edit installable skills in the matching plugin skill root:
+   - iOS: `plugins/evenbetter-ios/skills/`
+   - General: `plugins/evenbetter-general/skills/`
 2. Keep platform-specific metadata in the platform manifest directories:
    - Claude Code: `plugins/evenbetter-ios/.claude-plugin/plugin.json`
    - Codex: `plugins/evenbetter-ios/.codex-plugin/plugin.json`
-3. Keep marketplace entries pointed at `./plugins/evenbetter-ios`:
+   - Claude Code: `plugins/evenbetter-general/.claude-plugin/plugin.json`
+   - Codex: `plugins/evenbetter-general/.codex-plugin/plugin.json`
+3. Keep marketplace entries pointed at plugin roots such as `./plugins/evenbetter-ios` and `./plugins/evenbetter-general`:
    - Claude Code: `.claude-plugin/marketplace.json`
    - Codex: `.agents/plugins/marketplace.json`
 4. Keep plugin components at the plugin root. Do not put `skills/`, `commands/`, `agents/`, hooks, or other components inside `.claude-plugin/` or `.codex-plugin/`; only `plugin.json` belongs there.
@@ -133,7 +157,7 @@ Do not maintain a parallel copy of installable iOS plugin skills under the repos
 
 ## Documentation Basis
 
-- [Claude Code plugin marketplaces](https://docs.anthropic.com/en/docs/claude-code/plugin-marketplaces)
-- [Claude Code plugins reference](https://docs.anthropic.com/en/docs/claude-code/plugins-reference)
+- [Claude Code plugin marketplaces](https://code.claude.com/docs/en/plugin-marketplaces)
+- [Claude Code plugin manifest reference](https://github.com/anthropics/claude-code/blob/main/plugins/plugin-dev/skills/plugin-structure/references/manifest-reference.md)
 - [Codex plugins](https://developers.openai.com/codex/plugins/)
 - [Build Codex plugins](https://developers.openai.com/codex/plugins/build)

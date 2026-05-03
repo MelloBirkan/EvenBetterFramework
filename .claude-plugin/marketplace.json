@@ -1,6 +1,6 @@
 {
   "name": "evenbetter",
-  "description": "EvenBetter plugin marketplace for iOS product, UX, and implementation workflows.",
+  "description": "EvenBetter plugin marketplace for curated product, UX, planning, implementation, and validation workflows.",
   "owner": {
     "name": "EvenBetter",
     "url": "https://github.com/MelloBirkan/EvenBetterFramework"
@@ -10,6 +10,11 @@
       "name": "evenbetter-ios",
       "source": "./plugins/evenbetter-ios",
       "description": "EvenBetter iOS, SwiftUI, Apple HIG, accessibility, analysis, validation, and remediation skills."
+    },
+    {
+      "name": "evenbetter-general",
+      "source": "./plugins/evenbetter-general",
+      "description": "EvenBetter platform-agnostic feature and epic planning, ticketing, execution, and validation workflow skills."
     }
   ]
 }
