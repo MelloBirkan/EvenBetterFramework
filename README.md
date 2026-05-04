@@ -30,7 +30,7 @@ Reload plugins in the current Claude Code session after installing or updating:
 /reload-plugins
 ```
 
-Claude Code namespaces plugin skills by plugin name, so installed skills appear under names such as `/evenbetter-ios:evenbetter-ios-feature`, `/evenbetter-ios:swiftui-ui-patterns`, and `/evenbetter-general:evenbetter-general-feature`.
+Claude Code namespaces plugin skills by plugin name, so installed skills appear under names such as `/evenbetter-ios:evenbetter-ios-feature`, `/evenbetter-ios:evenbetter-swiftui-ui-patterns`, and `/evenbetter-general:evenbetter-general-feature`.
 
 ## Install in Codex
 
@@ -117,13 +117,13 @@ Do not maintain parallel copies of installable plugin skills under the repositor
 - `evenbetter-ios-analyze`
 - `evenbetter-validate`
 - `evenbetter-fix`
-- `ios-app-intents`
-- `ios-debugger-agent`
-- `swiftui-accessibility`
-- `swiftui-liquid-glass`
-- `swiftui-performance-audit`
-- `swiftui-ui-patterns`
-- `swiftui-view-refactor`
+- `evenbetter-ios-app-intents`
+- `evenbetter-ios-debugger-agent`
+- `evenbetter-swiftui-accessibility`
+- `evenbetter-swiftui-liquid-glass`
+- `evenbetter-swiftui-performance-audit`
+- `evenbetter-swiftui-ui-patterns`
+- `evenbetter-swiftui-view-refactor`
 
 `evenbetter-general` contains:
 

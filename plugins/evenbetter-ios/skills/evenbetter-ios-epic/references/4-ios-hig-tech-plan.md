@@ -8,7 +8,7 @@ Create the technical plan that turns the iOS UX brief and screen flows into a Sw
 
 1. Read `ios-ux-brief.md` and `screen-flows.md`.
 2. Inspect the codebase for app entry points, navigation, environment dependencies, theming, shared components, and minimum OS.
-3. Use `swiftui-ui-patterns` references for app wiring, TabView, NavigationStack, sheets, split views, forms, controls, theming, async state, and previews.
+3. Use `evenbetter-swiftui-ui-patterns` references for app wiring, TabView, NavigationStack, sheets, split views, forms, controls, theming, async state, and previews.
 4. Use `official-sources.md` for Apple documentation links.
 5. Ask multiple-choice questions for unresolved architecture or UX implementation tradeoffs. Ask roughly 3-10 questions in this phase when needed to close state, navigation, accessibility, adaptivity, and review-evidence assumptions.
 6. Write `.evenbetter/<epic-name>/ios-hig-tech-plan.md`.

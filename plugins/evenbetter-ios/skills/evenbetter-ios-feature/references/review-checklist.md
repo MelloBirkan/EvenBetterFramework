@@ -43,11 +43,11 @@ Use this checklist for `5-ux-implementation-review` and whenever a user asks for
 ## Code Review
 
 - Prefer native SwiftUI controls before custom controls.
-- Avoid giant views, inline side effects, and unstable root branch swapping; use `swiftui-view-refactor` if needed.
-- Use `swiftui-ui-patterns` for NavigationStack, sheets, forms, controls, theming, and async state.
+- Avoid giant views, inline side effects, and unstable root branch swapping; use `evenbetter-swiftui-view-refactor` if needed.
+- Use `evenbetter-swiftui-ui-patterns` for NavigationStack, sheets, forms, controls, theming, and async state.
 - Add accessibility modifiers at the smallest useful view boundary.
 - Avoid hard-coded colors, font sizes, and layout constants that break Dynamic Type or contrast.
-- Gate iOS 26+ Liquid Glass with availability and use `swiftui-liquid-glass` for review.
+- Gate iOS 26+ Liquid Glass with availability and use `evenbetter-swiftui-liquid-glass` for review.
 
 ## Output
 

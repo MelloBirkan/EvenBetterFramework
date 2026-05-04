@@ -37,12 +37,12 @@ Use this file when planning or reviewing multi-screen iOS UX, accessibility stra
 
 ## Local iOS Skills
 
-- `swiftui-ui-patterns`: app wiring, tab architecture, NavigationStack, sheets, split views, forms, controls, theming, Dynamic Type, async state, and previews.
-- `swiftui-view-refactor`: SwiftUI view decomposition, MV-first structure, state ownership, and accessibility modifier review.
-- `swiftui-liquid-glass`: iOS 26+ Liquid Glass design and API usage.
-- `ios-debugger-agent`: simulator, screenshots, UI hierarchy, logs, and runtime behavior.
-- `ios-app-intents`: Siri, Shortcuts, Spotlight, widgets, controls, and system action surfaces.
-- `swiftui-performance-audit`: SwiftUI performance when UX is affected by lag, hangs, or heavy rendering.
+- `evenbetter-swiftui-ui-patterns`: app wiring, tab architecture, NavigationStack, sheets, split views, forms, controls, theming, Dynamic Type, async state, and previews.
+- `evenbetter-swiftui-view-refactor`: SwiftUI view decomposition, MV-first structure, state ownership, and accessibility modifier review.
+- `evenbetter-swiftui-liquid-glass`: iOS 26+ Liquid Glass design and API usage.
+- `evenbetter-ios-debugger-agent`: simulator, screenshots, UI hierarchy, logs, and runtime behavior.
+- `evenbetter-ios-app-intents`: Siri, Shortcuts, Spotlight, widgets, controls, and system action surfaces.
+- `evenbetter-swiftui-performance-audit`: SwiftUI performance when UX is affected by lag, hangs, or heavy rendering.
 
 ## Working Rules
 

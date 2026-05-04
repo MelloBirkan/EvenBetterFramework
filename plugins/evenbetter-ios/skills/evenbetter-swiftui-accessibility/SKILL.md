@@ -1,5 +1,5 @@
 ---
-name: swiftui-accessibility
+name: evenbetter-swiftui-accessibility
 description: "Accessibility analysis rules for SwiftUI projects following Apple Human Interface Guidelines and WCAG"
 ---
 
