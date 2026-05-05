@@ -1,13 +1,13 @@
 ---
 name: evenbetter-ios-analyze
-description: iOS SwiftUI Apple HIG, UX, UI, and accessibility analyzer. Use when run from or given a SwiftUI iOS project directory and asked to audit typography, color and theming, components, layout and interaction, navigation and flow, or accessibility; defaults to the current working directory when no project path is provided, dispatches one read-only Claude Code sub-agent per iOS domain (or sequential passes when sub-agents are unavailable), uses the bundled corpus first and falls back to Ref/Exa for primary-source documentation when the corpus is uncertain, generates analyzer-owned ai_fix_prompt and fix_options for every finding, populates the EvenBetter iOS HIG html_report_data block, and stores numbered reports in the project's .evenbetter folder.
+description: iOS SwiftUI Apple HIG, UX, UI, and accessibility analyzer. Use when run from or given a SwiftUI iOS project directory and asked to audit typography, color and theming, components, layout and interaction, navigation and flow, or accessibility; defaults to the current working directory when no project path is provided, dispatches three read-only Claude Code sub-agents (one per UI/UX/accessibility dimension) covering the six iOS domains in parallel (or sequential passes when sub-agents are unavailable), pre-filters candidate Swift files per domain in the orchestrator so each sub-agent receives only relevant paths, uses the bundled corpus first and falls back to native web tools for primary-source documentation when the corpus is uncertain, generates analyzer-owned ai_fix_prompt and fix_options for every finding, populates the EvenBetter iOS HIG html_report_data block, and stores numbered reports in the project's .evenbetter folder.
 ---
 
 # evenbetter-ios-analyze
 
 ## Overview
 
-First pass of the EvenBetter iOS audit loop. Read SwiftUI source files without modifying them, dispatch one specialized read-only sub-agent per iOS domain, produce HIG-grounded violations with both an `ai_fix_prompt` and a structured `fix_options` menu, populate `html_report_data` for the browser template, and write the numbered report to `projectPath/.evenbetter/analyze-{N}.json`. After a successful run, do not echo the JSON body in chat — reply with the brief summary defined in `references/output-contract.md` and prompt the user to run `/evenbetter-validate`.
+First pass of the EvenBetter iOS audit loop. Read SwiftUI source files without modifying them, dispatch three specialized read-only sub-agents batched by dimension (`ui`, `ux`, `accessibility`) covering the six iOS domains, produce HIG-grounded violations with both an `ai_fix_prompt` and a structured `fix_options` menu, populate `html_report_data` for the browser template, and write the numbered report to `projectPath/.evenbetter/analyze-{N}.json`. After a successful run, do not echo the JSON body in chat — reply with the brief summary defined in `references/output-contract.md` and prompt the user to run `/evenbetter-validate`.
 
 Do not edit, delete, format, generate, or execute source/project files inside `projectPath`. The only permitted writes inside `projectPath` are creating `.evenbetter/` if needed, auto-migrating a legacy `.evenbetter/analyze.json` into numbered history, writing the final report JSON to `.evenbetter/analyze-{N}.json`, updating `.evenbetter/manifest.json`, and creating a transient `.evenbetter/tmp/run-{N}/` working directory for per-domain sub-agent JSON shards that must be removed before the run ends.
 
@@ -40,33 +40,29 @@ If no SwiftUI source is detected, emit exactly:
 
 Then stop.
 
-## Domain Analysis
+## Dimension Analysis
 
-Run all six iOS SwiftUI domains. When the host environment supports independent sub-agents, such as Claude Code's `Agent` tool or Codex sub-agents, spawn one specialized read-only sub-agent per domain and run them concurrently in a single message — this is the default execution path under Claude Code. When sub-agents are unavailable, run the same six domain passes sequentially in the main agent.
+Run all six iOS SwiftUI domains, batched by dimension into three parallel sub-agents. When the host environment supports independent sub-agents, such as Claude Code's `Agent` tool or Codex sub-agents, spawn one specialized read-only sub-agent per dimension and run them concurrently in a single message — this is the default execution path under Claude Code. When sub-agents are unavailable, run the same domain passes sequentially in the main agent in the order listed in the table below.
 
-Sub-agent briefs must stay slim so six parallel agents do not blow the orchestrator's context. The orchestrator never inlines source file contents, the corpus, the schema, or `index.json` into the brief; it only passes filesystem paths the sub-agent reads on demand. The orchestrator never asks the sub-agent to return its JSON array inline; the sub-agent writes its array to a per-domain shard file and returns only a one-line status.
+Sub-agent briefs must stay slim. The orchestrator pre-filters candidate Swift files per domain with a single Grep pass over the inventory (see `references/workflow.md` §5a) and passes each sub-agent only the matching paths — sub-agents do not re-Grep the inventory. The orchestrator never inlines source file contents, the corpus text, or `index.json`. The orchestrator does not pass `references/schema.md` either; instead it inlines a compact required-fields sketch for the active mode directly in the brief. The orchestrator never asks the sub-agent to return its JSON arrays inline; the sub-agent writes one shard per assigned domain and returns only a one-line status.
 
-In Claude Code specifically, dispatch each domain via `Agent` with `subagent_type: "general-purpose"` and pass it exactly:
+In Claude Code specifically, dispatch each dimension via `Agent` with `subagent_type: "general-purpose"` and pass it exactly:
 
 1. The resolved absolute `projectPath`.
 2. `mode` (`full` or `budget`).
-3. `candidateFiles`: the list of relative Swift file *paths* in the inventory (no file contents, no line-indexed text).
-4. `corpusPath`: absolute path to the matching domain corpus file (the sub-agent reads it once with its own `Read` tool).
-5. `schemaPath`: absolute path to `references/schema.md`.
-6. `outputPath`: absolute path to `projectPath/.evenbetter/tmp/run-{N}/{domain}.json` where the sub-agent must write its JSON array.
+3. `dimension` (`ui`, `ux`, or `accessibility`).
+4. `domains`: an array of `{ name, corpusPath, candidateFiles, outputPath }` entries, one per domain assigned to this dimension. `candidateFiles` is the orchestrator-filtered subset of relative paths for that domain (may be empty). `corpusPath` and `outputPath` are absolute.
+5. The compact schema sketch for the active mode, inlined in the prompt verbatim from `references/workflow.md` §5b.
 
-The sub-agent reads its corpus, opens only the candidate files it needs (using `Grep` to skip files with no domain-relevant tokens), produces violations against H2 corpus clauses only, writes the JSON array to `outputPath` with its `Write` tool, and returns a single line such as `Wrote 12 typography findings to <outputPath>.` It must not echo the JSON array back to the orchestrator. Use parallel `Agent` calls in one message when sub-agents are available.
+The sub-agent reads each assigned corpus once, opens only the pre-filtered candidate files for that domain, produces violations against H2 corpus clauses only, writes one JSON array per domain to its corresponding `outputPath` with `Write`, and returns a single line such as `Wrote ui findings: 7 typography, 4 color-theming.` It must not echo JSON arrays back to the orchestrator. Use parallel `Agent` calls in one message when sub-agents are available.
 
-| Domain | Corpus path |
-|---|---|
-| `typography` | `../../corpus/ios/typography.md` |
-| `color-theming` | `../../corpus/ios/color-theming.md` |
-| `components-patterns` | `../../corpus/ios/components-patterns.md` |
-| `layout-interaction` | `../../corpus/ios/layout-interaction.md` |
-| `navigation-flow` | `../../corpus/ios/navigation-flow.md` |
-| `accessibility` | `../../corpus/ios/accessibility.md` |
+| Dimension | Domains | Corpus files |
+|---|---|---|
+| `ui` | `typography`, `color-theming` | `../../corpus/ios/typography.md`, `../../corpus/ios/color-theming.md` |
+| `ux` | `components-patterns`, `layout-interaction`, `navigation-flow` | `../../corpus/ios/components-patterns.md`, `../../corpus/ios/layout-interaction.md`, `../../corpus/ios/navigation-flow.md` |
+| `accessibility` | `accessibility` | `../../corpus/ios/accessibility.md` |
 
-Each domain worker is read-only. Workers must use only H2 corpus clauses from their assigned file, set `rule_id` to the matching clause ID, emit findings only inside their own `domain`, and never modify source/project files, `.evenbetter` files, cache files, or notes.
+Each dimension worker is read-only. Workers must use only H2 corpus clauses from the corpora assigned to them, set `rule_id` to the matching clause ID, emit findings only inside one of their assigned domains, and never modify source/project files, `.evenbetter` files, cache files, or notes.
 
 Each finding must include both an `ai_fix_prompt` (for autonomous fix workflows) and a `fix_options` array of 1-4 concrete remediation alternatives (for the user-facing `/evenbetter-fix` flow). One option must be `recommended: true` and must mirror the violation's top-level `fix_description`/`fix_code`/`ai_fix_prompt`. Provide alternatives whenever multiple legitimate paths satisfy the same rule (e.g., for an undersized tap target: enlarge frame, wrap content in a `Button`, promote to a Tab Bar item).
 
@@ -78,7 +74,7 @@ Only use these tools to confirm a finding or correct a `guideline_reference.url`
 
 ## Aggregation
 
-After all six domain sub-agents return their one-line status messages:
+After all three dimension sub-agents return their one-line status messages (covering all six domains):
 
 0. Read each `projectPath/.evenbetter/tmp/run-{N}/{domain}.json` shard from disk, parse it as JSON, and treat it as the domain's violation array. If a shard is missing or unparseable, treat that domain as returning zero findings and continue.
 1. Validate every violation against `references/schema.md`, including non-empty `ai_fix_prompt` and a well-formed `fix_options` array with exactly one `recommended: true` entry.
