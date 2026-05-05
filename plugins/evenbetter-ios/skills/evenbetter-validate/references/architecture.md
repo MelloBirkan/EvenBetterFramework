@@ -22,9 +22,11 @@ flowchart LR
   I --> J["Source excerpt"]
   I --> K["Corpus clause"]
   I --> L["Verified source URL"]
-  J --> M["Kept, downgraded, dropped"]
+  I --> R["Optional web evidence"]
+  J --> M["Kept, severity adjusted, dropped"]
   K --> M
   L --> M
+  R --> M
   M --> N[".evenbetter/evenbetter-validate-{N}.json"]
   H --> P["generate_html_report.py"]
   N --> P
@@ -33,6 +35,6 @@ flowchart LR
   N --> O
 ```
 
-The analyzer workers make first-pass domain judgments and store each run as a numbered analyzer report indexed by `manifest.json`. The validator does not assume those judgments are correct; it reloads code, reloads the rule clause, verifies the source URL, and writes a separate numbered validation report with retention statistics for the same run number. After the validation artifacts are stored, the bundled HTML generator derives a browser report from the analyzer findings plus validator decisions.
+The analyzer workers make first-pass domain judgments, create `ai_fix_prompt` values, and store each run as a numbered analyzer report indexed by `manifest.json`. The validator does not assume those judgments are correct; it reloads code, reloads the rule clause, verifies the source URL, optionally uses native web lookup for uncertain cases, checks severity, verifies fix prompt accuracy, and writes a separate numbered validation report with retention statistics for the same run number. After the validation artifacts are stored, the bundled HTML generator derives a browser report from the analyzer findings plus validator decisions and evidence links.
 
-This separation makes the hallucination-control claim citable: the first pass produces candidate violations, while the second pass filters high-severity findings through independently checked evidence.
+This separation makes the hallucination-control claim citable: the first pass produces candidate violations and fix prompts, while the second pass filters all actionable findings through independently checked evidence.

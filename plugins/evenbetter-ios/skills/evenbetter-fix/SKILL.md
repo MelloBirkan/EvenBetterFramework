@@ -1,18 +1,18 @@
 ---
 name: evenbetter-fix
-description: Workflow skill that scopes and orchestrates agent-driven remediation from numbered EvenBetter findings. Use when asked to fix issues from analyze-{N}.json, orchestrate fixes from evenbetter-validate-{N}.json, resolve findings with agents, fix only severe issues first, generate fallback fix prompts, or coordinate remediation batches for an analyzed project with .evenbetter/manifest.json history.
+description: Workflow skill that scopes and executes agent-driven remediation from numbered EvenBetter findings. Use when asked to fix issues from analyze-{N}.json, orchestrate fixes from evenbetter-validate-{N}.json, resolve findings with sub-agents, fix only severe issues first, or coordinate remediation batches for an analyzed project with .evenbetter/manifest.json history.
 ---
 
 # evenbetter-fix
 
 ## Overview
 
-Coordinate the fix step of the EvenBetter loop after analysis and validation. Read numbered findings from the target project's `.evenbetter` reports, merge unresolved work across analyzer runs, ask a short scoping round before editing, plan deterministic remediation groups, and then execute fixes locally, with sub-agents, or as static prompts depending on user choice and environment support.
+Coordinate the fix step of the EvenBetter loop after analysis and validation. Read numbered findings from the target project's `.evenbetter` reports, merge unresolved work across analyzer runs, ask a short scoping round before editing, plan deterministic remediation groups, and always execute source edits through sub-agents. This skill does not create additional fix prompts; it consumes analyzer-generated `ai_fix_prompt` values and modifies code for the issues the user selects.
 
 ## Inputs
 
 - `projectPath` (required): Absolute filesystem path to the analyzed project.
-- Optional user intent from the prompt: severity scope, domain or file filters, execution mode, batch size, or request to use raw analyzer findings.
+- Optional user intent from the prompt: severity scope, domain or file filters, batch size, remediation preference, or request to use raw analyzer findings.
 
 If `projectPath` is missing or not absolute, ask for the absolute path and stop until it is provided.
 
@@ -22,13 +22,13 @@ Load reports from `projectPath/.evenbetter/` in this order:
 
 1. `manifest.json` as the source of truth for numbered report history.
 2. The newest paired validation report, `evenbetter-validate-{N}.json`, for the latest validated actionable run.
-3. The newest analyzer report, `analyze-{N}.json`, for raw latest findings and warning/info scopes.
+3. The newest analyzer report, `analyze-{N}.json`, for raw latest findings, analyzer-authored `ai_fix_prompt` values, and explicitly requested unvalidated scopes.
 4. Older analyzer runs listed in the manifest for unresolved items that remain open or deferred.
 5. Legacy `evenbetter-validate.json`, `validate.json`, or `analyze.json` only when no manifest exists; if legacy `analyze.json` exists, perform the documented auto-migration to `analyze-1.json` and initialize `manifest.json` before continuing.
 
-Treat validation output as the preferred evidence source for high-severity findings. From validator reports, act by default only on `kept` and `downgraded` findings. Never act on `dropped` findings unless the user explicitly requests raw analyzer findings or dropped-item review.
+Treat validation output as the preferred evidence source. From validator reports, act by default only on `kept` and `severity_adjusted` findings. Never act on `dropped` findings unless the user explicitly requests raw analyzer findings or dropped-item review.
 
-Use raw `analyze-{N}.json` for warning and info scopes when validation output only covers high-severity findings.
+Use raw `analyze-{N}.json` only when validation has not run yet, when the user explicitly asks for unvalidated findings, or when the analyzer report is needed to retrieve the original violation and `ai_fix_prompt`.
 
 Before writing any state update, reread `manifest.json` from disk. EvenBetter assumes serial execution: only one analyzer, validator, or fixer run writes `.evenbetter/` at a time.
 
@@ -41,7 +41,7 @@ Build work items by violation `id` across all manifest runs:
 - If the latest known `state.status` is `fixed`, `rejected`, or `duplicate_of`, skip it.
 - If the latest known `state.status` is `deferred`, include it only when the user explicitly opts into deferred work.
 - If the latest known `state.status` is `open`, include it.
-- If a validation report exists for a run, attach validator `decision`, `confidence`, `reasoning`, and `downgraded_severity` to matching violation IDs from `kept` and `downgraded`.
+- If a validation report exists for a run, attach validator `decision`, `confidence`, `reasoning`, `severity_assessment`, `corrected_severity`, and `fix_prompt_assessment` to matching violation IDs from `kept` and `severity_adjusted`.
 - Do not act on validator `dropped` findings by default, even if the analyzer violation is still open.
 
 When two reports disagree, newest analyzer state wins for state, and newest validation report wins for validator evidence. Per-run analyzer files remain the source of truth for the mutable `state` block.
@@ -65,10 +65,11 @@ Ask only what materially changes the run. Cover these decisions unless already c
   - Exclude deferred findings, which is the default.
   - Include deferred findings in this run.
   - Review deferred findings only, without editing.
-- Execution mode:
-  - Agent batches when current instructions allow sub-agents and the user has selected or authorized them.
-  - Sequential local remediation.
-  - Static prompts only for manual execution or debugging.
+- Remediation approach for ambiguous fixes:
+  - Apply the strict standards-compliant fix.
+  - Apply a compatibility-oriented fix.
+  - Reject selected findings as not applicable and record the reason.
+  - Defer selected findings and record the reason.
 
 Each closed-ended question must offer 3 or 4 concrete options with one marked as recommended when there is a safe default. Avoid open-ended questions unless the required decision cannot be represented as structured choices.
 
@@ -84,9 +85,9 @@ Convert each selected finding into a traceable work item before grouping:
 - `work_item_id`: the stable violation `id`; use `<rule_id>:<file_path>:<line_number>` only for legacy reports without IDs.
 - `state`: the current violation state object.
 - `rule_id`, `severity`, `domain`, `dimension`, `file_path`, and `line_number`.
-- `summary`, `why_fix`, `fix_description`, `fix_code`, `ai_fix_prompt`, and `auto_fixable` when available.
+- `summary`, `why_fix`, `fix_description`, `fix_code`, `ai_fix_prompt`, and `auto_fixable`; `ai_fix_prompt` must come from the analyzer report and must not be synthesized by the fixer.
 - `guideline_reference` and corpus clause/source details when available.
-- Validator `decision`, `confidence`, `reasoning`, and `downgraded_severity` when available.
+- Validator `decision`, `confidence`, `reasoning`, `severity_assessment`, `corrected_severity`, and `fix_prompt_assessment` when available.
 
 When normalizing work items, load `../../corpus/index.json` when it exists and enrich each `rule_id` with matching `clause_id`, `corpus_version`, `source_url`, `retrieved`, `reference_file`, and `anchor`. If the index is unavailable, continue from the report's `guideline_reference` and note the missing corpus metadata in the final verification gap.
 
@@ -111,23 +112,23 @@ Group work items for edit safety:
 - Disjoint leaf files with no shared symbols, imports, or generated outputs may run in parallel.
 - If uncertain whether two groups conflict, make them sequential.
 
-Present a brief execution plan before edits when the plan includes more than one group or any parallelism.
+Present a brief execution plan before edits when the plan includes more than one group or any parallelism. The plan may reference existing analyzer `ai_fix_prompt` values, but must not create new prompts.
 
 ## Execute Fixes
 
 Use the existing codebase patterns. Do not rewrite unrelated code, reformat entire files, or revert user changes. Keep each change tied to one or more work items.
 
-When sub-agents are permitted and selected:
+Always spawn sub-agents for source edits:
 
 - Spawn one worker per independent group, not per finding.
 - Give each worker exclusive file ownership for its group.
 - Tell workers they are not alone in the codebase, must not revert edits by others, and must adjust to existing changes.
-- Include only the relevant work items, source report path, file ownership, acceptance criteria, and verification expectations.
+- Include only the relevant work items, analyzer `ai_fix_prompt` values, source report path, file ownership, acceptance criteria, and verification expectations.
 - Require workers to list changed files and work item IDs addressed.
 
-When sub-agents are unavailable or not permitted, process the planned groups sequentially in priority order using the same group boundaries.
+If the environment cannot spawn sub-agents, stop before editing and report that this fixer requires sub-agent execution. Do not fall back to sequential local remediation or static prompt generation.
 
-When static prompt mode is selected, generate one prompt per group or file. Each prompt must include the selected work items, source file paths, traceability IDs, and acceptance criteria. Do not edit source files in static prompt mode.
+If a selected work item lacks an analyzer `ai_fix_prompt`, or validation marked `fix_prompt_assessment.accurate` as false, do not create a replacement prompt. Ask the user whether to skip, reject/defer the item, or rerun analysis/validation so the analyzer can provide a corrected prompt.
 
 After each completed fix attempt, update the originating analyzer report's violation state:
 
@@ -149,7 +150,7 @@ Pause for a closed-ended resolution decision when any of these are true:
 
 - `auto_fixable` is false or missing and the fix changes behavior.
 - The cited snippet or line no longer matches source.
-- Validator confidence is low or the finding was downgraded.
+- Validator confidence is low, the finding has `decision: "severity_adjusted"`, or the fix prompt assessment is missing.
 - Multiple plausible fixes affect product behavior, compatibility, accessibility semantics, navigation, data persistence, public APIs, or visual direction.
 - The fix would suppress the finding instead of remediating it.
 
@@ -190,7 +191,7 @@ After each group, inspect the diff for scope creep and run the most relevant ava
 At the end, summarize:
 
 - Report source used and scope selected.
-- Work item IDs fixed, skipped, or converted to prompts.
+- Work item IDs fixed or skipped.
 - Work item IDs rejected or deferred with reasons.
 - Files changed.
 - User decisions made for ambiguous remediation.

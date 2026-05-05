@@ -53,10 +53,11 @@ def _validation_index(validation_report: dict[str, Any]) -> dict[str, dict[str, 
     by_id: dict[str, dict[str, Any]] = {}
     fallback_decisions = {
         "kept": "kept",
-        "downgraded": "downgraded",
+        "severity_adjusted": "severity_adjusted",
+        "downgraded": "severity_adjusted",
         "dropped": "dropped",
     }
-    for bucket in ("kept", "downgraded", "dropped"):
+    for bucket in ("kept", "severity_adjusted", "downgraded", "dropped"):
         for item in validation_report.get(bucket, []) or []:
             if not isinstance(item, dict):
                 continue
@@ -68,13 +69,89 @@ def _validation_index(validation_report: dict[str, Any]) -> dict[str, dict[str, 
                 "decision": item.get("decision", fallback_decisions[bucket]),
                 "confidence": item.get("confidence"),
                 "reasoning": item.get("reasoning", ""),
-                "downgraded_severity": item.get("downgraded_severity"),
+                "corrected_severity": item.get("corrected_severity") or item.get("downgraded_severity"),
                 "drop_reason": item.get("drop_reason"),
                 "source_context": item.get("source_context"),
                 "corpus_clause": item.get("corpus_clause"),
                 "url_verification": item.get("url_verification"),
+                "severity_assessment": item.get("severity_assessment"),
+                "fix_prompt_assessment": item.get("fix_prompt_assessment"),
+                "supporting_links": item.get("supporting_links") or [],
             }
     return by_id
+
+
+def _add_supporting_link(
+    links: list[dict[str, str]],
+    seen: set[str],
+    *,
+    label: Any,
+    url: Any,
+    source: str,
+    reason: str,
+) -> None:
+    if not isinstance(url, str):
+        return
+    normalized_url = url.strip()
+    if not normalized_url.startswith(("http://", "https://")) or normalized_url in seen:
+        return
+    seen.add(normalized_url)
+    links.append(
+        {
+            "label": str(label or normalized_url),
+            "url": normalized_url,
+            "source": source,
+            "reason": reason,
+        }
+    )
+
+
+def _supporting_links(
+    violation: dict[str, Any],
+    validation: dict[str, Any] | None,
+) -> list[dict[str, str]]:
+    links: list[dict[str, str]] = []
+    seen: set[str] = set()
+
+    guideline = violation.get("guideline_reference") or {}
+    if isinstance(guideline, dict):
+        _add_supporting_link(
+            links,
+            seen,
+            label=guideline.get("label") or "Guideline reference",
+            url=guideline.get("url"),
+            source="guideline",
+            reason="Analyzer guideline reference verified by validation when applicable.",
+        )
+
+    if validation:
+        corpus = validation.get("corpus_clause") or {}
+        if isinstance(corpus, dict):
+            _add_supporting_link(
+                links,
+                seen,
+                label=corpus.get("heading") or corpus.get("clause_id") or "Corpus source",
+                url=corpus.get("source_url"),
+                source="corpus",
+                reason="Corpus source used by the validator.",
+            )
+
+        for link in validation.get("supporting_links") or []:
+            if not isinstance(link, dict):
+                continue
+            source = str(link.get("source") or "web")
+            if source not in {"guideline", "corpus", "web"}:
+                source = "web"
+            _add_supporting_link(
+                links,
+                seen,
+                label=link.get("label") or "Supporting evidence",
+                url=link.get("url"),
+                source=source,
+                reason=str(link.get("reason") or "Additional validator evidence."),
+            )
+
+    return links
 
 
 def _flatten_issues(
@@ -96,6 +173,7 @@ def _flatten_issues(
             validation = validations.get(violation_id)
             fix_code = violation.get("fix_code")
             fix_description = violation.get("fix_description", "")
+            supporting_links = _supporting_links(violation, validation)
 
             issues.append(
                 {
@@ -121,11 +199,12 @@ def _flatten_issues(
                     "ai_fix_prompt": violation.get("ai_fix_prompt", ""),
                     "language": _language_for_file(file_path),
                     "state": violation.get("state") or {},
+                    "supporting_links": supporting_links,
                     "validation": validation
                     or {
                         "decision": "not_validated",
                         "confidence": None,
-                        "reasoning": "This finding was not part of the high-severity validation pass.",
+                        "reasoning": "This finding was not included in the validation report.",
                     },
                 }
             )
@@ -163,13 +242,17 @@ def build_report_data(
     project_path = str(analyzer_report.get("project_path") or validation_report.get("project_path") or "")
     validation_counts = {
         "kept": int(validation_report.get("kept_count") or 0),
-        "downgraded": int(validation_report.get("downgraded_count") or 0),
+        "severity_adjusted": int(
+            validation_report.get("severity_adjusted_count")
+            or validation_report.get("downgraded_count")
+            or 0
+        ),
         "dropped": int(validation_report.get("dropped_count") or 0),
     }
     validation_counts["not_validated"] = max(
         len(issues)
         - validation_counts["kept"]
-        - validation_counts["downgraded"]
+        - validation_counts["severity_adjusted"]
         - validation_counts["dropped"],
         0,
     )
@@ -627,6 +710,20 @@ def build_html(data: dict[str, Any]) -> str:
                                 <p class="mt-2 text-xs font-mono" style="color: var(--text-muted);" x-show="issue.validation.confidence !== null && issue.validation.confidence !== undefined">
                                     Confidence: <span x-text="Math.round(issue.validation.confidence * 100) + '%'"></span>
                                 </p>
+                                <div class="mt-3" x-show="issue.supporting_links && issue.supporting_links.length">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i data-lucide="link" class="w-3 h-3" style="color: var(--accent);"></i>
+                                        <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--text-muted);">Evidence Links</span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <template x-for="link in issue.supporting_links" :key="link.url">
+                                            <a :href="link.url" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono transition-colors hover:opacity-80" style="background: var(--accent-muted); color: var(--accent);" :title="link.reason || link.url">
+                                                <i data-lucide="external-link" class="w-3 h-3"></i>
+                                                <span x-text="truncate(link.label, 44)"></span>
+                                            </a>
+                                        </template>
+                                    </div>
+                                </div>
                             </div>
                             <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
                                 <div class="rounded-lg overflow-hidden" style="background: var(--bg-tertiary); border: 1px solid var(--error); border-opacity: 0.3;">
@@ -802,6 +899,7 @@ def build_html(data: dict[str, Any]) -> str:
                 getDecisionStyle(decision) {{
                     return {{
                         kept: 'background: var(--kept-bg); color: var(--kept); border: 1px solid var(--kept);',
+                        severity_adjusted: 'background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning);',
                         downgraded: 'background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning);',
                         dropped: 'background: var(--dropped-bg); color: var(--dropped); border: 1px solid var(--dropped);',
                         not_validated: 'background: var(--bg-tertiary); color: var(--text-muted); border: 1px solid var(--border-strong);'
@@ -810,6 +908,7 @@ def build_html(data: dict[str, Any]) -> str:
                 decisionLabel(validation) {{
                     if (!validation || validation.decision === 'not_validated') return 'not validated';
                     if (validation.decision === 'dropped' && validation.drop_reason) return 'dropped: ' + validation.drop_reason.replaceAll('_', ' ');
+                    if (validation.decision === 'severity_adjusted' && validation.corrected_severity) return 'severity adjusted: ' + validation.corrected_severity;
                     return validation.decision;
                 }},
                 shortId(id) {{

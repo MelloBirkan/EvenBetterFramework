@@ -48,7 +48,7 @@ Create `projectPath/.evenbetter/` if needed, write the final analyzer report JSO
 }
 ```
 
-`critical_count` = number of violations with `severity = "error"`. Budget mode uses the same envelope; per-violation shape is the slimmer one from the schema. Every violation in `files[].violations[]` must include `id` and `state`.
+`critical_count` = number of violations with `severity = "error"`. Budget mode uses the same envelope; per-violation shape is the slimmer one from the schema. Every violation in `files[].violations[]` must include `id`, `state`, and an analyzer-generated `ai_fix_prompt`.
 
 ## Run Fields
 
@@ -88,6 +88,8 @@ Create `projectPath/.evenbetter/` if needed, write the final analyzer report JSO
 | `ux_score` | integer | 0-100 project score for UX rules. |
 | `a11y_score` | integer | 0-100 project score for accessibility rules. |
 | `executive_summary` | string | 3-5 sentence non-technical summary of compliance posture. |
+
+The analyzer report is the source of truth for fix prompts. Validator reports may judge whether `ai_fix_prompt` is accurate, but they must not create replacement prompts. Fixer runs must consume selected analyzer prompts as guidance and apply source edits rather than writing new prompt artifacts.
 
 ## Manifest
 

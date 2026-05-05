@@ -17,7 +17,7 @@ Every violation object carries a stable identity and a mutable state block in bo
 | `summary` | string | one-sentence description |
 | `guideline_reference` | object | `{ "label": string, "url": string }` - URL must resolve to a real HIG / developer.apple.com / WCAG page |
 | `fix_description` | string | recommended remediation in prose |
-| `ai_fix_prompt` | string | self-contained prompt another AI could follow to apply the fix |
+| `ai_fix_prompt` | string | analyzer-generated, self-contained prompt another AI could follow to apply the fix |
 | `state` | object | Decision state for this violation. |
 
 Full mode also requires:
@@ -29,6 +29,18 @@ Full mode also requires:
 | `auto_fixable` | boolean | whether the fix can be applied deterministically |
 
 Budget mode drops `why_fix`, `fix_code`, and `auto_fixable`; keeps all shared fields.
+
+## Fix Prompt Ownership
+
+The analyzer is responsible for creating `ai_fix_prompt` directly in each violation JSON object. Validator and fixer skills must not invent replacement prompts.
+
+Each `ai_fix_prompt` must:
+
+- Identify the exact finding by `id` when available, `rule_id`, `file_path`, and `line_number`.
+- State the concrete source problem and the expected standards-compliant outcome.
+- Reference the analyzer's `fix_description` and, in full mode, the intended `fix_code` direction without requiring blind copy-paste.
+- Include acceptance criteria specific enough for a fixer agent to know when the issue is remediated.
+- Stay scoped to the cited issue and avoid unrelated refactors, formatting churn, or broad redesign.
 
 ## Stable ID
 
@@ -138,4 +150,5 @@ Only analyzer, validator, and fixer skills may mutate `state`. Analyzer creates 
 - `line_number` must be a positive 1-based integer.
 - `code_snippet` must be the offending code, not a paraphrase.
 - `guideline_reference.url` must be a verified Apple HIG, developer.apple.com, or WCAG URL.
+- `ai_fix_prompt` must be non-empty, grounded in the violation fields, and specific enough to execute without adding new remediation requirements.
 - `state.status = "duplicate_of"` requires `state.duplicateOf`; every other status requires `state.duplicateOf = null`.

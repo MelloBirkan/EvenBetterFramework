@@ -99,7 +99,7 @@ Inputs:
 - mode: <full|budget>
 - files: <relative path, line-indexed content, and metrics>
 
-Follow <domain corpus reference>. Use only H2 corpus clauses from that domain file as rules, and set each violation `rule_id` to the matching clause ID. Return only a JSON array of violation objects matching the shared schema for the active mode except for analyzer-added id and state. Do not modify source/project files. Do not include findings outside <domain>.
+Follow <domain corpus reference>. Use only H2 corpus clauses from that domain file as rules, and set each violation `rule_id` to the matching clause ID. Return only a JSON array of violation objects matching the shared schema for the active mode except for analyzer-added id and state. Create `ai_fix_prompt` directly in each violation as a self-contained prompt that identifies the finding, cites the relevant file/line/rule, explains the intended remediation, and gives clear acceptance criteria for a later fixer agent. Do not modify source/project files. Do not include findings outside <domain>.
 ```
 
 ## 6. Validate And Enrich Domain Results
@@ -115,12 +115,14 @@ For each domain JSON array:
 7. Require `dimension` to be `ui`, `ux`, or `accessibility`.
 8. Require `file_path` to be in the file inventory.
 9. Require `line_number` to be a positive 1-based integer.
-10. In `budget` mode, remove `why_fix`, `fix_code`, and `auto_fixable` if present.
-11. In `full` mode, discard findings that cannot provide all required full-mode fields.
-12. Generate `id` for each remaining violation using `references/schema.md`.
-13. Add default `state` for each new violation.
-14. For a matching violation ID found in previous analyzer reports, copy the latest prior `state` into the new violation so fixed, rejected, and deferred decisions persist across runs.
-15. If the analyzer can confidently identify a duplicate of an earlier violation with a different ID, set `state.status` to `duplicate_of` and `state.duplicateOf` to the earlier ID.
+10. Require `ai_fix_prompt` to be present, specific, and grounded in `rule_id`, `file_path`, `line_number`, `summary`, and `fix_description`.
+11. Reject findings whose prompt asks for broad redesign, unrelated refactoring, validation work, or future prompt generation instead of a concrete fix.
+12. In `budget` mode, remove `why_fix`, `fix_code`, and `auto_fixable` if present.
+13. In `full` mode, discard findings that cannot provide all required full-mode fields.
+14. Generate `id` for each remaining violation using `references/schema.md`.
+15. Add default `state` for each new violation.
+16. For a matching violation ID found in previous analyzer reports, copy the latest prior `state` into the new violation so fixed, rejected, and deferred decisions persist across runs.
+17. If the analyzer can confidently identify a duplicate of an earlier violation with a different ID, set `state.status` to `duplicate_of` and `state.duplicateOf` to the earlier ID.
 
 When copying prior state, latest run wins. Never overwrite a prior report's `violations[]` content during analysis; only the fixer may mutate prior violation `state` after a user decision or completed fix.
 
@@ -261,6 +263,7 @@ If context is compacted, preserve these facts exactly:
 - legacy `.evenbetter/analyze.json` is auto-migrated only when no manifest exists
 - six domain names and corpus paths
 - schema field sets for `full` and `budget`
+- analyzer creates all `ai_fix_prompt` values directly in the JSON report
 - domain, severity, dimension, state, and run status enums
 - stable violation ID inputs and SHA-256 prefix rule
 - aggregation and scoring contract
