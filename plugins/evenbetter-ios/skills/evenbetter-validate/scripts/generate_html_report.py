@@ -270,6 +270,28 @@ def _issue_from_violation(
     }
 
 
+def _file_entries(analyzer_report: dict[str, Any]) -> list[dict[str, Any]]:
+    files = analyzer_report.get("files")
+    if isinstance(files, list) and files:
+        return [file_entry for file_entry in files if isinstance(file_entry, dict)]
+
+    violations = analyzer_report.get("violations")
+    if not isinstance(violations, list):
+        return []
+
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for violation in violations:
+        if not isinstance(violation, dict):
+            continue
+        file_path = str(violation.get("file_path") or "")
+        grouped.setdefault(file_path, []).append(violation)
+
+    return [
+        {"file_path": file_path, "violations": grouped_violations}
+        for file_path, grouped_violations in grouped.items()
+    ]
+
+
 def _flatten_issues(
     analyzer_report: dict[str, Any],
     validation_report: dict[str, Any] | None = None,
@@ -278,9 +300,7 @@ def _flatten_issues(
     matched_validation_ids: set[str] = set()
     issues: list[dict[str, Any]] = []
 
-    for file_entry in analyzer_report.get("files", []) or []:
-        if not isinstance(file_entry, dict):
-            continue
+    for file_entry in _file_entries(analyzer_report):
         for violation in file_entry.get("violations", []) or []:
             if not isinstance(violation, dict):
                 continue

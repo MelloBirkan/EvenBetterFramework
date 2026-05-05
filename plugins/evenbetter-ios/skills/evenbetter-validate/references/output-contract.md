@@ -98,7 +98,7 @@ Required `html_report_data` fields:
 - `scan_context.confidence`
 - `scan_context.custom_utilities`
 
-Issue-card fields remain sourced from `files[].violations[]`: `id`, `summary`, `severity`, `rule_id`, `dimension`, `file_path`, `line_number`, `code_snippet`, `fix_description`, optional `fix_code`, `ai_fix_prompt`, and `guideline_reference`.
+Issue-card fields remain sourced from analyzer violations: canonical `files[].violations[]`, or top-level `violations[]` only when reading older flat analyzer reports. Required issue-card fields are `id`, `summary`, `severity`, `rule_id`, `dimension`, `file_path`, `line_number`, `code_snippet`, `fix_description`, optional `fix_code`, `ai_fix_prompt`, and `guideline_reference`.
 
 ## Manifest
 
@@ -118,6 +118,7 @@ Update `analyze-{N}.json` `run.status` to `validated` unless it is already `fixe
 Generate `projectPath/.evenbetter/evenbetter-validate-{N}.html` with `scripts/generate_html_report.py` after analyzer and manifest updates succeed. The generator must:
 
 - Read `analyze-{N}.json` and optional `manifest.json`.
+- Populate issues from canonical `files[].violations[]`; if `files[]` is missing and top-level `violations[]` exists, group flat violations by `file_path` and render those as issue cards.
 - Render only current issues: `state.status = "open"` or `state.status = "deferred"`.
 - Exclude `fixed`, `rejected`, and `duplicate_of` findings.
 - Tolerate legacy per-finding visible states or validation decisions such as `validated`, `kept`, and `severity_adjusted` when regenerating HTML from older reports.

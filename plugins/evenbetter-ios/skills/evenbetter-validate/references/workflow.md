@@ -44,13 +44,15 @@ where `N` equals the manifest run number.
 
 Read `projectPath/.evenbetter/analyze-{N}.json`.
 
-If the file is missing, malformed, or does not contain `files[]`, emit a JSON error object and stop. Do not read legacy `eb-analyze.json`.
+If the file is missing, malformed, or contains neither `files[]` nor top-level `violations[]`, emit a JSON error object and stop. Do not read legacy `eb-analyze.json`.
 
 Extract every violation under `files[].violations[]` where:
 
 - `state.status` is not `fixed`
 - `state.status` is not `rejected`
 - `state.status` is not `duplicate_of`
+
+Compatibility: if an analyzer report has top-level `violations[]` and no `files[]`, normalize those violations in memory by grouping them by `file_path` and treating each group as a synthetic file entry for validation and HTML generation. Prefer writing corrected reports back in the canonical `files[].violations[]` shape when the validator is already rewriting the analyzer report, but the HTML generator must accept both shapes.
 
 Deferred findings remain eligible for validation because deferral is a fix-scoping decision, not evidence invalidation.
 
@@ -189,7 +191,7 @@ Recompute or repair the top-level `html_report_data` object so the adapted EvenB
 - `summary.total`, `summary.critical`, `summary.high`, `summary.medium`, and `summary.low`
 - `scan_context.frameworks`, `framework_versions`, `design_systems`, `component_patterns`, `scan_duration`, `files_scanned`, `confidence`, and `custom_utilities`
 
-Use current visible issues for summary counts. Map `error -> critical`, `warning -> high`, `info -> medium`, and write `low: 0` unless a lower-priority severity exists in the analyzer contract. Do not add `html_report_data.issues`; the HTML issue list is derived from `files[].violations[]`.
+Use current visible issues for summary counts. Map `error -> critical`, `warning -> high`, `info -> medium`, and write `low: 0` unless a lower-priority severity exists in the analyzer contract. Do not add `html_report_data.issues`; the HTML issue list is derived from `files[].violations[]`, or from top-level `violations[]` only when reading older flat analyzer reports.
 
 ## 10. Store Analyzer And Update Manifest
 
@@ -226,7 +228,7 @@ Run the bundled generator with:
 scripts/generate_html_report.py --analyze projectPath/.evenbetter/analyze-{N}.json --manifest projectPath/.evenbetter/manifest.json --output projectPath/.evenbetter/evenbetter-validate-{N}.html
 ```
 
-The HTML report is a derived view of current issues using the EvenBetter iOS HIG adaptation of the supplied template. It must include only analyzer findings with `state.status = "open"` or `state.status = "deferred"`, render issue-level HIG/evidence links from `guideline_reference.url`, use `html_report_data` for dashboard and scan-context fields, and avoid validation-status language.
+The HTML report is a derived view of current issues using the EvenBetter iOS HIG adaptation of the supplied template. It must include only analyzer findings with `state.status = "open"` or `state.status = "deferred"`, render issue-level HIG/evidence links from `guideline_reference.url`, use `html_report_data` for dashboard and scan-context fields, and avoid validation-status language. The generator must populate issues from canonical `files[].violations[]` and from flat top-level `violations[]` reports by grouping flat violations by `file_path`.
 
 When regenerating HTML for older projects that still have `.evenbetter/evenbetter-validate-{N}.json`, pass that file through the generator's optional `--validation` argument if needed. The visual report must still remain issue-focused: include kept and severity-adjusted legacy findings as issue cards, populate their analyzer `ai_fix_prompt` values from `original_violation`, include legacy supporting evidence links, and exclude dropped findings.
 
@@ -257,6 +259,7 @@ If context is compacted, preserve these facts:
 - validation does not create `.evenbetter/evenbetter-validate-{N}.json`
 - HTML report path is `.evenbetter/evenbetter-validate-{N}.html`
 - HTML generation can read old validation JSON only as compatibility input, never as a new output artifact
+- HTML generation accepts both canonical `files[].violations[]` and flat top-level `violations[]` analyzer reports
 - every actionable finding is validated, regardless of severity
 - canonical threshold is `0.7`
 - real issues remain analyzer violations
