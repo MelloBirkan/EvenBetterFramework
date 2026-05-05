@@ -55,6 +55,17 @@ For each actionable finding:
 
 When the host supports isolated sub-agents, such as Claude Code subagents or Codex sub-agents, spawn specialized validator sub-agents by domain or by domain-sized batches. Each validator sub-agent receives only the relevant findings, source excerpts, corpus clauses, URL verification results, and optional primary-source links for its assigned domain. The validator orchestrator alone mutates `analyze-{N}.json`, `manifest.json`, and the HTML report. If isolated sub-agents are unavailable or not permitted, still perform an explicit independent re-evaluation from those artifacts and do not reuse the original auditor's reasoning as evidence.
 
+## Execution Progress
+
+Do not end the conversation after a future-tense status message such as "validation is now running" or "this will take a moment." A progress message is not a final response. After sending any progress update, continue the validation work in the same turn until the analyzer JSON, manifest, and HTML report are written, or until a concrete blocker/error is returned.
+
+Before starting second-pass checks, state the actual execution mode:
+
+- If sub-agents are available and spawned, name the validator sub-agents or batches, for example `typography`, `color-theming`, and `accessibility batch 1`.
+- If sub-agents are unavailable, say so once and validate sequentially in explicit domain/batch chunks.
+
+For large reports, especially 20 or more actionable findings, validate in visible chunks of no more than 10 findings per sequential batch, or domain-sized sub-agent batches when sub-agents are available. Provide short progress updates after each completed batch with counts such as `validated 20/95`, rejected findings, severity changes, and guideline corrections so far.
+
 ## Output Rules
 
 - Do not write `.evenbetter/evenbetter-validate-{N}.json` for new validation runs.

@@ -72,6 +72,7 @@ Validator behavior:
 - Select runs from `manifest.json` by default.
 - Validate the newest unvalidated run unless an explicit run is requested.
 - When Claude Code, Codex, or another host supports sub-agents, dispatch specialized validator sub-agents by domain or domain-sized batch; only the validator orchestrator mutates reports.
+- Do not end validation after a "validation is running" status message. Continue with visible sub-agent dispatch or sequential batches, then write outputs or return a concrete blocker.
 - Correct severity and guideline references directly in `analyze-{N}.json`.
 - Correct missing or stale analyzer `html_report_data` directly in `analyze-{N}.json`.
 - Reject unsupported findings by setting violation `state.status` to `rejected` with `decidedBy: "validator"`.

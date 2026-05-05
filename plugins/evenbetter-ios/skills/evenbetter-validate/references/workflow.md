@@ -54,6 +54,26 @@ Extract every violation under `files[].violations[]` where:
 
 Deferred findings remain eligible for validation because deferral is a fix-scoping decision, not evidence invalidation.
 
+## 3.5 Plan Execution And Keep The Turn Alive
+
+Before any long-running evidence pass, decide and state the actual execution mode. Do not send a future-tense status message and then stop. The following message is prohibited as a terminal response:
+
+```text
+Validator is now performing second-pass evidence checks... This will take a moment...
+```
+
+A progress message is only valid if the agent continues working in the same turn immediately after it.
+
+Use this liveness contract:
+
+1. Count actionable findings and group them by domain and, when useful, file.
+2. If host-native sub-agents are available, spawn the validator sub-agents immediately and state the concrete dispatched units, for example `typography`, `color-theming`, `accessibility batch 1`, and `accessibility batch 2`.
+3. If sub-agents are unavailable, state the fallback once and continue sequentially in domain/batch chunks.
+4. For sequential validation, use batches of no more than 10 findings. For sub-agent validation, split very large domains into batches that keep related findings together by file and rule.
+5. After each completed sequential batch or returned sub-agent batch, report concise progress: validated count out of total, rejected count, severity corrections, guideline corrections, and remaining count.
+6. Do not provide the final validation summary until `analyze-{N}.json`, `manifest.json`, and `.evenbetter/evenbetter-validate-{N}.html` have actually been written.
+7. If a blocker prevents continuing, return a concrete error or blocker with the file/run involved. Do not leave the user with a vague "running" status.
+
 ## 4. Prepare Evidence
 
 For each actionable finding:
@@ -73,7 +93,7 @@ For each actionable finding:
 
 Group prepared findings by analyzer `domain`: `typography`, `color-theming`, `components-patterns`, `layout-interaction`, `navigation-flow`, and `accessibility`.
 
-If the host environment supports independent sub-agents or worker contexts, such as Claude Code subagents or Codex sub-agents, spawn specialized validator sub-agents by domain when practical. For very large domains, split into batches that keep related findings together by file and rule. Each validator sub-agent is an expert for its assigned Apple HIG, SwiftUI, and accessibility domain.
+If the host environment supports independent sub-agents or worker contexts, such as Claude Code subagents or Codex sub-agents, spawn specialized validator sub-agents by domain when practical. For very large domains, split into batches that keep related findings together by file and rule. Each validator sub-agent is an expert for its assigned Apple HIG, SwiftUI, and accessibility domain. The orchestrator must explicitly state which sub-agents or batches were dispatched before waiting for them.
 
 Pass each validator sub-agent only:
 
@@ -86,7 +106,7 @@ Pass each validator sub-agent only:
 
 Validator sub-agents return proposed actions only: keep as issue, correct severity, correct guideline reference, or reject as non-issue with concise reasoning. They must not write source files, `.evenbetter` files, cache files, or notes. The validator orchestrator reviews their outputs and is the only actor that mutates `analyze-{N}.json`, updates `manifest.json`, or generates HTML.
 
-If sub-agents are unavailable or not permitted, perform the same domain-specialized validation sequentially in the main agent from the prepared artifacts.
+If sub-agents are unavailable or not permitted, perform the same domain-specialized validation sequentially in the main agent from the prepared artifacts, using the batch/progress rules from section 3.5.
 
 ## 6. Verify Or Correct The Guideline URL
 
@@ -228,6 +248,8 @@ If context is compacted, preserve these facts:
 - `projectPath` defaults to the invocation working directory when omitted
 - default target is the newest unvalidated analyzer run
 - spawn specialized validator sub-agents by domain or domain-sized batches when the host supports sub-agents; otherwise perform the same validation sequentially
+- never end after a "validation is running" progress message; continue to sub-agent dispatch, sequential batches, written outputs, or a concrete blocker
+- large sequential validations use batches of no more than 10 findings with progress after each batch
 - explicit `run` requires a matching `analyze-{N}.json`
 - revalidating an already validated run requires `revalidate: true`
 - validation does not create `.evenbetter/evenbetter-validate-{N}.json`
