@@ -55,7 +55,7 @@ The current EvenBetter report contract is manifest-first:
 
 - `.evenbetter/manifest.json` is the source of truth for report history.
 - Analyzer reports are numbered as `.evenbetter/analyze-{N}.json`.
-- Validator reports are numbered as `.evenbetter/evenbetter-validate-{N}.json`.
+- Validate updates the selected `.evenbetter/analyze-{N}.json` in place and generates `.evenbetter/evenbetter-validate-{N}.html`.
 - Legacy singleton files such as `.evenbetter/analyze.json`, `.evenbetter/eb-analyze.json`, `.evenbetter/validate.json`, and `.evenbetter/evenbetter-validate.json` are compatibility or migration cases only.
 
 Analyzer behavior:
@@ -68,13 +68,15 @@ Validator behavior:
 
 - Select runs from `manifest.json` by default.
 - Validate the newest unvalidated run unless an explicit run is requested.
-- Write the matching `evenbetter-validate-{N}.json` report and update manifest run pairing.
-- Validate high-severity findings separately from analyzer output; do not merge validator results into analyzer JSON.
+- Correct severity and guideline references directly in `analyze-{N}.json`.
+- Reject unsupported findings by setting violation `state.status` to `rejected` with `decidedBy: "validator"`.
+- Generate the matching `.evenbetter/evenbetter-validate-{N}.html` report and update manifest validation/html metadata.
+- Do not write new `.evenbetter/evenbetter-validate-{N}.json` reports.
 
 Fixer behavior:
 
 - Do a short closed-ended scoping step before remediation.
-- Use precedence: manifest, newest validation report, newest analyzer report, then older unresolved manifest runs.
+- Use precedence: manifest, newest validated analyzer report, newest analyzer report, then older unresolved manifest runs.
 - Skip `fixed` and `rejected` findings. Include `deferred` only when explicitly requested.
 - Reread `manifest.json` before writing state updates. EvenBetter assumes serial writes to `.evenbetter/`.
 

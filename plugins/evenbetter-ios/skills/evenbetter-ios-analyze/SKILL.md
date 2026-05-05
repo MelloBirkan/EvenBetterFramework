@@ -7,7 +7,7 @@ description: iOS SwiftUI design-guidelines compliance analyzer for Apple Human I
 
 ## Overview
 
-Analyze an iOS SwiftUI project for Apple Human Interface Guidelines and WCAG 2.2 compliance. The analyzer reads source files without modifying them, creates the first-pass violation records and their self-contained `ai_fix_prompt` values, then stores each final JSON report at `projectPath/.evenbetter/analyze-{N}.json` and updates `projectPath/.evenbetter/manifest.json`. After a successful run, do not include the JSON report body in the chat response; reply only with a brief summary that names the written report path and finding counts.
+Analyze an iOS SwiftUI project for Apple Human Interface Guidelines and WCAG 2.2 compliance. The analyzer reads source files without modifying them, creates the first-pass violation records and their self-contained `ai_fix_prompt` values, then stores each final JSON report at `projectPath/.evenbetter/analyze-{N}.json` and updates `projectPath/.evenbetter/manifest.json`. After a successful run, do not include the JSON report body in the chat response; reply only with a brief summary that names the written report path, finding counts, and prompts the user to run `$evenbetter-validate`.
 
 Do not edit, delete, format, generate, or execute source/project files inside `projectPath`. The only permitted writes inside `projectPath` are creating `.evenbetter/` if needed, auto-migrating a legacy `.evenbetter/analyze.json` into numbered history, writing the final report JSON to `.evenbetter/analyze-{N}.json`, and updating `.evenbetter/manifest.json`.
 
@@ -80,6 +80,8 @@ Budget mode uses the same final envelope but slimmer violation objects.
 Analysis complete.
 - Wrote: .evenbetter/analyze-{N}.json
 - Findings: <total> total (<error> error, <warning> warning, <info> info)
+
+Next: use $evenbetter-validate to confirm the findings and generate the HTML report.
 ```
 
 - Compute `<total>` from `total_violations`, `<error>` from `critical_count` or summed `domain_summaries[].error_count`, and `<warning>` / `<info>` from summed `domain_summaries`.
@@ -91,3 +93,4 @@ Analysis complete.
 - Include a specific `ai_fix_prompt` in every violation. The validator may later judge prompt accuracy, but the analyzer is the only skill that creates fix prompts.
 - Never modify source or project files inside `projectPath`.
 - The only permitted project writes are numbered analyzer reports, `manifest.json`, and documented legacy report migration inside `projectPath/.evenbetter/`.
+- End the chat summary by prompting the user to run `$evenbetter-validate`; validation corrects the analyzer JSON in place and generates the browser report.

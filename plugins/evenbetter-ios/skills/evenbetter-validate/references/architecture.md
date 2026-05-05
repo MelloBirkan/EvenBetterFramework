@@ -1,6 +1,6 @@
 # Architecture
 
-This skill documents the validator part of EvenBetter's compliance-auditing architecture. It combines Anthropic's orchestrator-workers and evaluator-style checking patterns from [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) into a practical orchestrator-worker-with-validators flow.
+This skill documents the validator part of EvenBetter's compliance-auditing architecture. It combines an analyzer first pass with an evidence-checking correction pass: the analyzer proposes issues and `ai_fix_prompt` values, then the validator corrects the analyzer report so downstream users and fixers see the current issue set.
 
 ```mermaid
 flowchart LR
@@ -21,20 +21,20 @@ flowchart LR
   H --> I
   I --> J["Source excerpt"]
   I --> K["Corpus clause"]
-  I --> L["Verified source URL"]
-  I --> R["Optional web evidence"]
-  J --> M["Kept, severity adjusted, dropped"]
+  I --> L["Verified HIG/WCAG URL"]
+  I --> R["Optional primary-source web evidence"]
+  J --> M["Correct analyzer JSON"]
   K --> M
   L --> M
   R --> M
-  M --> N[".evenbetter/evenbetter-validate-{N}.json"]
+  M --> H
+  M --> O
   H --> P["generate_html_report.py"]
-  N --> P
   O --> P
   P --> Q[".evenbetter/evenbetter-validate-{N}.html"]
-  N --> O
+  H --> S["evenbetter-fix"]
 ```
 
-The analyzer workers make first-pass domain judgments, create `ai_fix_prompt` values, and store each run as a numbered analyzer report indexed by `manifest.json`. The validator does not assume those judgments are correct; it reloads code, reloads the rule clause, verifies the source URL, optionally uses native web lookup for uncertain cases, checks severity, verifies fix prompt accuracy, and writes a separate numbered validation report with retention statistics for the same run number. After the validation artifacts are stored, the bundled HTML generator derives a browser report from the analyzer findings plus validator decisions and evidence links.
+The analyzer workers make first-pass domain judgments, create `ai_fix_prompt` values, and store each run as a numbered analyzer report indexed by `manifest.json`. The validator does not assume those judgments are correct; it reloads code, reloads the rule clause, verifies or corrects the source URL, optionally uses native web lookup for uncertain cases, corrects severity and guideline references, and rejects unsupported findings through analyzer state.
 
-This separation makes the hallucination-control claim citable: the first pass produces candidate violations and fix prompts, while the second pass filters all actionable findings through independently checked evidence.
+The resulting HTML report is generated from the corrected analyzer JSON. It focuses on current issues, not on what the validator checked, kept, dropped, or skipped.

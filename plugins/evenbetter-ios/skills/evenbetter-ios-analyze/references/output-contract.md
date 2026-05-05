@@ -101,13 +101,15 @@ The analyzer report is the source of truth for fix prompts. Validator reports ma
   "currentRun": 3,
   "latest": {
     "analyze": "analyze-3.json",
-    "validate": "evenbetter-validate-1.json"
+    "validate": "evenbetter-validate-1.json",
+    "html_report": "evenbetter-validate-1.html"
   },
   "runs": [
     {
       "number": 1,
       "analyze": "analyze-1.json",
       "validate": "evenbetter-validate-1.json",
+      "html_report": "evenbetter-validate-1.html",
       "validated": true,
       "createdAt": "2026-04-28T12:00:00Z",
       "status": "fixed",
@@ -123,6 +125,7 @@ The analyzer report is the source of truth for fix prompts. Validator reports ma
       "number": 2,
       "analyze": "analyze-2.json",
       "validate": null,
+      "html_report": null,
       "validated": false,
       "createdAt": "2026-04-28T12:20:00Z",
       "status": "partially_fixed",
@@ -138,6 +141,7 @@ The analyzer report is the source of truth for fix prompts. Validator reports ma
       "number": 3,
       "analyze": "analyze-3.json",
       "validate": null,
+      "html_report": null,
       "validated": false,
       "createdAt": "2026-04-28T12:34:56Z",
       "status": "pending_validation",
@@ -153,7 +157,7 @@ The analyzer report is the source of truth for fix prompts. Validator reports ma
 }
 ```
 
-The manifest is authoritative for run numbering, latest analyzer/validator paths, validation pairing, and per-run state summaries. `latest.analyze` is the newest analyzer report. `latest.validate` is the newest validation report across all runs, or null when no validation report exists. Per-run `analyze-{N}.json` files remain authoritative for the violations themselves.
+The manifest is authoritative for run numbering, latest analyzer path, validation state, generated HTML report paths, and per-run state summaries. `latest.analyze` is the newest analyzer report. `latest.validate` is legacy compatibility for older validation JSON reports; new validator runs do not create validation JSON. `latest.html_report` is the newest generated browser report, or null when no HTML report exists. Per-run `analyze-{N}.json` files remain authoritative for the violations themselves.
 
 ## Backwards Compatibility
 
@@ -183,6 +187,8 @@ Use this response shape:
 Analysis complete.
 - Wrote: .evenbetter/analyze-{N}.json
 - Findings: <total> total (<error> error, <warning> warning, <info> info)
+
+Next: use $evenbetter-validate to confirm the findings and generate the HTML report.
 ```
 
 Compute `<total>` from `total_violations`, `<error>` from `critical_count` or summed `domain_summaries[].error_count`, and `<warning>` / `<info>` from summed `domain_summaries`.

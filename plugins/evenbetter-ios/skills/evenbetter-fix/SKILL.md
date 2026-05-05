@@ -1,13 +1,13 @@
 ---
 name: evenbetter-fix
-description: Workflow skill that scopes and executes agent-driven remediation from numbered EvenBetter findings. Use when asked to fix issues from analyze-{N}.json, orchestrate fixes from evenbetter-validate-{N}.json, resolve findings with sub-agents, fix only severe issues first, or coordinate remediation batches for an analyzed project with .evenbetter/manifest.json history.
+description: Workflow skill that scopes and executes agent-driven remediation from numbered EvenBetter analyzer findings. Use when asked to fix issues from analyze-{N}.json, apply fixes after evenbetter-validate has corrected analyzer JSON, resolve findings with sub-agents, fix only severe issues first, or coordinate remediation batches for an analyzed project with .evenbetter/manifest.json history.
 ---
 
 # evenbetter-fix
 
 ## Overview
 
-Coordinate the fix step of the EvenBetter loop after analysis and validation. Read numbered findings from the target project's `.evenbetter` reports, merge unresolved work across analyzer runs, ask a short scoping round before editing, plan deterministic remediation groups, and always execute source edits through sub-agents. This skill does not create additional fix prompts; it consumes analyzer-generated `ai_fix_prompt` values and modifies code for the issues the user selects.
+Coordinate the fix step of the EvenBetter loop after analysis and validation. Read numbered findings from the target project's `.evenbetter/analyze-{N}.json` reports, merge unresolved work across analyzer runs, ask a short scoping round before editing, plan deterministic remediation groups, and always execute source edits through sub-agents. This skill does not create additional fix prompts; it consumes analyzer-generated `ai_fix_prompt` values and modifies code for the issues the user selects.
 
 ## Inputs
 
@@ -21,14 +21,14 @@ If `projectPath` is missing or not absolute, ask for the absolute path and stop 
 Load reports from `projectPath/.evenbetter/` in this order:
 
 1. `manifest.json` as the source of truth for numbered report history.
-2. The newest paired validation report, `evenbetter-validate-{N}.json`, for the latest validated actionable run.
-3. The newest analyzer report, `analyze-{N}.json`, for raw latest findings, analyzer-authored `ai_fix_prompt` values, and explicitly requested unvalidated scopes.
+2. The newest validated analyzer report, `analyze-{N}.json`, where the matching manifest run has `validated: true`.
+3. The newest analyzer report, `analyze-{N}.json`, for unvalidated findings only when validation has not run yet or the user explicitly asks for unvalidated scope.
 4. Older analyzer runs listed in the manifest for unresolved items that remain open or deferred.
-5. Legacy `evenbetter-validate.json`, `validate.json`, or `analyze.json` only when no manifest exists; if legacy `analyze.json` exists, perform the documented auto-migration to `analyze-1.json` and initialize `manifest.json` before continuing.
+5. Legacy `analyze.json` only when no manifest exists; perform the documented auto-migration to `analyze-1.json` and initialize `manifest.json` before continuing.
 
-Treat validation output as the preferred evidence source. From validator reports, act by default only on `kept` and `severity_adjusted` findings. Never act on `dropped` findings unless the user explicitly requests raw analyzer findings or dropped-item review.
+Treat validated analyzer JSON as the preferred source. By default, act only on current analyzer issues where `state.status` is `open`; include `deferred` only when the user explicitly opts in. Skip `fixed`, `rejected`, and `duplicate_of` findings.
 
-Use raw `analyze-{N}.json` only when validation has not run yet, when the user explicitly asks for unvalidated findings, or when the analyzer report is needed to retrieve the original violation and `ai_fix_prompt`.
+Use unvalidated `analyze-{N}.json` only when validation has not run yet or when the user explicitly asks for unvalidated findings.
 
 Before writing any state update, reread `manifest.json` from disk. EvenBetter assumes serial execution: only one analyzer, validator, or fixer run writes `.evenbetter/` at a time.
 
@@ -41,10 +41,8 @@ Build work items by violation `id` across all manifest runs:
 - If the latest known `state.status` is `fixed`, `rejected`, or `duplicate_of`, skip it.
 - If the latest known `state.status` is `deferred`, include it only when the user explicitly opts into deferred work.
 - If the latest known `state.status` is `open`, include it.
-- If a validation report exists for a run, attach validator `decision`, `confidence`, `reasoning`, `severity_assessment`, `corrected_severity`, and `fix_prompt_assessment` to matching violation IDs from `kept` and `severity_adjusted`.
-- Do not act on validator `dropped` findings by default, even if the analyzer violation is still open.
 
-When two reports disagree, newest analyzer state wins for state, and newest validation report wins for validator evidence. Per-run analyzer files remain the source of truth for the mutable `state` block.
+When reports disagree, newest analyzer state wins. Per-run analyzer files remain the source of truth for the mutable `state` block.
 
 ## Scoping Before Fixes
 
@@ -53,7 +51,7 @@ Do not start remediation before a short closed-ended scoping step. If a question
 Ask only what materially changes the run. Cover these decisions unless already clear from the user request:
 
 - Severity scope:
-  - Most serious only, usually `error` and validator `kept`.
+  - Most serious only, usually validated `error` findings.
   - Serious and medium, usually `error` plus `warning`.
   - Everything, including `info`.
   - Selected domain or file set.
@@ -78,20 +76,16 @@ Each closed-ended question must offer 3 or 4 concrete options with one marked as
 Convert each selected finding into a traceable work item before grouping:
 
 - `source_report`: absolute path to the report used.
-- `source_kind`: `manifest`, `evenbetter-validate`, `validate`, or `analyze`.
+- `source_kind`: `manifest` or `analyze`.
 - `source_analyze_report`: absolute path to the originating `analyze-{N}.json`.
-- `source_validate_report`: absolute path to the paired `evenbetter-validate-{N}.json` when available.
 - `originating_run`: analyzer run number where the mutable state must be written.
 - `work_item_id`: the stable violation `id`; use `<rule_id>:<file_path>:<line_number>` only for legacy reports without IDs.
 - `state`: the current violation state object.
 - `rule_id`, `severity`, `domain`, `dimension`, `file_path`, and `line_number`.
 - `summary`, `why_fix`, `fix_description`, `fix_code`, `ai_fix_prompt`, and `auto_fixable`; `ai_fix_prompt` must come from the analyzer report and must not be synthesized by the fixer.
 - `guideline_reference` and corpus clause/source details when available.
-- Validator `decision`, `confidence`, `reasoning`, `severity_assessment`, `corrected_severity`, and `fix_prompt_assessment` when available.
 
 When normalizing work items, load `../../corpus/index.json` when it exists and enrich each `rule_id` with matching `clause_id`, `corpus_version`, `source_url`, `retrieved`, `reference_file`, and `anchor`. If the index is unavailable, continue from the report's `guideline_reference` and note the missing corpus metadata in the final verification gap.
-
-For validator reports, the original analyzer violation usually lives under `original_violation`; preserve the validator wrapper and the original violation so the final summary can trace both.
 
 Reject path traversal. Resolve source files as `projectPath / file_path` and ensure the result stays inside `projectPath`. Resolve report paths as `projectPath/.evenbetter / filename` and ensure they stay inside `.evenbetter/`.
 
@@ -101,7 +95,7 @@ Sort selected work items by:
 
 1. Severity, with `error` before `warning` before `info`.
 2. User impact, with accessibility and interaction blockers before visual cleanup.
-3. Validator confidence, higher first when available.
+3. Validation state, with validated analyzer runs before explicitly requested unvalidated runs.
 4. Concentration of findings in the same file.
 5. Source order by file path and line number.
 
@@ -128,7 +122,7 @@ Always spawn sub-agents for source edits:
 
 If the environment cannot spawn sub-agents, stop before editing and report that this fixer requires sub-agent execution. Do not fall back to sequential local remediation or static prompt generation.
 
-If a selected work item lacks an analyzer `ai_fix_prompt`, or validation marked `fix_prompt_assessment.accurate` as false, do not create a replacement prompt. Ask the user whether to skip, reject/defer the item, or rerun analysis/validation so the analyzer can provide a corrected prompt.
+If a selected work item lacks an analyzer `ai_fix_prompt`, do not create a replacement prompt. Ask the user whether to skip, reject/defer the item, or rerun analysis/validation so the analyzer can provide a corrected prompt.
 
 After each completed fix attempt, update the originating analyzer report's violation state:
 
@@ -150,7 +144,7 @@ Pause for a closed-ended resolution decision when any of these are true:
 
 - `auto_fixable` is false or missing and the fix changes behavior.
 - The cited snippet or line no longer matches source.
-- Validator confidence is low, the finding has `decision: "severity_adjusted"`, or the fix prompt assessment is missing.
+- The analyzer report is unvalidated, source evidence is ambiguous, or the fix prompt is missing.
 - Multiple plausible fixes affect product behavior, compatibility, accessibility semantics, navigation, data persistence, public APIs, or visual direction.
 - The fix would suppress the finding instead of remediating it.
 
@@ -178,7 +172,7 @@ After every state mutation:
 2. Recompute the affected run's `summary` counts from its analyzer report.
 3. Update the affected run's `status` to `fixed`, `partially_fixed`, or preserve `validated`/`pending_validation` when no fix decision was made.
 4. Update the analyzer report `run.status` to match the manifest run status when applicable.
-5. Preserve `latest.analyze`, `latest.validate`, `currentRun`, and unrelated run entries.
+5. Preserve `latest.analyze`, `latest.validate`, `latest.html_report`, `currentRun`, and unrelated run entries.
 
 Project memory may mirror these decisions for convenience, but the in-repo manifest and analyzer report state are the only authoritative records.
 

@@ -77,7 +77,7 @@ Every violation must include:
 | `reason` | string or null | Free-text note for rejected or deferred decisions. |
 | `duplicateOf` | string or null | Earlier violation ID when `status` is `duplicate_of`; otherwise null. |
 
-Only analyzer, validator, and fixer skills may mutate `state`. Analyzer creates the default state and may carry forward the latest prior state for the same `id`. Validator may set report/run validation status but must not change user rejection or deferral decisions. Fixer records user decisions and completed fix attempts in the originating analyzer report.
+Only analyzer, validator, and fixer skills may mutate `state`. Analyzer creates the default state and may carry forward the latest prior state for the same `id`. Validator may set unsupported findings to `rejected` with `decidedBy: "validator"` and may set report/run validation status, but must not override user rejection or deferral decisions. Fixer records user decisions and completed fix attempts in the originating analyzer report.
 
 ## Full Mode Object
 

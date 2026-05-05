@@ -225,9 +225,11 @@ Then update `projectPath/.evenbetter/manifest.json`:
 - `version`: `1`
 - `currentRun`: `N`
 - `latest.analyze`: `analyze-{N}.json`
-- `latest.validate`: preserve the newest validation report path across all runs, or null when no validation report exists
+- `latest.validate`: preserve legacy validation report paths for compatibility, or null when no legacy validation report exists
+- `latest.html_report`: preserve the newest generated HTML report path when present, or null when no HTML report exists
 - `runs[]`: add or replace the entry for run `N`
-- `runs[].validate`: null until the validator writes `evenbetter-validate-{N}.json`
+- `runs[].validate`: preserve legacy compatibility only; new validation runs do not write validation JSON
+- `runs[].html_report`: null until the validator generates `.evenbetter/evenbetter-validate-{N}.html`
 - `runs[].validated`: false until validation succeeds
 - `runs[].status`: `pending_validation`
 - `runs[].summary`: counts of violation `state.status` values in `analyze-{N}.json`
@@ -240,15 +242,17 @@ Reply with this concise summary only:
 Analysis complete.
 - Wrote: .evenbetter/analyze-{N}.json
 - Findings: <total> total (<error> error, <warning> warning, <info> info)
+
+Next: use $evenbetter-validate to confirm the findings and generate the HTML report.
 ```
 
 Compute `<total>` from `total_violations`, `<error>` from `critical_count` or summed `domain_summaries[].error_count`, and `<warning>` / `<info>` from summed `domain_summaries`.
 
 ## 12. Optional Validator Handoff
 
-If `skills/evenbetter-validate/SKILL.md` exists in the workspace and the user or host requests validation, invoke `evenbetter-validate` as a separate skill against the same `projectPath` after `.evenbetter/analyze-{N}.json` and `.evenbetter/manifest.json` are written. Keep the validation output separate at `.evenbetter/evenbetter-validate-{N}.json`; do not merge validator results into the analyzer JSON envelope.
+If `skills/evenbetter-validate/SKILL.md` exists in the workspace and the user or host requests validation, invoke `evenbetter-validate` as a separate skill against the same `projectPath` after `.evenbetter/analyze-{N}.json` and `.evenbetter/manifest.json` are written. Validation corrects the analyzer JSON in place, marks the run as validated in `manifest.json`, and generates `.evenbetter/evenbetter-validate-{N}.html`; it does not write `.evenbetter/evenbetter-validate-{N}.json`.
 
-For analyzer runs that also request validation, keep the analyzer summary separate from validator output. Do not append validator commentary to the analyzer summary.
+For analyzer runs that also request validation, keep the analyzer summary separate from validator output. The analyzer summary should still prompt the user to run `$evenbetter-validate` unless validation was already requested and completed in the same interaction.
 
 ## 13. Compaction-Safe Invariants
 
@@ -269,3 +273,4 @@ If context is compacted, preserve these facts exactly:
 - aggregation and scoring contract
 - source-safe discipline and the numbered report plus manifest writes
 - final output envelope keys
+- successful analysis prompts the user to run `$evenbetter-validate`

@@ -1,125 +1,112 @@
 # Output Contract
 
-Write the final validation report to `projectPath/.evenbetter/evenbetter-validate-{N}.json`, where `N` matches the analyzer run being validated, and emit the same JSON object when running headless:
+Validate writes corrections into the selected analyzer report. It does not create a separate validation JSON artifact.
+
+## Written Files
+
+For analyzer run `N`, update:
+
+```text
+projectPath/.evenbetter/analyze-{N}.json
+projectPath/.evenbetter/manifest.json
+projectPath/.evenbetter/evenbetter-validate-{N}.html
+```
+
+The HTML path intentionally keeps the historical filename for compatibility, but the page content is an issue report, not a validation-status report.
+
+## Analyzer JSON Corrections
+
+Use `analyze-{N}.json` as the source of truth. For every actionable finding:
+
+- Keep real issues in `files[].violations[]`.
+- Correct `severity` in place when evidence shows the analyzer chose the wrong severity.
+- Correct `guideline_reference` in place when the issue is real but the URL or label points to the wrong HIG, developer.apple.com, or WCAG source.
+- Leave `ai_fix_prompt` unchanged when accurate.
+- Reject unsupported findings by mutating only the existing `state` object:
 
 ```json
 {
-  "project_path": "/abs/path",
-  "input_report": "/abs/path/.evenbetter/analyze-3.json",
-  "validates": "analyze-3.json",
-  "analyzer_run": 3,
-  "html_report": ".evenbetter/evenbetter-validate-3.html",
-  "createdAt": "2026-04-28T12:40:00Z",
-  "confidence_threshold": 0.7,
-  "total_validated_input": 0,
-  "kept_count": 0,
-  "severity_adjusted_count": 0,
-  "dropped_count": 0,
-  "retention_rate": 0.0,
-  "mean_confidence": 0.0,
-  "time_per_finding_ms": 0.0,
-  "kept": [],
-  "severity_adjusted": [],
-  "dropped": []
+  "status": "rejected",
+  "decidedIn": 3,
+  "decidedBy": "validator",
+  "reason": "Source evidence does not support this as a HIG violation.",
+  "duplicateOf": null
 }
 ```
 
-## Run Pairing
+Reject instead of keeping when:
 
-| Field | Type | Description |
-|---|---|---|
-| `input_report` | string | Absolute path to `.evenbetter/analyze-{N}.json`. |
-| `validates` | string | Analyzer report filename, e.g. `analyze-3.json`. |
-| `analyzer_run` | integer | Analyzer run number `N`; must match both report filenames. |
-| `html_report` | string | Relative path to the generated browser report, e.g. `.evenbetter/evenbetter-validate-3.html`. |
-| `createdAt` | string | UTC ISO-8601 timestamp with `Z`. |
+- source evidence does not support the finding
+- confidence is below `confidence_threshold`
+- the corpus clause cannot be resolved
+- no valid primary-source guideline URL can be verified or corrected
+- the finding is internally inconsistent with the source excerpt
+- `ai_fix_prompt` is missing, vague, or inaccurate
 
-The validator must update `.evenbetter/manifest.json` after a successful write so the matching `runs[]` entry has:
+Do not delete rejected findings from analyzer JSON. Do not add validation result wrappers, decision buckets, confidence fields, or validation status fields to individual violations.
 
-- `validate: "evenbetter-validate-{N}.json"`
+## Recomputed Analyzer Fields
+
+After corrections, recompute analyzer aggregate fields from non-rejected, non-fixed, non-duplicate current issues unless a field explicitly summarizes all historical violations:
+
+- `total_violations`
+- `critical_count`
+- `domain_summaries[].violation_count`
+- `domain_summaries[].error_count`
+- `domain_summaries[].warning_count`
+- `domain_summaries[].info_count`
+- `files[].score`
+- `files[].ui_score`
+- `files[].ux_score`
+- `files[].a11y_score`
+- project `overall_score`, `ui_score`, `ux_score`, and `a11y_score`
+- `executive_summary` when rejected or corrected findings materially change the user-facing compliance posture
+
+Do not rewrite code snippets, fix descriptions, fix code, summaries, or `ai_fix_prompt` unless the analyzer field is directly wrong and the correction is explicitly permitted above.
+
+## Manifest
+
+Update the matching manifest run entry:
+
 - `validated: true`
-- `status: "validated"` unless the run was already marked `fixed` or `partially_fixed`
-- `summary` recomputed from the paired analyzer report's violation states
-- `latest.validate: "evenbetter-validate-{N}.json"` when this is the newest validation report by `createdAt`
+- `status: "validated"` unless it is already `fixed` or `partially_fixed`
+- `html_report: "evenbetter-validate-{N}.html"` or `.evenbetter/evenbetter-validate-{N}.html`, matching the manifest's existing path style
+- `summary` recomputed from violation `state.status` values in the corrected analyzer report
 
-It may also update `analyze-{N}.json` `run.status` to `validated`. It must not rewrite analyzer violation objects except for preserving existing state when the file is touched for the run status update. It must not create, revise, or backfill analyzer `ai_fix_prompt` values.
+Update `latest.html_report` to the generated HTML report when the manifest has a `latest` object. Preserve `latest.analyze`, `latest.validate`, `currentRun`, legacy per-run `validate` fields, and unrelated run entries. New validation runs must not set per-run `validate` to a new JSON file because no validation JSON is written.
 
-After the JSON report and manifest updates succeed, the validator must generate the derived HTML report at `projectPath/.evenbetter/evenbetter-validate-{N}.html`. The HTML report is populated from the paired analyzer report plus this validation report; it is not the source of truth for decisions.
-
-## Result Object
-
-Each item in `kept`, `severity_adjusted`, or `dropped` must include:
-
-| Field | Type | Description |
-|---|---|---|
-| `decision` | string | `kept`, `severity_adjusted`, or `dropped`. |
-| `confidence` | number | Validator confidence from `0.0` to `1.0`. |
-| `reasoning` | string | Concise evidence-based explanation. |
-| `original_violation` | object | The complete original analyzer violation, including `id` and `state`. |
-| `source_context` | object | `{ "file_path": string, "line_start": integer, "line_end": integer, "excerpt": string }`. |
-| `corpus_clause` | object | `{ "clause_id": string, "reference_file": string, "heading": string, "text": string, "source_url": string, "retrieved": string, "corpus_version": string }`. |
-| `url_verification` | object | JSON emitted by `scripts/verify_url.py`. |
-| `severity_assessment` | object | `{ "original": "error" \| "warning" \| "info", "correct": "error" \| "warning" \| "info", "reasoning": string }`. |
-| `fix_prompt_assessment` | object | `{ "accurate": boolean, "reasoning": string }`; evaluates the analyzer-provided `ai_fix_prompt` without replacing it. |
-| `supporting_links` | array | Optional evidence links used by validation, each shaped as `{ "label": string, "url": string, "source": "guideline" \| "corpus" \| "web", "reason": string }`. May be empty. |
-
-Items in `severity_adjusted` must also include:
-
-| Field | Type | Description |
-|---|---|---|
-| `corrected_severity` | string | Correct severity, one of `error`, `warning`, or `info`. |
-
-Items in `dropped` must also include:
-
-| Field | Type | Allowed values |
-|---|---|---|
-| `drop_reason` | string | `low_confidence`, `url_unreachable`, `clause_not_found`, `reasoning_incoherent`, `not_a_violation`, `fix_prompt_missing`, or `fix_prompt_inaccurate`. |
-
-## Kept Invariants
-
-Every item in `kept` must satisfy:
-
-- `confidence >= confidence_threshold`
-- `url_verification.ok == true`
-- `url_verification.status_code == 200`
-- `corpus_clause.text` is non-empty
-- `reasoning` explains why the source excerpt violates the cited rule
-- `severity_assessment.original == severity_assessment.correct`
-- `fix_prompt_assessment.accurate == true`
-- every `supporting_links[].url` is a working, relevant evidence link when present
-
-Every item in `severity_adjusted` must satisfy the same evidence and prompt requirements as `kept`, but `severity_assessment.correct` differs from the analyzer's original severity.
-
-## Aggregate Fields
-
-| Field | Type | Description |
-|---|---|---|
-| `project_path` | string | Absolute `projectPath` received as input. |
-| `html_report` | string | Relative path to `.evenbetter/evenbetter-validate-{N}.html`. |
-| `confidence_threshold` | number | Threshold used for retained decisions. |
-| `total_validated_input` | integer | Count of input violations whose state is actionable for validation. |
-| `kept_count` | integer | Number of retained findings whose original severity and fix prompt are accurate. |
-| `severity_adjusted_count` | integer | Number of real findings whose severity needed correction. |
-| `dropped_count` | integer | Number of inputs removed from the validated set. |
-| `retention_rate` | number | `(kept_count + severity_adjusted_count) / total_validated_input`, rounded to four decimals. |
-| `mean_confidence` | number | Mean confidence across processed findings, rounded to four decimals. |
-| `time_per_finding_ms` | number | Mean validation time per processed finding, rounded to one decimal. |
-
-## Backwards Compatibility
-
-If no `manifest.json` exists but `.evenbetter/analyze.json` exists, perform the analyzer legacy migration first: write `analyze-1.json`, add missing `run`, `id`, and `state` fields when possible, initialize `manifest.json`, and validate run 1. Do not treat `.evenbetter/analyze.json` as the latest report once the manifest exists.
+Update `analyze-{N}.json` `run.status` to `validated` unless it is already `fixed` or `partially_fixed`.
 
 ## HTML Report
 
-Generate `projectPath/.evenbetter/evenbetter-validate-{N}.html` with `scripts/generate_html_report.py` after the validation JSON is written. The generator must:
+Generate `projectPath/.evenbetter/evenbetter-validate-{N}.html` with `scripts/generate_html_report.py` after analyzer and manifest updates succeed. The generator must:
 
-- Read `analyze-{N}.json`, `evenbetter-validate-{N}.json`, and `manifest.json` when present.
-- Flatten all analyzer `files[].violations[]` into the HTML `issues[]` view.
-- Join validation decisions by matching each validation result's `original_violation.id` to analyzer violation `id`.
-- Derive template-only fields such as `title`, `description`, `recommended_fix`, `language`, and `scan_context` without adding them to the analyzer JSON.
-- Render issue-level evidence links from validation `supporting_links`, analyzer `guideline_reference.url`, and validation `corpus_clause.source_url` when present.
-- Show analyzer findings as `not_validated` only when they were excluded by state or when the validation report predates the all-actionable validation contract.
+- Read `analyze-{N}.json` and optional `manifest.json`.
+- Render only current issues: `state.status = "open"` or `state.status = "deferred"`.
+- Exclude `fixed`, `rejected`, and `duplicate_of` findings.
+- Derive template-only fields such as display title, description, recommended fix, language, and scan context without adding them to analyzer JSON.
+- Render an inline HIG/evidence link per issue from `guideline_reference.url` when present.
+- Keep the previous visual standard: summary dashboard, severity filtering, search, AI prompt copying, code/fix comparison, and the same compact inline evidence style.
+- Avoid validation-status UI: no `kept`, `dropped`, `severity_adjusted`, `not_validated`, confidence, retention, or validation decision blocks.
 
-## JSON-Only Rule
+Run the generator with:
 
-When invoked headless, output only the validation report object. Do not wrap it in Markdown fences, add commentary, or include partial diagnostic output. The manifest and HTML report are written as side effects and are not included in stdout beyond the `html_report` path field.
+```text
+scripts/generate_html_report.py --analyze projectPath/.evenbetter/analyze-{N}.json --manifest projectPath/.evenbetter/manifest.json --output projectPath/.evenbetter/evenbetter-validate-{N}.html
+```
+
+## Chat Summary
+
+In interactive chat, respond with a concise summary:
+
+```text
+Validation complete.
+- Updated: .evenbetter/analyze-{N}.json
+- HTML report: .evenbetter/evenbetter-validate-{N}.html
+- Current issues: <total> total (<error> error, <warning> warning, <info> info)
+- Corrections: <severity> severity, <links> guideline links, <rejected> rejected
+
+Open the HTML report in a browser by holding Command and clicking the left mouse button on the path. To apply corrections, use $evenbetter-fix.
+```
+
+When invoked by automation, keep stdout concise and do not emit a validation report JSON object.
