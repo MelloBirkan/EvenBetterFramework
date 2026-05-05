@@ -91,31 +91,72 @@ Run all six domains against the same inventory:
 
 When the host supports independent sub-agents (Claude Code's `Agent` tool, Codex sub-agents, or equivalent), dispatch one specialized read-only domain sub-agent per row in a single message so they execute concurrently. Each sub-agent is an expert for its assigned Apple HIG, SwiftUI, and accessibility domain. When sub-agents are unavailable or not permitted, run the same six domain passes sequentially in the main agent in table order.
 
-Only the analyzer orchestrator may write files. Domain sub-agents must read the supplied inventory and references, return a JSON array, and not write source files, `.evenbetter` files, cache files, or notes.
+Only the analyzer orchestrator may write `.evenbetter/analyze-{N}.json` and `.evenbetter/manifest.json`. Domain sub-agents are read-only on project source and may write only their own per-domain JSON shard at `.evenbetter/tmp/run-{N}/<domain>.json`. They must not write source files, other `.evenbetter` files, cache files, or notes.
+
+### 5a. Sub-Agent Brief Discipline (Context Budget)
+
+Six parallel sub-agents will overflow the orchestrator's context window if their briefs inline source files or their replies inline JSON arrays. Keep both lean:
+
+**What the orchestrator sends to each sub-agent (no exceptions):**
+
+- `projectPath` — absolute path string.
+- `mode` — `full` or `budget`.
+- `candidateFiles` — list of relative Swift file *paths* from the inventory. Never inline contents, never inline line-indexed text.
+- `corpusPath` — absolute path to the one matching domain corpus file. The sub-agent reads it once with `Read`. Do not inline the corpus.
+- `schemaPath` — absolute path to `references/schema.md`. The sub-agent reads it once. Do not inline the schema.
+- `outputPath` — absolute path to `projectPath/.evenbetter/tmp/run-{N}/<domain>.json`.
+
+**What the sub-agent does:**
+
+1. Reads `corpusPath` and `schemaPath` once.
+2. Runs `Grep` over `candidateFiles` for tokens relevant to its domain (e.g., the typography agent grepping for `\.font\(`, `Text\(`, `\.bold\(`, etc.) and skips files with no matches.
+3. Reads only the files that survived the filter, on demand.
+4. Builds the JSON array of violation objects against H2 corpus clauses only, with `ai_fix_prompt` and `fix_options` per the schema.
+5. Writes the JSON array to `outputPath` with `Write`.
+6. Returns one line, e.g. `Wrote 12 typography findings to <outputPath>.` Nothing else.
+
+**What the sub-agent must not do:**
+
+- Echo the JSON array back in chat.
+- Read corpora outside its assigned `corpusPath`.
+- Read `corpus/index.json` (the orchestrator validates `rule_id` against it during aggregation).
+- Read or write any file under `.evenbetter/` other than its own `outputPath`.
 
 Use this generic prompt shape for each domain context:
 
 ```text
 You are the <domain> specialist for an EvenBetter iOS SwiftUI Apple HIG and accessibility analysis.
 
-Analyze the provided iOS SwiftUI file inventory for the <domain> domain only.
-Inputs:
+Inputs (paths only — read on demand, do not expect inline content):
 - projectPath: <absolute path>
 - mode: <full|budget>
-- files: <relative path, line-indexed content, and metrics>
+- candidateFiles: <relative paths to all SwiftUI source files in the inventory>
+- corpusPath: <absolute path to the matching ../../corpus/ios/<domain>.md>
+- schemaPath: <absolute path to references/schema.md>
+- outputPath: <absolute path to projectPath/.evenbetter/tmp/run-{N}/<domain>.json>
 
-Follow <domain corpus reference>. Use only H2 corpus clauses from that domain file as rules, and set each violation `rule_id` to the matching clause ID. Return only a JSON array of violation objects matching the shared schema for the active mode except for analyzer-added id and state.
+Workflow:
+1. Read corpusPath once to learn the H2 clause IDs and rules for <domain>.
+2. Read schemaPath once to learn the violation object shape for the active mode.
+3. Use Grep over candidateFiles to skip files with no <domain>-relevant tokens, then Read only the files that remain.
+4. Produce a JSON array of violation objects for <domain> only. Use only H2 corpus clauses; set rule_id to the matching clause ID exactly as written in corpusPath.
+5. For every violation, include a self-contained ai_fix_prompt (cites file/line/rule, explains the remediation, gives acceptance criteria) and a 1–4 entry fix_options array (exactly one recommended: true, distinct labels, valid kind, content aligned with the violation's top-level fix_description/fix_code/ai_fix_prompt). In budget mode, drop each option's `code` field and the violation's why_fix/fix_code/auto_fixable fields per schema.
+6. Write the JSON array to outputPath with the Write tool. The file must contain the JSON array and nothing else.
+7. Reply with exactly one line: "Wrote <N> <domain> findings to <outputPath>." Do not echo the JSON in chat.
 
-For every violation:
-- Create `ai_fix_prompt` as a self-contained prompt that identifies the finding, cites the relevant file/line/rule, explains the intended remediation, and gives clear acceptance criteria for a later fixer agent.
-- Create `fix_options` as a 1-4 entry array of distinct remediation alternatives. Mark exactly one option `recommended: true` and align its content with the violation's top-level `fix_description`, `fix_code`, and `ai_fix_prompt`. Provide additional options whenever multiple legitimate iOS-compliant paths exist (for example: enlarge a tap target, wrap content in a `Button`, or promote it to a Tab Bar item). Each option must follow the schema in `references/schema.md` (id, label, description, kind, recommended, optional code, optional ai_fix_prompt).
-
-If the corpus clause is ambiguous for a real-world snippet, you may consult primary-source Apple documentation using the host AI agent's native web tools (`WebSearch`/`WebFetch` in Claude Code, equivalent native lookups in other hosts). Only emit findings whose `rule_id` exists in `../../corpus/index.json`; drop a finding before inventing a new rule.
-
-Do not modify source/project files. Do not include findings outside <domain>.
+Constraints:
+- Read-only on project source.
+- The only file you write is outputPath.
+- Do not read corpus/index.json or other domain corpora; the orchestrator validates rule_id during aggregation.
+- If a corpus clause is ambiguous for a real-world snippet, consult primary-source Apple documentation via the host's native web tools (WebSearch/WebFetch in Claude Code, equivalent elsewhere). Drop a finding before inventing a rule_id that is not present in corpusPath.
+- Do not include findings outside <domain>.
 ```
 
+The same disk-shard discipline applies in the sequential fallback: even when running in-line, write each domain's array to its shard file before continuing to the next domain so the orchestrator's working memory does not accumulate six full violation arrays at once.
+
 ## 6. Validate And Enrich Domain Results
+
+For each domain, read its shard from `projectPath/.evenbetter/tmp/run-{N}/<domain>.json`. If the shard is missing, empty, or unparseable JSON, treat that domain as zero findings and continue (do not fail the whole run on a single bad shard).
 
 For each domain JSON array:
 
@@ -269,6 +310,8 @@ Then update `projectPath/.evenbetter/manifest.json`:
 - `runs[].status`: `pending_validation`
 - `runs[].summary`: counts of violation `state.status` values in `analyze-{N}.json`
 
+After `analyze-{N}.json` and `manifest.json` have been written, remove `projectPath/.evenbetter/tmp/run-{N}/` and remove `projectPath/.evenbetter/tmp/` if it is now empty. The transient shard directory must not survive into the validator handoff. Cleanup failure is non-fatal but should be reported in the run's chat summary as a notice.
+
 The stored analyzer JSON remains the complete machine-readable artifact. The chat response must not include that JSON body.
 
 Reply with this concise summary only:
@@ -303,6 +346,9 @@ If context is compacted, preserve these facts exactly:
 - legacy `.evenbetter/analyze.json` is auto-migrated only when no manifest exists
 - six domain names and corpus paths
 - spawn specialized read-only domain sub-agents for the six domains when the host supports sub-agents; otherwise run the same passes sequentially
+- sub-agent briefs carry only paths (projectPath, candidateFiles, corpusPath, schemaPath, outputPath) plus mode — never inline source content, corpus text, schema text, or `corpus/index.json`
+- sub-agents write their JSON arrays to `.evenbetter/tmp/run-{N}/<domain>.json` and reply with a single line; the orchestrator reads shards from disk during aggregation
+- the transient `.evenbetter/tmp/run-{N}/` directory is removed after the final report and manifest are written
 - schema field sets for `full` and `budget`
 - analyzer creates all `ai_fix_prompt` values directly in the JSON report
 - analyzer creates `html_report_data` for the EvenBetter iOS HIG HTML template, while current issue cards still come from `files[].violations[]`

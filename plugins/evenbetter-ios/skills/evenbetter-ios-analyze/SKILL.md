@@ -9,7 +9,7 @@ description: iOS SwiftUI Apple HIG, UX, UI, and accessibility analyzer. Use when
 
 First pass of the EvenBetter iOS audit loop. Read SwiftUI source files without modifying them, dispatch one specialized read-only sub-agent per iOS domain, produce HIG-grounded violations with both an `ai_fix_prompt` and a structured `fix_options` menu, populate `html_report_data` for the browser template, and write the numbered report to `projectPath/.evenbetter/analyze-{N}.json`. After a successful run, do not echo the JSON body in chat — reply with the brief summary defined in `references/output-contract.md` and prompt the user to run `/evenbetter-validate`.
 
-Do not edit, delete, format, generate, or execute source/project files inside `projectPath`. The only permitted writes inside `projectPath` are creating `.evenbetter/` if needed, auto-migrating a legacy `.evenbetter/analyze.json` into numbered history, writing the final report JSON to `.evenbetter/analyze-{N}.json`, and updating `.evenbetter/manifest.json`.
+Do not edit, delete, format, generate, or execute source/project files inside `projectPath`. The only permitted writes inside `projectPath` are creating `.evenbetter/` if needed, auto-migrating a legacy `.evenbetter/analyze.json` into numbered history, writing the final report JSON to `.evenbetter/analyze-{N}.json`, updating `.evenbetter/manifest.json`, and creating a transient `.evenbetter/tmp/run-{N}/` working directory for per-domain sub-agent JSON shards that must be removed before the run ends.
 
 ## Inputs
 
@@ -44,7 +44,18 @@ Then stop.
 
 Run all six iOS SwiftUI domains. When the host environment supports independent sub-agents, such as Claude Code's `Agent` tool or Codex sub-agents, spawn one specialized read-only sub-agent per domain and run them concurrently in a single message — this is the default execution path under Claude Code. When sub-agents are unavailable, run the same six domain passes sequentially in the main agent.
 
-In Claude Code specifically, dispatch each domain via `Agent` with `subagent_type: "general-purpose"` and pass it (1) the resolved `projectPath`, (2) the file inventory, (3) the matching domain corpus path, and (4) a strict instruction to return a JSON array only. Use parallel `Agent` calls in one message when sub-agents are available.
+Sub-agent briefs must stay slim so six parallel agents do not blow the orchestrator's context. The orchestrator never inlines source file contents, the corpus, the schema, or `index.json` into the brief; it only passes filesystem paths the sub-agent reads on demand. The orchestrator never asks the sub-agent to return its JSON array inline; the sub-agent writes its array to a per-domain shard file and returns only a one-line status.
+
+In Claude Code specifically, dispatch each domain via `Agent` with `subagent_type: "general-purpose"` and pass it exactly:
+
+1. The resolved absolute `projectPath`.
+2. `mode` (`full` or `budget`).
+3. `candidateFiles`: the list of relative Swift file *paths* in the inventory (no file contents, no line-indexed text).
+4. `corpusPath`: absolute path to the matching domain corpus file (the sub-agent reads it once with its own `Read` tool).
+5. `schemaPath`: absolute path to `references/schema.md`.
+6. `outputPath`: absolute path to `projectPath/.evenbetter/tmp/run-{N}/{domain}.json` where the sub-agent must write its JSON array.
+
+The sub-agent reads its corpus, opens only the candidate files it needs (using `Grep` to skip files with no domain-relevant tokens), produces violations against H2 corpus clauses only, writes the JSON array to `outputPath` with its `Write` tool, and returns a single line such as `Wrote 12 typography findings to <outputPath>.` It must not echo the JSON array back to the orchestrator. Use parallel `Agent` calls in one message when sub-agents are available.
 
 | Domain | Corpus path |
 |---|---|
@@ -67,8 +78,9 @@ Only use these tools to confirm a finding or correct a `guideline_reference.url`
 
 ## Aggregation
 
-After all six domain arrays return:
+After all six domain sub-agents return their one-line status messages:
 
+0. Read each `projectPath/.evenbetter/tmp/run-{N}/{domain}.json` shard from disk, parse it as JSON, and treat it as the domain's violation array. If a shard is missing or unparseable, treat that domain as returning zero findings and continue.
 1. Validate every violation against `references/schema.md`, including non-empty `ai_fix_prompt` and a well-formed `fix_options` array with exactly one `recommended: true` entry.
 2. Reject findings whose `ai_fix_prompt` or recommended `fix_options` entry is missing, generic, or not grounded in the cited source file, rule, severity, and intended remediation.
 3. Add stable `id` and default `state` fields to every violation.
@@ -80,7 +92,8 @@ After all six domain arrays return:
 9. Populate `html_report_data` for the EvenBetter iOS HIG HTML template, including project metadata, severity dashboard counts, and scan context.
 10. Store exactly that JSON object at `projectPath/.evenbetter/analyze-{N}.json`, creating `.evenbetter/` if needed.
 11. Update `.evenbetter/manifest.json` with run `N`, latest analyzer path, validation status, and state summary.
-12. Reply with the concise human-readable summary defined in `references/output-contract.md`. Do not include the analyzer report JSON body in the chat response.
+12. Remove the transient `projectPath/.evenbetter/tmp/run-{N}/` directory (and `tmp/` if empty) once `analyze-{N}.json` and the manifest have been written. Failure to clean up is not fatal, but the directory must not persist into the validator handoff.
+13. Reply with the concise human-readable summary defined in `references/output-contract.md`. Do not include the analyzer report JSON body in the chat response.
 
 Budget mode uses the same final envelope but slimmer violation objects (no `why_fix`, `fix_code`, `auto_fixable`, and no per-option `code`).
 

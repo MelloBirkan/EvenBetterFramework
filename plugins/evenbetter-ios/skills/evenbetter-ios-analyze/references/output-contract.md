@@ -239,6 +239,10 @@ Before writing a report or manifest update, reread the current manifest from dis
 
 Old reports are kept indefinitely. Pruning and archival are out of scope for this skill.
 
+## Transient Sub-Agent Shards
+
+When the analyzer dispatches per-domain sub-agents, each sub-agent writes its JSON array to `projectPath/.evenbetter/tmp/run-{N}/<domain>.json`. This keeps the orchestrator's context small (sub-agents return only a one-line status) and is the only sub-agent write permitted inside `projectPath`. The orchestrator reads each shard during aggregation and removes `projectPath/.evenbetter/tmp/run-{N}/` once `analyze-{N}.json` and `manifest.json` are written. The `tmp/` directory must not survive into the validator handoff. Cleanup failure is non-fatal — surface it as a one-line notice in the chat summary so the user can clear it manually — but the validator and fixer skills must never depend on shard contents.
+
 ## Chat Summary Rule
 
 The final response for a successful analyzer run must be concise and human-readable. The stored file at `.evenbetter/analyze-{N}.json` is the complete analyzer report JSON artifact; do not paste, fence, or otherwise include the JSON body in chat. The manifest is written as a side effect and is not included in the chat response.
