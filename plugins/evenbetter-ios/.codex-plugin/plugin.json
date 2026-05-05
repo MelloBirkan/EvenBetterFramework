@@ -15,6 +15,7 @@
     "hig"
   ],
   "skills": "./skills/",
+  "mcpServers": "./.mcp.codex.json",
   "interface": {
     "displayName": "EvenBetter iOS",
     "shortDescription": "iOS product, UX, SwiftUI, analysis, validation, and remediation skills.",

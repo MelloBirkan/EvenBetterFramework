@@ -6,6 +6,7 @@
     "url": "https://github.com/MelloBirkan/EvenBetterFramework"
   },
   "repository": "https://github.com/MelloBirkan/EvenBetterFramework",
+  "mcpServers": "./.mcp.claude.json",
   "keywords": [
     "evenbetter",
     "ios",
