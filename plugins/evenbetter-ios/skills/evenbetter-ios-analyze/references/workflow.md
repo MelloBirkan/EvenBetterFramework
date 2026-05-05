@@ -278,7 +278,7 @@ Analysis complete.
 - Wrote: .evenbetter/analyze-{N}.json
 - Findings: <total> total (<error> error, <warning> warning, <info> info)
 
-Next: use $evenbetter-validate to confirm the findings and generate the HTML report.
+Next: use /evenbetter-validate to confirm the findings and generate the HTML report.
 ```
 
 Compute `<total>` from `total_violations`, `<error>` from `critical_count` or summed `domain_summaries[].error_count`, and `<warning>` / `<info>` from summed `domain_summaries`.
@@ -287,7 +287,7 @@ Compute `<total>` from `total_violations`, `<error>` from `critical_count` or su
 
 If `skills/evenbetter-validate/SKILL.md` exists in the workspace and the user or host requests validation, invoke `evenbetter-validate` as a separate skill against the same `projectPath` after `.evenbetter/analyze-{N}.json` and `.evenbetter/manifest.json` are written. Validation corrects the analyzer JSON in place, marks the run as validated in `manifest.json`, and generates `.evenbetter/evenbetter-validate-{N}.html`; it does not write `.evenbetter/evenbetter-validate-{N}.json`.
 
-For analyzer runs that also request validation, keep the analyzer summary separate from validator output. The analyzer summary should still prompt the user to run `$evenbetter-validate` unless validation was already requested and completed in the same interaction.
+For analyzer runs that also request validation, keep the analyzer summary separate from validator output. The analyzer summary should still prompt the user to run `/evenbetter-validate` unless validation was already requested and completed in the same interaction.
 
 ## 13. Compaction-Safe Invariants
 
@@ -311,4 +311,4 @@ If context is compacted, preserve these facts exactly:
 - aggregation and scoring contract
 - source-safe discipline and the numbered report plus manifest writes
 - final output envelope keys
-- successful analysis prompts the user to run `$evenbetter-validate`
+- successful analysis prompts the user to run `/evenbetter-validate`

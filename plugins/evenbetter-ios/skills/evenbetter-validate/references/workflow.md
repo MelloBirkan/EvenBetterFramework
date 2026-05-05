@@ -115,7 +115,7 @@ Validation complete.
 - Current issues: <total> total (<error> error, <warning> warning, <info> info)
 - Corrections: <severity> severity, <links> guideline links, <rejected> rejected
 
-Open the HTML report in a browser by holding Command and clicking the left mouse button on the path. To apply corrections, use $evenbetter-fix.
+Open the HTML report in a browser by holding Command and clicking the left mouse button on the path. To apply corrections, use /evenbetter-fix.
 ```
 
 When invoked by automation, keep stdout concise and do not emit a validation report JSON object.

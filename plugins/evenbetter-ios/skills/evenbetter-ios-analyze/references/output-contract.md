@@ -250,7 +250,7 @@ Analysis complete.
 - Wrote: .evenbetter/analyze-{N}.json
 - Findings: <total> total (<error> error, <warning> warning, <info> info)
 
-Next: use $evenbetter-validate to confirm the findings and generate the HTML report.
+Next: use /evenbetter-validate to confirm the findings and generate the HTML report.
 ```
 
 Compute `<total>` from `total_violations`, `<error>` from `critical_count` or summed `domain_summaries[].error_count`, and `<warning>` / `<info>` from summed `domain_summaries`.

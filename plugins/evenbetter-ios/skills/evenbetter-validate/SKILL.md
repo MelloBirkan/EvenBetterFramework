@@ -7,7 +7,7 @@ description: Fast second-pass validator for numbered EvenBetter iOS analyzer rep
 
 ## Overview
 
-Confirm or correct an analyzer report so the user can trust the issues that go into the HTML report and into `$evenbetter-fix`. This skill is intentionally lean: it does *not* re-run the six-domain analysis. It runs a single deterministic verification pass over `analyze-{N}.json`, escalates only findings flagged ambiguous, applies corrections in place, and renders the HTML report from the corrected analyzer JSON.
+Confirm or correct an analyzer report so the user can trust the issues that go into the HTML report and into `/evenbetter-fix`. This skill is intentionally lean: it does *not* re-run the six-domain analysis. It runs a single deterministic verification pass over `analyze-{N}.json`, escalates only findings flagged ambiguous, applies corrections in place, and renders the HTML report from the corrected analyzer JSON.
 
 The analyzer is the source of truth for findings, `ai_fix_prompt`, `fix_options`, and the top-level `html_report_data`. Validate may correct `severity`, `guideline_reference`, and `html_report_data`, and may reject unsupported findings through the existing violation `state` object. It must not invent new fix prompts, options, or rules.
 
@@ -86,7 +86,7 @@ Run the bundled generator:
 scripts/generate_html_report.py --analyze projectPath/.evenbetter/analyze-{N}.json --manifest projectPath/.evenbetter/manifest.json --output projectPath/.evenbetter/evenbetter-validate-{N}.html
 ```
 
-The HTML report is the primary artifact for the end user. It must render only current issues (`state.status` is `open` or `deferred`), pull dashboard/scan-context from `html_report_data`, and surface each finding's `fix_options` so users see the same remediation alternatives `$evenbetter-fix` will offer.
+The HTML report is the primary artifact for the end user. It must render only current issues (`state.status` is `open` or `deferred`), pull dashboard/scan-context from `html_report_data`, and surface each finding's `fix_options` so users see the same remediation alternatives `/evenbetter-fix` will offer.
 
 Do not write `.evenbetter/evenbetter-validate-{N}.json`. Older projects may still have such files — the generator's `--validation` argument can accept them as legacy input.
 
@@ -101,7 +101,7 @@ Validation complete.
 - Current issues: <total> total (<error> error, <warning> warning, <info> info)
 - Corrections: <severity> severity, <links> guideline links, <rejected> rejected
 
-Open the HTML report in a browser by holding Command and clicking the left mouse button on the path. To apply corrections, use $evenbetter-fix.
+Open the HTML report in a browser by holding Command and clicking the left mouse button on the path. To apply corrections, use /evenbetter-fix.
 ```
 
 Load `references/workflow.md` next.

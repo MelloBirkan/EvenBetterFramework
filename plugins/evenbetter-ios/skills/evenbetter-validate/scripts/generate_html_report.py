@@ -1431,7 +1431,7 @@ def build_html(data: dict[str, Any]) -> str:
                                             Remediation Options
                                         </span>
                                         <span class="text-xs" style="color: var(--text-muted);">
-                                            $evenbetter-fix will ask which one to apply
+                                            /evenbetter-fix will ask which one to apply
                                         </span>
                                     </div>
                                     <div class="p-4 space-y-3">

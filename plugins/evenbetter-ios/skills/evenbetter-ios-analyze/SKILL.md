@@ -7,7 +7,7 @@ description: iOS SwiftUI Apple HIG, UX, UI, and accessibility analyzer. Use when
 
 ## Overview
 
-First pass of the EvenBetter iOS audit loop. Read SwiftUI source files without modifying them, dispatch one specialized read-only sub-agent per iOS domain, produce HIG-grounded violations with both an `ai_fix_prompt` and a structured `fix_options` menu, populate `html_report_data` for the browser template, and write the numbered report to `projectPath/.evenbetter/analyze-{N}.json`. After a successful run, do not echo the JSON body in chat — reply with the brief summary defined in `references/output-contract.md` and prompt the user to run `$evenbetter-validate`.
+First pass of the EvenBetter iOS audit loop. Read SwiftUI source files without modifying them, dispatch one specialized read-only sub-agent per iOS domain, produce HIG-grounded violations with both an `ai_fix_prompt` and a structured `fix_options` menu, populate `html_report_data` for the browser template, and write the numbered report to `projectPath/.evenbetter/analyze-{N}.json`. After a successful run, do not echo the JSON body in chat — reply with the brief summary defined in `references/output-contract.md` and prompt the user to run `/evenbetter-validate`.
 
 Do not edit, delete, format, generate, or execute source/project files inside `projectPath`. The only permitted writes inside `projectPath` are creating `.evenbetter/` if needed, auto-migrating a legacy `.evenbetter/analyze.json` into numbered history, writing the final report JSON to `.evenbetter/analyze-{N}.json`, and updating `.evenbetter/manifest.json`.
 
@@ -57,7 +57,7 @@ In Claude Code specifically, dispatch each domain via `Agent` with `subagent_typ
 
 Each domain worker is read-only. Workers must use only H2 corpus clauses from their assigned file, set `rule_id` to the matching clause ID, emit findings only inside their own `domain`, and never modify source/project files, `.evenbetter` files, cache files, or notes.
 
-Each finding must include both an `ai_fix_prompt` (for autonomous fix workflows) and a `fix_options` array of 1-4 concrete remediation alternatives (for the user-facing `$evenbetter-fix` flow). One option must be `recommended: true` and must mirror the violation's top-level `fix_description`/`fix_code`/`ai_fix_prompt`. Provide alternatives whenever multiple legitimate paths satisfy the same rule (e.g., for an undersized tap target: enlarge frame, wrap content in a `Button`, promote to a Tab Bar item).
+Each finding must include both an `ai_fix_prompt` (for autonomous fix workflows) and a `fix_options` array of 1-4 concrete remediation alternatives (for the user-facing `/evenbetter-fix` flow). One option must be `recommended: true` and must mirror the violation's top-level `fix_description`/`fix_code`/`ai_fix_prompt`. Provide alternatives whenever multiple legitimate paths satisfy the same rule (e.g., for an undersized tap target: enlarge frame, wrap content in a `Button`, promote to a Tab Bar item).
 
 ## Documentation Lookup Fallbacks
 
@@ -94,7 +94,7 @@ Analysis complete.
 - Wrote: .evenbetter/analyze-{N}.json
 - Findings: <total> total (<error> error, <warning> warning, <info> info)
 
-Next: use $evenbetter-validate to confirm the findings and generate the HTML report.
+Next: use /evenbetter-validate to confirm the findings and generate the HTML report.
 ```
 
 - Compute `<total>` from `total_violations`, `<error>` from `critical_count` or summed `domain_summaries[].error_count`, and `<warning>` / `<info>` from summed `domain_summaries`.
@@ -107,4 +107,4 @@ Next: use $evenbetter-validate to confirm the findings and generate the HTML rep
 - Include both a specific `ai_fix_prompt` and a structured `fix_options` array in every violation. Validators may judge their accuracy; only the analyzer creates them.
 - Never modify source or project files inside `projectPath`.
 - The only permitted project writes are numbered analyzer reports, `manifest.json`, and documented legacy report migration inside `projectPath/.evenbetter/`.
-- End the chat summary by prompting the user to run `$evenbetter-validate`; validation corrects the analyzer JSON in place and generates the browser report.
+- End the chat summary by prompting the user to run `/evenbetter-validate`; validation corrects the analyzer JSON in place and generates the browser report.

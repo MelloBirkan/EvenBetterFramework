@@ -98,7 +98,7 @@ Required `html_report_data` fields:
 - `scan_context.confidence`
 - `scan_context.custom_utilities`
 
-Issue-card fields remain sourced from analyzer violations: canonical `files[].violations[]`, or top-level `violations[]` only when reading older flat analyzer reports. Required issue-card fields are `id`, `summary`, `severity`, `rule_id`, `dimension`, `file_path`, `line_number`, `code_snippet`, `fix_description`, optional `fix_code`, `ai_fix_prompt`, `fix_options`, and `guideline_reference`. The `fix_options` array is rendered as a remediation menu in the HTML so users see the same alternatives `$evenbetter-fix` will offer.
+Issue-card fields remain sourced from analyzer violations: canonical `files[].violations[]`, or top-level `violations[]` only when reading older flat analyzer reports. Required issue-card fields are `id`, `summary`, `severity`, `rule_id`, `dimension`, `file_path`, `line_number`, `code_snippet`, `fix_description`, optional `fix_code`, `ai_fix_prompt`, `fix_options`, and `guideline_reference`. The `fix_options` array is rendered as a remediation menu in the HTML so users see the same alternatives `/evenbetter-fix` will offer.
 
 ## Manifest
 
@@ -154,7 +154,7 @@ Validation complete.
 - Current issues: <total> total (<error> error, <warning> warning, <info> info)
 - Corrections: <severity> severity, <links> guideline links, <rejected> rejected
 
-Open the HTML report in a browser by holding Command and clicking the left mouse button on the path. To apply corrections, use $evenbetter-fix.
+Open the HTML report in a browser by holding Command and clicking the left mouse button on the path. To apply corrections, use /evenbetter-fix.
 ```
 
 When invoked by automation, keep stdout concise and do not emit a validation report JSON object.
