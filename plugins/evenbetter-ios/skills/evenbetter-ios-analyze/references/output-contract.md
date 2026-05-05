@@ -60,11 +60,13 @@ Create `projectPath/.evenbetter/` if needed, write the final analyzer report JSO
 | `run.supersedes` | array | Prior analyzer report filenames consumed as history. Usually the immediate previous report. |
 | `run.status` | string | `pending_validation`, `validated`, `fixed`, or `partially_fixed`. Analyzer writes `pending_validation`; validator and fixer may later update this field. |
 
+`projectPath` inputs are resolved before this contract is applied. When omitted, `projectPath` is the invocation working directory; when relative, it is resolved against that directory. Store the resolved absolute path in `project_path`.
+
 ## Report Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `project_path` | string | Absolute path received as `projectPath`. |
+| `project_path` | string | Resolved absolute project path. |
 | `platform` | string | Always `swiftui` for successful analysis. |
 | `guidelines` | string | Always `Apple Human Interface Guidelines`. |
 | `total_files` | integer | Number of discovered SwiftUI `.swift` files analyzed. |

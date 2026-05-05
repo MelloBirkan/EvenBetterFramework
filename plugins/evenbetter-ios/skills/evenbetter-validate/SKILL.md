@@ -1,6 +1,6 @@
 ---
 name: evenbetter-validate
-description: Validator for numbered EvenBetter iOS analyzer reports. Use to validate and correct .evenbetter/analyze-{N}.json findings, verify every actionable issue, correct severity and guideline references in place, reject unsupported findings in analyzer state, verify analyzer-generated ai_fix_prompt accuracy without replacing it, use native web search or documentation lookup when evidence is uncertain, update .evenbetter/manifest.json, and generate .evenbetter/evenbetter-validate-{N}.html for browser review.
+description: Validator for numbered EvenBetter iOS analyzer reports. Use to validate and correct .evenbetter/analyze-{N}.json findings in the current or supplied project directory, verify every actionable issue, correct severity and guideline references in place, reject unsupported findings in analyzer state, verify analyzer-generated ai_fix_prompt accuracy without replacing it, use native web search or documentation lookup when evidence is uncertain, update .evenbetter/manifest.json, and generate .evenbetter/evenbetter-validate-{N}.html for browser review. Defaults to the current working directory when no project path is provided.
 ---
 
 # evenbetter-validate
@@ -13,12 +13,12 @@ The analyzer remains the source of truth for findings and `ai_fix_prompt` values
 
 ## Inputs
 
-- `projectPath` (required): Absolute path to the analyzed SwiftUI project.
+- `projectPath` (optional): Filesystem path to the analyzed SwiftUI project. Default to the host's current working directory when omitted or `.`.
 - `confidence_threshold` (optional): Float from `0.0` to `1.0`. Default to `0.7`.
 - `run` (optional): Analyzer run number to validate. Default is the latest unvalidated analyzer run in `.evenbetter/manifest.json`.
 - `revalidate` (optional): Boolean. Default `false`; when `true`, allow validating a run whose manifest entry already has `validated: true`.
 
-If `projectPath` is missing or not absolute, return a JSON error object with an `error` key and stop.
+Resolve `projectPath` to an absolute path before use. If the user supplies a relative path, resolve it against the host's current working directory. Do not ask for a full path solely because `projectPath` is omitted or relative.
 
 ## Source Safety
 

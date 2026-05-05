@@ -1,6 +1,6 @@
 ---
 name: evenbetter-ios-analyze
-description: iOS SwiftUI design-guidelines compliance analyzer for Apple Human Interface Guidelines and WCAG 2.2. Use when given an absolute path to a SwiftUI iOS project and asked to audit typography, color and theming, components, layout and interaction, navigation and flow, or accessibility; reads source files without modifying them, creates self-contained fix prompts directly in each JSON violation, and stores the report in the project's .evenbetter folder.
+description: iOS SwiftUI design-guidelines compliance analyzer for Apple Human Interface Guidelines and WCAG 2.2. Use when run from or given a SwiftUI iOS project directory and asked to audit typography, color and theming, components, layout and interaction, navigation and flow, or accessibility; defaults to the current working directory when no project path is provided, reads source files without modifying them, creates self-contained fix prompts directly in each JSON violation, and stores the report in the project's .evenbetter folder.
 ---
 
 # evenbetter-ios-analyze
@@ -13,10 +13,10 @@ Do not edit, delete, format, generate, or execute source/project files inside `p
 
 ## Inputs
 
-- `projectPath` (required): Absolute filesystem path to a SwiftUI iOS project.
+- `projectPath` (optional): Filesystem path to a SwiftUI iOS project. Default to the host's current working directory when omitted or `.`.
 - `mode` (optional): `full` or `budget`. Default to `full`.
 
-If `projectPath` is missing or not absolute, return a JSON error object with an `error` key and stop.
+Resolve `projectPath` to an absolute path before use. If the user supplies a relative path, resolve it against the host's current working directory. Do not ask for a full path solely because `projectPath` is omitted or relative.
 
 ## Required References
 

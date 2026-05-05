@@ -57,6 +57,7 @@ The current EvenBetter report contract is manifest-first:
 - Analyzer reports are numbered as `.evenbetter/analyze-{N}.json`.
 - Validate updates the selected `.evenbetter/analyze-{N}.json` in place and generates `.evenbetter/evenbetter-validate-{N}.html`.
 - Legacy singleton files such as `.evenbetter/analyze.json`, `.evenbetter/eb-analyze.json`, `.evenbetter/validate.json`, and `.evenbetter/evenbetter-validate.json` are compatibility or migration cases only.
+- Analyzer, validator, and fixer `projectPath` inputs default to the invocation working directory when omitted. Relative paths resolve against that directory; do not ask for a full path solely because the user is running from the target app directory.
 
 Analyzer behavior:
 

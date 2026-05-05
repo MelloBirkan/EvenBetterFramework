@@ -6,12 +6,13 @@ EvenBetter assumes serial execution. Before writing analyzer or manifest updates
 
 ## 1. Normalize Inputs
 
-1. Require `projectPath`.
-2. Confirm `projectPath` is absolute.
-3. Set `confidence_threshold` to `0.7` when omitted.
-4. Accept only numeric thresholds from `0.0` to `1.0`; otherwise return a JSON error object with an `error` key and stop.
-5. Accept optional `run` as a positive integer analyzer run number.
-6. Accept optional `revalidate` as a boolean; default to `false`.
+1. If `projectPath` is omitted or `.`, set it to the host's current working directory for this skill invocation.
+2. If `projectPath` is relative, resolve it against the host's current working directory.
+3. Canonicalize `projectPath` to an absolute path before reading, writing, reporting, or passing it to validator contexts.
+4. Set `confidence_threshold` to `0.7` when omitted.
+5. Accept only numeric thresholds from `0.0` to `1.0`; otherwise return a JSON error object with an `error` key and stop.
+6. Accept optional `run` as a positive integer analyzer run number.
+7. Accept optional `revalidate` as a boolean; default to `false`.
 
 ## 2. Load Manifest And Select Run
 
@@ -197,6 +198,7 @@ Open the HTML report in a browser by holding Command and clicking the left mouse
 If context is compacted, preserve these facts:
 
 - report history is indexed by `.evenbetter/manifest.json`
+- `projectPath` defaults to the invocation working directory when omitted
 - default target is the newest unvalidated analyzer run
 - explicit `run` requires a matching `analyze-{N}.json`
 - revalidating an already validated run requires `revalidate: true`

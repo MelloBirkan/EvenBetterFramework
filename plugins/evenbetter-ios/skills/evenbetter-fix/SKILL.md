@@ -1,6 +1,6 @@
 ---
 name: evenbetter-fix
-description: Workflow skill that scopes and executes agent-driven remediation from numbered EvenBetter analyzer findings. Use when asked to fix issues from analyze-{N}.json, apply fixes after evenbetter-validate has corrected analyzer JSON, resolve findings with sub-agents, fix only severe issues first, or coordinate remediation batches for an analyzed project with .evenbetter/manifest.json history.
+description: Workflow skill that scopes and executes agent-driven remediation from numbered EvenBetter analyzer findings in the current or supplied project directory. Use when asked to fix issues from analyze-{N}.json, apply fixes after evenbetter-validate has corrected analyzer JSON, resolve findings with sub-agents, fix only severe issues first, or coordinate remediation batches for an analyzed project with .evenbetter/manifest.json history. Defaults to the current working directory when no project path is provided.
 ---
 
 # evenbetter-fix
@@ -11,10 +11,10 @@ Coordinate the fix step of the EvenBetter loop after analysis and validation. Re
 
 ## Inputs
 
-- `projectPath` (required): Absolute filesystem path to the analyzed project.
+- `projectPath` (optional): Filesystem path to the analyzed project. Default to the host's current working directory when omitted or `.`.
 - Optional user intent from the prompt: severity scope, domain or file filters, batch size, remediation preference, or request to use raw analyzer findings.
 
-If `projectPath` is missing or not absolute, ask for the absolute path and stop until it is provided.
+Resolve `projectPath` to an absolute path before use. If the user supplies a relative path, resolve it against the host's current working directory. Do not ask for a full path solely because `projectPath` is omitted or relative.
 
 ## Report Source Precedence
 

@@ -6,10 +6,11 @@ EvenBetter assumes serial execution. Before writing any report or manifest updat
 
 ## 1. Normalize Inputs
 
-1. Require `projectPath`.
-2. Confirm `projectPath` is absolute.
-3. Set `mode` to `full` when omitted.
-4. Accept only `full` or `budget`; otherwise return a JSON error object with an `error` key and stop.
+1. If `projectPath` is omitted or `.`, set it to the host's current working directory for this skill invocation.
+2. If `projectPath` is relative, resolve it against the host's current working directory.
+3. Canonicalize `projectPath` to an absolute path before reading, writing, reporting, or passing it to domain workers.
+4. Set `mode` to `full` when omitted.
+5. Accept only `full` or `budget`; otherwise return a JSON error object with an `error` key and stop.
 
 ## 2. Detect SwiftUI
 
@@ -210,7 +211,7 @@ Avoid:
 Load `references/output-contract.md` and produce one analyzer report object matching it exactly. Use:
 
 - `run`: metadata from the prepared report history
-- `project_path`: the input `projectPath`
+- `project_path`: the resolved absolute `projectPath`
 - `platform`: `swiftui`
 - `guidelines`: `Apple Human Interface Guidelines`
 
@@ -259,6 +260,7 @@ For analyzer runs that also request validation, keep the analyzer summary separa
 If context is compacted, preserve these facts exactly:
 
 - `projectPath`
+- `projectPath` defaults to the invocation working directory when omitted
 - `mode`
 - skip-directory list
 - ordered SwiftUI file inventory
