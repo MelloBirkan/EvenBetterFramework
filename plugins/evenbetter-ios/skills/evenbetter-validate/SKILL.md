@@ -1,6 +1,6 @@
 ---
 name: evenbetter-validate
-description: Validator for numbered EvenBetter iOS analyzer reports. Use to validate and correct .evenbetter/analyze-{N}.json findings in the current or supplied project directory, verify every actionable issue, correct severity and guideline references in place, reject unsupported findings in analyzer state, verify analyzer-generated ai_fix_prompt accuracy without replacing it, use native web search or documentation lookup when evidence is uncertain, update .evenbetter/manifest.json, and generate .evenbetter/evenbetter-validate-{N}.html for browser review. Defaults to the current working directory when no project path is provided.
+description: Validator for numbered EvenBetter iOS analyzer reports. Use to validate and correct .evenbetter/analyze-{N}.json findings in the current or supplied project directory, verify every actionable issue, correct severity and guideline references in place, verify the analyzer's EvenBetter iOS HIG html_report_data, reject unsupported findings in analyzer state, verify analyzer-generated ai_fix_prompt accuracy without replacing it, spawn specialized validation sub-agents when the host supports Claude Code or Codex subagents, use native web search or documentation lookup when evidence is uncertain, update .evenbetter/manifest.json, and generate .evenbetter/evenbetter-validate-{N}.html for browser review. Defaults to the current working directory when no project path is provided.
 ---
 
 # evenbetter-validate
@@ -9,7 +9,7 @@ description: Validator for numbered EvenBetter iOS analyzer reports. Use to vali
 
 Validate EvenBetter iOS analyzer findings with a second-pass evidence check. Treat this skill as a correction pass over `analyze-{N}.json`: confirm real issues, correct analyzer fields in place, reject findings that are not actual issues, mark the run as validated, and generate an issue-focused browser report. Do not create a separate validation JSON report.
 
-The analyzer remains the source of truth for findings and `ai_fix_prompt` values. The validator may correct `severity` and `guideline_reference`, and may reject unsupported findings through the existing violation `state` object. It must not create replacement fix prompts or add per-violation validation status fields.
+The analyzer remains the source of truth for findings, `ai_fix_prompt` values, and the top-level `html_report_data` consumed by the EvenBetter iOS HIG browser template. The validator may correct `severity`, `guideline_reference`, and `html_report_data`, and may reject unsupported findings through the existing violation `state` object. It must not create replacement fix prompts or add per-violation validation status fields.
 
 ## Inputs
 
@@ -31,7 +31,7 @@ Load only what the current phase needs:
 - `references/workflow.md`: Validation loop, evidence checks, analyzer JSON correction rules, and compaction-safe invariants.
 - `references/output-contract.md`: Analyzer JSON mutation and HTML output contract.
 - `references/architecture.md`: Analyzer-to-validator-to-fixer flow.
-- `scripts/verify_url.py`: Deterministic URL verifier for Apple and W3C sources.
+- `scripts/verify_url.py`: Deterministic URL verifier for Apple guideline and developer documentation sources.
 - `scripts/generate_html_report.py`: Deterministic analyzer-only HTML issue report generator.
 
 ## Validation Scope
@@ -50,9 +50,10 @@ For each actionable finding:
 6. Correct `severity` in the analyzer violation when the issue is real but the analyzer severity is wrong.
 7. Correct `guideline_reference` in the analyzer violation when the issue is real but the label or URL points to the wrong primary source.
 8. Verify that `ai_fix_prompt` is present, scoped to this finding, and accurate for the source evidence and rule.
-9. If the finding is unsupported, too uncertain, missing a usable prompt, or has an uncorrectable guideline reference, set `state.status = "rejected"`, `state.decidedIn = N`, `state.decidedBy = "validator"`, `state.reason` to a concise evidence-based reason, and `state.duplicateOf = null`.
+9. Verify that top-level `html_report_data` includes the EvenBetter iOS HIG template fields and correct it from analyzer facts when stale or missing.
+10. If the finding is unsupported, too uncertain, missing a usable prompt, or has an uncorrectable guideline reference, set `state.status = "rejected"`, `state.decidedIn = N`, `state.decidedBy = "validator"`, `state.reason` to a concise evidence-based reason, and `state.duplicateOf = null`.
 
-When the host supports isolated subagents, run the judgment in a fresh validator context that receives only the finding, source excerpt, corpus clause, and URL result. If isolated subagents are unavailable or not permitted, still perform an explicit independent re-evaluation from those artifacts and do not reuse the original auditor's reasoning as evidence.
+When the host supports isolated sub-agents, such as Claude Code subagents or Codex sub-agents, spawn specialized validator sub-agents by domain or by domain-sized batches. Each validator sub-agent receives only the relevant findings, source excerpts, corpus clauses, URL verification results, and optional primary-source links for its assigned domain. The validator orchestrator alone mutates `analyze-{N}.json`, `manifest.json`, and the HTML report. If isolated sub-agents are unavailable or not permitted, still perform an explicit independent re-evaluation from those artifacts and do not reuse the original auditor's reasoning as evidence.
 
 ## Output Rules
 

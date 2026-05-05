@@ -62,14 +62,18 @@ The current EvenBetter report contract is manifest-first:
 Analyzer behavior:
 
 - Read project source files without modifying them.
+- When Claude Code, Codex, or another host supports sub-agents, dispatch one specialized read-only analyzer sub-agent per iOS domain; otherwise run the same domain passes sequentially.
 - Only write numbered analyzer reports, documented legacy migrations, and `manifest.json` inside the analyzed project's `.evenbetter/` directory.
 - Preserve stable violation IDs and carry forward prior mutable state when matching violations recur.
+- Include `html_report_data` in analyzer reports so the EvenBetter iOS HIG HTML template has complete dashboard and scan-context fields.
 
 Validator behavior:
 
 - Select runs from `manifest.json` by default.
 - Validate the newest unvalidated run unless an explicit run is requested.
+- When Claude Code, Codex, or another host supports sub-agents, dispatch specialized validator sub-agents by domain or domain-sized batch; only the validator orchestrator mutates reports.
 - Correct severity and guideline references directly in `analyze-{N}.json`.
+- Correct missing or stale analyzer `html_report_data` directly in `analyze-{N}.json`.
 - Reject unsupported findings by setting violation `state.status` to `rejected` with `decidedBy: "validator"`.
 - Generate the matching `.evenbetter/evenbetter-validate-{N}.html` report and update manifest validation/html metadata.
 - Do not write new `.evenbetter/evenbetter-validate-{N}.json` reports.

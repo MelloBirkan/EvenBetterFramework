@@ -18,6 +18,33 @@ Create `projectPath/.evenbetter/` if needed, write the final analyzer report JSO
   "project_path": "/abs/path",
   "platform": "swiftui",
   "guidelines": "Apple Human Interface Guidelines",
+  "html_report_data": {
+    "brand": "EvenBetter",
+    "report_title": "EvenBetter iOS HIG Report",
+    "standard_label": "Apple Human Interface Guidelines",
+    "project_name": "AppName",
+    "project_path": "/abs/path",
+    "framework": "SwiftUI",
+    "hig_standard": "Apple Human Interface Guidelines",
+    "scan_date": "2026-04-28T12:34:56Z",
+    "summary": {
+      "total": 0,
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "scan_context": {
+      "frameworks": ["SwiftUI"],
+      "framework_versions": {},
+      "design_systems": ["Apple Human Interface Guidelines"],
+      "component_patterns": [],
+      "scan_duration": null,
+      "files_scanned": 0,
+      "confidence": null,
+      "custom_utilities": []
+    }
+  },
   "total_files": 0,
   "total_violations": 0,
   "critical_count": 0,
@@ -48,7 +75,7 @@ Create `projectPath/.evenbetter/` if needed, write the final analyzer report JSO
 }
 ```
 
-`critical_count` = number of violations with `severity = "error"`. Budget mode uses the same envelope; per-violation shape is the slimmer one from the schema. Every violation in `files[].violations[]` must include `id`, `state`, and an analyzer-generated `ai_fix_prompt`.
+`critical_count` = number of violations with `severity = "error"`. `html_report_data` carries the dashboard and scan-context fields consumed by the EvenBetter iOS HIG HTML template; the issue list itself is still sourced from `files[].violations[]` so validation and fix state remain authoritative. Budget mode uses the same envelope; per-violation shape is the slimmer one from the schema. Every violation in `files[].violations[]` must include `id`, `state`, and an analyzer-generated `ai_fix_prompt`.
 
 ## Run Fields
 
@@ -69,6 +96,28 @@ Create `projectPath/.evenbetter/` if needed, write the final analyzer report JSO
 | `project_path` | string | Resolved absolute project path. |
 | `platform` | string | Always `swiftui` for successful analysis. |
 | `guidelines` | string | Always `Apple Human Interface Guidelines`. |
+| `html_report_data` | object | Data required by the EvenBetter iOS HIG HTML report template. |
+| `html_report_data.brand` | string | Always `EvenBetter`. |
+| `html_report_data.report_title` | string | Always `EvenBetter iOS HIG Report`. |
+| `html_report_data.standard_label` | string | Always `Apple Human Interface Guidelines`. |
+| `html_report_data.project_name` | string | Display name derived from `project_path` unless a project name is known. |
+| `html_report_data.project_path` | string | Same resolved absolute path as `project_path`. |
+| `html_report_data.framework` | string | Display framework, usually `SwiftUI`. |
+| `html_report_data.hig_standard` | string | Display standard, usually `Apple Human Interface Guidelines`. |
+| `html_report_data.scan_date` | string | Same timestamp as `run.createdAt`. |
+| `html_report_data.summary.total` | integer | Count of current analyzer findings before validation. |
+| `html_report_data.summary.critical` | integer | Count mapped from `severity = "error"` for the template. |
+| `html_report_data.summary.high` | integer | Count mapped from `severity = "warning"` for the template. |
+| `html_report_data.summary.medium` | integer | Count mapped from `severity = "info"` for the template. |
+| `html_report_data.summary.low` | integer | Reserved for future low-priority display issues; write `0` unless the analyzer adds a lower severity. |
+| `html_report_data.scan_context.frameworks` | array | Framework names shown in the collapsible scan context, usually `["SwiftUI"]`. |
+| `html_report_data.scan_context.framework_versions` | object | Known framework/tool versions keyed by framework name; use `{}` when unknown. |
+| `html_report_data.scan_context.design_systems` | array | Design systems or standards applied, usually `["Apple Human Interface Guidelines"]`. |
+| `html_report_data.scan_context.component_patterns` | array | Detected SwiftUI/iOS patterns or analyzed domain names shown in the template. |
+| `html_report_data.scan_context.scan_duration` | number or null | Analysis duration in seconds when known. |
+| `html_report_data.scan_context.files_scanned` | integer | Same count as `total_files`. |
+| `html_report_data.scan_context.confidence` | number or null | Overall analyzer confidence only when computed; otherwise `null`. |
+| `html_report_data.scan_context.custom_utilities` | array | Project-specific UI helpers detected during inventory. |
 | `total_files` | integer | Number of discovered SwiftUI `.swift` files analyzed. |
 | `total_violations` | integer | Total number of violation objects across all domains. |
 | `critical_count` | integer | Count of violations where `severity` is `error`. |
@@ -92,6 +141,17 @@ Create `projectPath/.evenbetter/` if needed, write the final analyzer report JSO
 | `executive_summary` | string | 3-5 sentence non-technical summary of compliance posture. |
 
 The analyzer report is the source of truth for fix prompts. Validator reports may judge whether `ai_fix_prompt` is accurate, but they must not create replacement prompts. Fixer runs must consume selected analyzer prompts as guidance and apply source edits rather than writing new prompt artifacts.
+
+## HTML Template Field Mapping
+
+The EvenBetter browser report is based on the supplied bold modern audit template, adapted for iOS and Apple HIG. Analyze must produce all source fields needed by that template:
+
+- Dashboard/header fields come from `html_report_data`: `project_name`, `project_path`, `framework`, `hig_standard`, `scan_date`, `summary`, and `scan_context`.
+- Issue cards come from each violation: `id`, `summary`, `severity`, `rule_id`, `dimension`, `file_path`, `line_number`, `code_snippet`, `fix_description`, optional `fix_code`, `ai_fix_prompt`, and `guideline_reference`.
+- The HTML generator maps violation severities for display: `error -> critical`, `warning -> high`, `info -> medium`, and reserves `low` for future lower-priority issue types.
+- The HTML generator maps `rule_id` to the displayed HIG criteria, `dimension` to the displayed HIG area, and `guideline_reference.url` to the inline Evidence link.
+
+Do not duplicate violations inside `html_report_data.issues`; current issues are always derived from `files[].violations[]` so validator corrections and fixer state changes remain authoritative.
 
 ## Manifest
 

@@ -1,6 +1,6 @@
 # Coordinator Workflow
 
-This workflow coordinates a source-safe design-guidelines compliance analysis for iOS SwiftUI projects. Never edit, delete, format, generate, or execute source/project files inside `projectPath`; read source files only. The only permitted writes inside `projectPath` are numbered analyzer reports, `manifest.json`, and documented legacy report migration inside `.evenbetter/`.
+This workflow coordinates a source-safe Apple HIG and iOS accessibility analysis for SwiftUI projects. Never edit, delete, format, generate, or execute source/project files inside `projectPath`; read source files only. The only permitted writes inside `projectPath` are numbered analyzer reports, `manifest.json`, and documented legacy report migration inside `.evenbetter/`.
 
 EvenBetter assumes serial execution. Before writing any report or manifest update, reread `projectPath/.evenbetter/manifest.json` from disk.
 
@@ -76,7 +76,7 @@ For the new run, set:
 
 Keep old reports indefinitely. Do not delete or overwrite `analyze-{N}.json`, `evenbetter-validate-{N}.json`, or legacy `analyze.json`.
 
-## 5. Run The Six Domains
+## 5. Run The Six Domain Specialists
 
 Run all six domains against the same inventory:
 
@@ -89,11 +89,15 @@ Run all six domains against the same inventory:
 | `navigation-flow` | `../../corpus/ios/navigation-flow.md` |
 | `accessibility` | `../../corpus/ios/accessibility.md` |
 
-If the host environment supports independent worker contexts, these analyses may run concurrently because they are read-only and independent. Otherwise run them sequentially in the table order.
+If the host environment supports independent sub-agents or worker contexts, such as Claude Code subagents or Codex sub-agents, spawn one specialized read-only domain sub-agent for each row in the table and run them concurrently when practical. Each sub-agent is an expert for its own Apple HIG, SwiftUI, and accessibility domain. If sub-agents are unavailable or not permitted, run the same six domain passes sequentially in the table order.
+
+Only the analyzer orchestrator may write files. Domain sub-agents must read the supplied inventory and references, return a JSON array, and not write source files, `.evenbetter` files, cache files, or notes.
 
 Use this generic prompt shape for each domain context:
 
 ```text
+You are the <domain> specialist for an EvenBetter iOS SwiftUI Apple HIG and accessibility analysis.
+
 Analyze the provided iOS SwiftUI file inventory for the <domain> domain only.
 Inputs:
 - projectPath: <absolute path>
@@ -214,6 +218,27 @@ Load `references/output-contract.md` and produce one analyzer report object matc
 - `project_path`: the resolved absolute `projectPath`
 - `platform`: `swiftui`
 - `guidelines`: `Apple Human Interface Guidelines`
+- `html_report_data`: dashboard and scan-context data for the EvenBetter iOS HIG browser template
+
+Populate `html_report_data` from the same source facts rather than inventing a second issue model:
+
+- `brand`: `EvenBetter`
+- `report_title`: `EvenBetter iOS HIG Report`
+- `standard_label` and `hig_standard`: `Apple Human Interface Guidelines`
+- `project_name`: project directory name unless a stronger app name is known from project metadata
+- `project_path`: same value as top-level `project_path`
+- `framework`: `SwiftUI`
+- `scan_date`: same value as `run.createdAt`
+- `summary.total`: same value as `total_violations`
+- `summary.critical`: count of `severity = "error"`
+- `summary.high`: count of `severity = "warning"`
+- `summary.medium`: count of `severity = "info"`
+- `summary.low`: `0` unless the contract later adds a lower-priority severity
+- `scan_context.frameworks`: at least `["SwiftUI"]`
+- `scan_context.design_systems`: at least `["Apple Human Interface Guidelines"]`
+- `scan_context.component_patterns`: detected SwiftUI patterns or the analyzed domain names
+- `scan_context.files_scanned`: same value as `total_files`
+- `scan_context.framework_versions`, `scan_context.scan_duration`, `scan_context.confidence`, and `scan_context.custom_utilities`: fill when known, otherwise use the null/empty defaults from the output contract
 
 Before writing the JSON object, reread `projectPath/.evenbetter/manifest.json` and write the analyzer report to:
 
@@ -268,8 +293,10 @@ If context is compacted, preserve these facts exactly:
 - analyzer reports are numbered as `.evenbetter/analyze-{N}.json`
 - legacy `.evenbetter/analyze.json` is auto-migrated only when no manifest exists
 - six domain names and corpus paths
+- spawn specialized read-only domain sub-agents for the six domains when the host supports sub-agents; otherwise run the same passes sequentially
 - schema field sets for `full` and `budget`
 - analyzer creates all `ai_fix_prompt` values directly in the JSON report
+- analyzer creates `html_report_data` for the EvenBetter iOS HIG HTML template, while current issue cards still come from `files[].violations[]`
 - domain, severity, dimension, state, and run status enums
 - stable violation ID inputs and SHA-256 prefix rule
 - aggregation and scoring contract

@@ -69,7 +69,26 @@ For each actionable finding:
 9. Attach index metadata to the working evidence: `clause_id`, `source_url`, `retrieved`, and `corpus_version`.
 10. If the index entry or markdown clause cannot be found, reject the analyzer violation with `state.reason = "Corpus clause for <rule_id> could not be resolved."`
 
-## 5. Verify Or Correct The Guideline URL
+## 5. Dispatch Specialized Validator Contexts
+
+Group prepared findings by analyzer `domain`: `typography`, `color-theming`, `components-patterns`, `layout-interaction`, `navigation-flow`, and `accessibility`.
+
+If the host environment supports independent sub-agents or worker contexts, such as Claude Code subagents or Codex sub-agents, spawn specialized validator sub-agents by domain when practical. For very large domains, split into batches that keep related findings together by file and rule. Each validator sub-agent is an expert for its assigned Apple HIG, SwiftUI, and accessibility domain.
+
+Pass each validator sub-agent only:
+
+- the assigned original violation objects
+- source excerpts and adjacent source context needed to interpret them
+- resolved corpus clauses and index metadata
+- URL verification results
+- analyzer-provided `ai_fix_prompt`, `fix_description`, and `fix_code` when present
+- optional primary-source web evidence when needed
+
+Validator sub-agents return proposed actions only: keep as issue, correct severity, correct guideline reference, or reject as non-issue with concise reasoning. They must not write source files, `.evenbetter` files, cache files, or notes. The validator orchestrator reviews their outputs and is the only actor that mutates `analyze-{N}.json`, updates `manifest.json`, or generates HTML.
+
+If sub-agents are unavailable or not permitted, perform the same domain-specialized validation sequentially in the main agent from the prepared artifacts.
+
+## 6. Verify Or Correct The Guideline URL
 
 Promote this deterministic rule to code: use the bundled script rather than model judgment for URL reachability.
 
@@ -82,20 +101,20 @@ For each finding with a resolved clause:
 5. Verify the corrected URL with `scripts/verify_url.py`.
 6. If no valid source URL can be verified, reject the analyzer violation with `state.reason = "No reachable primary guideline URL could be verified."`
 
-The URL must resolve with HTTP 200 and must belong to `developer.apple.com`, `www.w3.org`, or `w3.org`.
+The URL must resolve with HTTP 200 and belong to `developer.apple.com`. Prefer Apple Human Interface Guidelines pages when available; Apple Developer documentation pages are valid for SwiftUI API-specific clauses.
 
-## 6. Optional Web Evidence
+## 7. Optional Web Evidence
 
 Use the host AI agent's native web search, web fetch, or documentation lookup tools when the local corpus clause and verified guideline URL leave uncertainty about whether the issue is real, severity is correct, or the fix prompt is accurate.
 
 Rules:
 
-- Prefer primary sources: `developer.apple.com`, Apple Human Interface Guidelines, W3C WCAG, or official framework documentation.
+- Prefer primary sources on `developer.apple.com`: Apple Human Interface Guidelines or official SwiftUI framework documentation.
 - Do not require extra web-discovered evidence for every finding; the existing verified guideline URL and corpus source may be enough.
 - Use web results to correct analyzer fields or reject unsupported findings, not to add validation metadata.
 - If native web tools are unavailable, continue from local evidence and the deterministic URL verifier.
 
-## 7. Independent Judgment And Corrections
+## 8. Independent Judgment And Corrections
 
 Judge from fresh evidence, not from the original auditor's confidence. Use only:
 
@@ -107,7 +126,7 @@ Judge from fresh evidence, not from the original auditor's confidence. Use only:
 - the analyzer-provided `ai_fix_prompt`, `fix_description`, and `fix_code` when present
 - optional primary-source web evidence when needed
 
-When isolated subagent contexts are available and permitted, pass only those artifacts to the validator context. Otherwise perform a deliberate second-pass re-evaluation after reloading those artifacts.
+When isolated sub-agent contexts are available and permitted, use the specialized validator sub-agent outputs from the dispatch step as independent evidence proposals. Otherwise perform a deliberate second-pass re-evaluation after reloading those artifacts.
 
 For each finding, choose one action:
 
@@ -130,7 +149,7 @@ Reject by mutating only the existing state block:
 
 Do not create, revise, or backfill `ai_fix_prompt`; that field belongs to the analyzer report. Do not add validator decision fields to analyzer violations.
 
-## 8. Recompute Analyzer Aggregates
+## 9. Recompute Analyzer Aggregates
 
 Load `references/output-contract.md` and update the selected analyzer report accordingly.
 
@@ -144,7 +163,15 @@ Recompute visible issue counts from violations whose `state.status` is `open` or
 
 Refresh `executive_summary` if corrections materially changed the issue set. Preserve old reports and do not rewrite unrelated analyzer runs.
 
-## 9. Store Analyzer And Update Manifest
+Recompute or repair the top-level `html_report_data` object so the adapted EvenBetter iOS HIG template has all required fields:
+
+- `brand`, `report_title`, `standard_label`, `project_name`, `project_path`, `framework`, `hig_standard`, and `scan_date`
+- `summary.total`, `summary.critical`, `summary.high`, `summary.medium`, and `summary.low`
+- `scan_context.frameworks`, `framework_versions`, `design_systems`, `component_patterns`, `scan_duration`, `files_scanned`, `confidence`, and `custom_utilities`
+
+Use current visible issues for summary counts. Map `error -> critical`, `warning -> high`, `info -> medium`, and write `low: 0` unless a lower-priority severity exists in the analyzer contract. Do not add `html_report_data.issues`; the HTML issue list is derived from `files[].violations[]`.
+
+## 10. Store Analyzer And Update Manifest
 
 Before writing, reread `manifest.json`.
 
@@ -165,7 +192,7 @@ Then update `projectPath/.evenbetter/manifest.json`:
 7. Set `latest.html_report` to the generated HTML path when the manifest has a `latest` object.
 8. Update `analyze-{N}.json` `run.status` to `validated` unless it is already `fixed` or `partially_fixed`.
 
-## 10. Generate HTML Report
+## 11. Generate HTML Report
 
 After analyzer and manifest updates complete, generate the browser report:
 
@@ -179,7 +206,7 @@ Run the bundled generator with:
 scripts/generate_html_report.py --analyze projectPath/.evenbetter/analyze-{N}.json --manifest projectPath/.evenbetter/manifest.json --output projectPath/.evenbetter/evenbetter-validate-{N}.html
 ```
 
-The HTML report is a derived view of current issues. It must include only analyzer findings with `state.status = "open"` or `state.status = "deferred"`, render issue-level HIG/evidence links from `guideline_reference.url`, and avoid validation-status language.
+The HTML report is a derived view of current issues using the EvenBetter iOS HIG adaptation of the supplied template. It must include only analyzer findings with `state.status = "open"` or `state.status = "deferred"`, render issue-level HIG/evidence links from `guideline_reference.url`, use `html_report_data` for dashboard and scan-context fields, and avoid validation-status language.
 
 In interactive chat, keep the response concise:
 
@@ -193,13 +220,14 @@ Validation complete.
 Open the HTML report in a browser by holding Command and clicking the left mouse button on the path. To apply corrections, use $evenbetter-fix.
 ```
 
-## 11. Compaction-Safe Invariants
+## 12. Compaction-Safe Invariants
 
 If context is compacted, preserve these facts:
 
 - report history is indexed by `.evenbetter/manifest.json`
 - `projectPath` defaults to the invocation working directory when omitted
 - default target is the newest unvalidated analyzer run
+- spawn specialized validator sub-agents by domain or domain-sized batches when the host supports sub-agents; otherwise perform the same validation sequentially
 - explicit `run` requires a matching `analyze-{N}.json`
 - revalidating an already validated run requires `revalidate: true`
 - validation does not create `.evenbetter/evenbetter-validate-{N}.json`
@@ -208,6 +236,7 @@ If context is compacted, preserve these facts:
 - canonical threshold is `0.7`
 - real issues remain analyzer violations
 - wrong severities and guideline references are corrected in analyzer JSON
+- missing or stale `html_report_data` is corrected in analyzer JSON before HTML generation
 - non-issues are rejected through `state.status = "rejected"` with `decidedBy = "validator"`
 - validation does not create or change analyzer `ai_fix_prompt` values
 - source/project files are read-only except for analyzer report, manifest, and HTML report writes inside `.evenbetter/`

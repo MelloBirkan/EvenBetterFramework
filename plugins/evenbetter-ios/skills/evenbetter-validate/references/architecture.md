@@ -19,14 +19,18 @@ flowchart LR
   H --> O[".evenbetter/manifest.json"]
   O --> I["evenbetter-validate"]
   H --> I
-  I --> J["Source excerpt"]
-  I --> K["Corpus clause"]
-  I --> L["Verified HIG/WCAG URL"]
-  I --> R["Optional primary-source web evidence"]
+  I --> J["Typography validator"]
+  I --> K["Color validator"]
+  I --> L["Components validator"]
+  I --> R["Layout validator"]
+  I --> T["Navigation validator"]
+  I --> U["Accessibility validator"]
   J --> M["Correct analyzer JSON"]
   K --> M
   L --> M
   R --> M
+  T --> M
+  U --> M
   M --> H
   M --> O
   H --> P["generate_html_report.py"]
@@ -35,6 +39,8 @@ flowchart LR
   H --> S["evenbetter-fix"]
 ```
 
-The analyzer workers make first-pass domain judgments, create `ai_fix_prompt` values, and store each run as a numbered analyzer report indexed by `manifest.json`. The validator does not assume those judgments are correct; it reloads code, reloads the rule clause, verifies or corrects the source URL, optionally uses native web lookup for uncertain cases, corrects severity and guideline references, and rejects unsupported findings through analyzer state.
+The analyzer workers are specialized read-only sub-agents when the host supports Claude Code or Codex subagents. They make first-pass domain judgments, create `ai_fix_prompt` values, and return JSON arrays to the analyzer orchestrator, which writes each numbered analyzer report plus the `html_report_data` required by the EvenBetter iOS HIG browser template.
+
+The validator does not assume those judgments are correct. When the host supports sub-agents, it dispatches specialized validator sub-agents by domain or domain-sized batch. Those validators reload code excerpts, rule clauses, verified source URLs, and optional primary-source web evidence, then propose keep/correct/reject actions. The validator orchestrator alone corrects severity, guideline references, and stale `html_report_data`, rejects unsupported findings through analyzer state, updates manifest metadata, and generates HTML.
 
 The resulting HTML report is generated from the corrected analyzer JSON. It focuses on current issues, not on what the validator checked, kept, dropped, or skipped.

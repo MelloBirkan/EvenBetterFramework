@@ -11,7 +11,7 @@ import urllib.parse
 import urllib.request
 
 
-ALLOWED_DOMAINS = {"developer.apple.com", "www.w3.org", "w3.org"}
+ALLOWED_DOMAINS = {"developer.apple.com"}
 TIMEOUT_SECONDS = 5
 
 

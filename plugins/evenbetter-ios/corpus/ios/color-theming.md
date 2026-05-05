@@ -2,7 +2,7 @@
 corpus_version: development
 domain: color-theming
 platform: ios
-last_reviewed: 2026-05-02
+last_reviewed: 2026-05-05
 ---
 
 # iOS SwiftUI Color And Theming Corpus
@@ -71,12 +71,12 @@ RoundedRectangle(cornerRadius: 8)
 **Severity:** warning
 **Dimension:** ux
 **Platform:** ios
-**Source:** [WCAG 2.2: Use of Color](https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html)
-**Retrieved:** 2026-05-02
+**Source:** [Apple HIG: Accessibility](https://developer.apple.com/design/human-interface-guidelines/accessibility)
+**Retrieved:** 2026-05-05
 
 **Check.** Flag status, selection, required fields, validation, or destructive states represented only by color changes without text, icon, shape, or accessibility value redundancy.
 
-**Why.** Users with color-vision differences or unusual display conditions need redundant cues.
+**Why.** iOS interfaces should not rely on color alone because users with color-vision differences, increased contrast settings, or unusual display conditions need redundant cues.
 
 **Correct code.**
 
@@ -85,17 +85,15 @@ Label("Payment failed", systemImage: "exclamationmark.circle.fill")
     .foregroundStyle(.red)
 ```
 
-**WCAG:** WCAG 2.2 - Use of Color
-
-## CLR-A11Y-001 - Meet WCAG AA text contrast
+## CLR-A11Y-001 - Maintain readable text contrast
 
 **Severity:** error
 **Dimension:** accessibility
 **Platform:** ios
-**Source:** [WCAG 2.2: Contrast Minimum](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)
-**Retrieved:** 2026-05-02
+**Source:** [Apple HIG: Accessibility](https://developer.apple.com/design/human-interface-guidelines/accessibility)
+**Retrieved:** 2026-05-05
 
-**Check.** Flag visible text color/background pairs that are likely below 4.5:1 for normal text or below 3:1 for large text. Common examples include light gray text on white, secondary opacity text on tinted backgrounds, or low-alpha foregrounds over materials.
+**Check.** Flag visible text color/background pairs that are likely too low contrast for comfortable reading across system appearances and accessibility settings. Common examples include light gray text on white, secondary opacity text on tinted backgrounds, or low-alpha foregrounds over materials.
 
 **Why.** Insufficient contrast prevents many users from reading text reliably.
 
@@ -106,8 +104,6 @@ Text("Due today")
     .foregroundStyle(.primary)
     .background(.regularMaterial)
 ```
-
-**WCAG:** WCAG 2.2 - Contrast Minimum
 
 ## CLR-A11Y-002 - Avoid red/green as the only distinction
 

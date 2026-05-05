@@ -1,4 +1,4 @@
 interface:
   display_name: "EB Validate"
-  short_description: "Correct analyzer findings in place and generate an issue-focused HTML report"
-  default_prompt: "Use $evenbetter-validate to validate every actionable finding from an EvenBetter iOS analysis report, correct severity and guideline references directly in analyze-{N}.json, reject unsupported findings in analyzer state, and generate the HTML browser report."
+  short_description: "Correct analyzer findings and generate the EvenBetter iOS HIG HTML report"
+  default_prompt: "Use $evenbetter-validate to validate every actionable finding from an EvenBetter iOS HIG analysis report, dispatch specialized validator sub-agents when available, correct severity, guideline references, and html_report_data directly in analyze-{N}.json, reject unsupported findings in analyzer state, and generate the HTML browser report."

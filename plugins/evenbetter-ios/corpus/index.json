@@ -112,18 +112,18 @@
     "title": "Add hints for non-obvious actions"
   },
   {
-    "anchor": "#clr-a11y-001-meet-wcag-aa-text-contrast",
+    "anchor": "#clr-a11y-001-maintain-readable-text-contrast",
     "clause_id": "CLR-A11Y-001",
     "corpus_version": "development",
     "dimension": "accessibility",
     "domain": "color-theming",
     "file_path": "corpus/ios/color-theming.md",
     "platform": "ios",
-    "retrieved": "2026-05-02",
+    "retrieved": "2026-05-05",
     "severity": "error",
-    "source_label": "WCAG 2.2: Contrast Minimum",
-    "source_url": "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html",
-    "title": "Meet WCAG AA text contrast"
+    "source_label": "Apple HIG: Accessibility",
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/accessibility",
+    "title": "Maintain readable text contrast"
   },
   {
     "anchor": "#clr-a11y-002-avoid-redgreen-as-the-only-distinction",
@@ -189,10 +189,10 @@
     "domain": "color-theming",
     "file_path": "corpus/ios/color-theming.md",
     "platform": "ios",
-    "retrieved": "2026-05-02",
+    "retrieved": "2026-05-05",
     "severity": "warning",
-    "source_label": "WCAG 2.2: Use of Color",
-    "source_url": "https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html",
+    "source_label": "Apple HIG: Accessibility",
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/accessibility",
     "title": "Do not use color as the only indicator"
   },
   {
@@ -301,10 +301,10 @@
     "domain": "layout-interaction",
     "file_path": "corpus/ios/layout-interaction.md",
     "platform": "ios",
-    "retrieved": "2026-05-02",
+    "retrieved": "2026-05-05",
     "severity": "error",
-    "source_label": "WCAG 2.2: Target Size Minimum",
-    "source_url": "https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html",
+    "source_label": "Apple HIG: Accessibility",
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/accessibility",
     "title": "Enforce 44x44 accessibility hit areas"
   },
   {

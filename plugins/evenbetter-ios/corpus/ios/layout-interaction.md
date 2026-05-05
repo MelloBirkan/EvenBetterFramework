@@ -2,7 +2,7 @@
 corpus_version: development
 domain: layout-interaction
 platform: ios
-last_reviewed: 2026-05-02
+last_reviewed: 2026-05-05
 ---
 
 # iOS SwiftUI Layout And Interaction Corpus
@@ -141,12 +141,12 @@ if items.isEmpty {
 **Severity:** error
 **Dimension:** accessibility
 **Platform:** ios
-**Source:** [WCAG 2.2: Target Size Minimum](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html)
-**Retrieved:** 2026-05-02
+**Source:** [Apple HIG: Accessibility](https://developer.apple.com/design/human-interface-guidelines/accessibility)
+**Retrieved:** 2026-05-05
 
 **Check.** Flag accessibility elements with gesture or button behavior whose tappable area is less than 44x44 points, even if the visible icon appears adequate.
 
-**Why.** Small targets are difficult for users with motor disabilities and conflict with accessible target-size guidance.
+**Why.** Small targets are difficult for users with motor disabilities and conflict with iOS accessibility guidance for comfortable touch interaction.
 
 **Correct code.**
 
@@ -156,8 +156,6 @@ Image(systemName: "xmark")
     .contentShape(Rectangle())
     .accessibilityLabel("Close")
 ```
-
-**WCAG:** WCAG 2.2 - Target Size Minimum
 
 ## LAY-A11Y-002 - Keep accessible content inside safe areas
 

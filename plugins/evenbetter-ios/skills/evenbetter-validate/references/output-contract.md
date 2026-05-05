@@ -20,7 +20,8 @@ Use `analyze-{N}.json` as the source of truth. For every actionable finding:
 
 - Keep real issues in `files[].violations[]`.
 - Correct `severity` in place when evidence shows the analyzer chose the wrong severity.
-- Correct `guideline_reference` in place when the issue is real but the URL or label points to the wrong HIG, developer.apple.com, or WCAG source.
+- Correct `guideline_reference` in place when the issue is real but the URL or label points to the wrong Apple HIG or Apple Developer source.
+- Correct `html_report_data` in place when analyzer dashboard or scan-context fields are missing, stale, or inconsistent with the selected analyzer report.
 - Leave `ai_fix_prompt` unchanged when accurate.
 - Reject unsupported findings by mutating only the existing `state` object:
 
@@ -61,8 +62,41 @@ After corrections, recompute analyzer aggregate fields from non-rejected, non-fi
 - `files[].a11y_score`
 - project `overall_score`, `ui_score`, `ux_score`, and `a11y_score`
 - `executive_summary` when rejected or corrected findings materially change the user-facing compliance posture
+- `html_report_data.summary`
+- `html_report_data.scan_context.files_scanned`
+- `html_report_data.project_name`, `project_path`, `framework`, `hig_standard`, and `scan_date` when missing or inconsistent with the analyzer run
 
 Do not rewrite code snippets, fix descriptions, fix code, summaries, or `ai_fix_prompt` unless the analyzer field is directly wrong and the correction is explicitly permitted above.
+
+## Analyzer HTML Template Data
+
+Validate must verify the selected analyzer report includes `html_report_data` for the adapted EvenBetter iOS HIG HTML template. If missing or stale, add or correct only this top-level object; do not duplicate the issue list inside it.
+
+Required `html_report_data` fields:
+
+- `brand: "EvenBetter"`
+- `report_title: "EvenBetter iOS HIG Report"`
+- `standard_label: "Apple Human Interface Guidelines"`
+- `project_name`
+- `project_path`
+- `framework`
+- `hig_standard`
+- `scan_date`
+- `summary.total`
+- `summary.critical`
+- `summary.high`
+- `summary.medium`
+- `summary.low`
+- `scan_context.frameworks`
+- `scan_context.framework_versions`
+- `scan_context.design_systems`
+- `scan_context.component_patterns`
+- `scan_context.scan_duration`
+- `scan_context.files_scanned`
+- `scan_context.confidence`
+- `scan_context.custom_utilities`
+
+Issue-card fields remain sourced from `files[].violations[]`: `id`, `summary`, `severity`, `rule_id`, `dimension`, `file_path`, `line_number`, `code_snippet`, `fix_description`, optional `fix_code`, `ai_fix_prompt`, and `guideline_reference`.
 
 ## Manifest
 
@@ -84,9 +118,10 @@ Generate `projectPath/.evenbetter/evenbetter-validate-{N}.html` with `scripts/ge
 - Read `analyze-{N}.json` and optional `manifest.json`.
 - Render only current issues: `state.status = "open"` or `state.status = "deferred"`.
 - Exclude `fixed`, `rejected`, and `duplicate_of` findings.
-- Derive template-only fields such as display title, description, recommended fix, language, and scan context without adding them to analyzer JSON.
+- Use `html_report_data` for the EvenBetter iOS HIG dashboard and scan context, correcting it before generation when needed.
+- Derive issue-card display fields such as title, description, recommended fix, language, HIG criteria, and HIG area from analyzer violations.
 - Render an inline HIG/evidence link per issue from `guideline_reference.url` when present.
-- Keep the previous visual standard: summary dashboard, severity filtering, search, AI prompt copying, code/fix comparison, and the same compact inline evidence style.
+- Keep the supplied visual standard adapted to EvenBetter and iOS HIG: summary dashboard, severity filtering, search, AI prompt copying, code/fix comparison, and the same compact inline evidence style.
 - Avoid validation-status UI: no `kept`, `dropped`, `severity_adjusted`, `not_validated`, confidence, retention, or validation decision blocks.
 
 Run the generator with:

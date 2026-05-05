@@ -41,10 +41,10 @@ Text("Account").font(.title2)
 ```
 ````
 
-Optional:
+Optional note for clauses that intentionally cite supporting standards in addition to the Apple source:
 
 ```markdown
-**WCAG:** WCAG 2.2 - Target Size Minimum
+**Standards note:** Supporting mobile accessibility source
 ```
 
 ## Taxonomy
@@ -82,9 +82,9 @@ Keep IDs stable. If a rule is renamed but its detection meaning remains the same
 
 - Add clauses to exactly one domain file.
 - Use one source URL per clause and record the retrieval date.
-- Prefer Apple HIG, Apple Developer, or W3C WCAG sources.
+- Prefer Apple HIG or Apple Developer sources. Use non-Apple supporting standards only when there is no precise Apple source for the iOS rule, and keep the clause framed for SwiftUI/iOS behavior.
 - Keep examples short and SwiftUI-specific.
 - Update `index.json` whenever clause metadata changes.
 - Run the corpus consistency checks documented in the repository `AGENTS.md` before committing.
 
-Conceptually, the taxonomy supports traceability from mobile usability criteria and accessibility standards into concrete SwiftUI checks, including the kind of design-heuristic structure discussed by Hoehle and Venkatesh and mobile accessibility mappings such as WCAG2Mobile.
+Conceptually, the taxonomy supports traceability from Apple platform guidance and mobile accessibility standards into concrete SwiftUI checks, including the kind of design-heuristic structure discussed by Hoehle and Venkatesh and mobile accessibility mappings.

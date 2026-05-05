@@ -15,7 +15,7 @@ Every violation object carries a stable identity and a mutable state block in bo
 | `line_number` | integer | 1-based line number of the offending code |
 | `code_snippet` | string | the offending code |
 | `summary` | string | one-sentence description |
-| `guideline_reference` | object | `{ "label": string, "url": string }` - URL must resolve to a real HIG / developer.apple.com / WCAG page |
+| `guideline_reference` | object | `{ "label": string, "url": string }` - URL must resolve to a real Apple HIG or Apple Developer page |
 | `fix_description` | string | recommended remediation in prose |
 | `ai_fix_prompt` | string | analyzer-generated, self-contained prompt another AI could follow to apply the fix |
 | `state` | object | Decision state for this violation. |
@@ -24,7 +24,7 @@ Full mode also requires:
 
 | Field | Type | Allowed values / shape |
 |---|---|---|
-| `why_fix` | string | why this matters (user impact, HIG/WCAG rationale) |
+| `why_fix` | string | why this matters to iOS users and how it relates to Apple HIG, SwiftUI, or accessibility rationale |
 | `fix_code` | string | corrected code snippet |
 | `auto_fixable` | boolean | whether the fix can be applied deterministically |
 
@@ -92,7 +92,7 @@ Only analyzer, validator, and fixer skills may mutate `state`. Analyzer creates 
   "line_number": 1,
   "code_snippet": "Text(\"Title\").font(.system(size: 28))",
   "summary": "One-sentence description of the violation.",
-  "why_fix": "Why this matters to users and how it relates to HIG or WCAG.",
+  "why_fix": "Why this matters to iOS users and how it relates to Apple HIG, SwiftUI, or accessibility rationale.",
   "guideline_reference": {
     "label": "Apple HIG: Typography",
     "url": "https://developer.apple.com/design/human-interface-guidelines/typography"
@@ -149,6 +149,6 @@ Only analyzer, validator, and fixer skills may mutate `state`. Analyzer creates 
 - `rule_id` must follow `<PREFIX>-<DIMENSION>-<NNN>`, where `<DIMENSION>` is `UI`, `UX`, or `A11Y`, and must match a clause ID in `../../corpus/index.json`.
 - `line_number` must be a positive 1-based integer.
 - `code_snippet` must be the offending code, not a paraphrase.
-- `guideline_reference.url` must be a verified Apple HIG, developer.apple.com, or WCAG URL.
+- `guideline_reference.url` must be a verified Apple HIG or Apple Developer URL.
 - `ai_fix_prompt` must be non-empty, grounded in the violation fields, and specific enough to execute without adding new remediation requirements.
 - `state.status = "duplicate_of"` requires `state.duplicateOf`; every other status requires `state.duplicateOf = null`.
