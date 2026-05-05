@@ -14,6 +14,8 @@ projectPath/.evenbetter/evenbetter-validate-{N}.html
 
 The HTML path intentionally keeps the historical filename for compatibility, but the page content is an issue report, not a validation-status report.
 
+Legacy compatibility: older skill versions wrote `.evenbetter/evenbetter-validate-{N}.json` files with `kept`, `severity_adjusted`, and `dropped` decision buckets. New validator runs must not create those JSON files, but the HTML generator may accept one as `--validation` input, or as the `--analyze` input when it can resolve the paired analyzer report, so existing validated issue data can still populate the browser report.
+
 ## Analyzer JSON Corrections
 
 Use `analyze-{N}.json` as the source of truth. For every actionable finding:
@@ -118,9 +120,11 @@ Generate `projectPath/.evenbetter/evenbetter-validate-{N}.html` with `scripts/ge
 - Read `analyze-{N}.json` and optional `manifest.json`.
 - Render only current issues: `state.status = "open"` or `state.status = "deferred"`.
 - Exclude `fixed`, `rejected`, and `duplicate_of` findings.
+- Tolerate legacy per-finding visible states or validation decisions such as `validated`, `kept`, and `severity_adjusted` when regenerating HTML from older reports.
+- When a legacy validation report is supplied, include the validator-kept and severity-adjusted issue cards, exclude dropped findings, and source issue details and `ai_fix_prompt` from each result's `original_violation` when the paired analyzer report cannot be loaded.
 - Use `html_report_data` for the EvenBetter iOS HIG dashboard and scan context, correcting it before generation when needed.
 - Derive issue-card display fields such as title, description, recommended fix, language, HIG criteria, and HIG area from analyzer violations.
-- Render an inline HIG/evidence link per issue from `guideline_reference.url` when present.
+- Render inline HIG/evidence links per issue from `guideline_reference.url`, legacy validation `supporting_links`, and validation `corpus_clause.source_url` when present.
 - Keep the supplied visual standard adapted to EvenBetter and iOS HIG: summary dashboard, severity filtering, search, AI prompt copying, code/fix comparison, and the same compact inline evidence style.
 - Avoid validation-status UI: no `kept`, `dropped`, `severity_adjusted`, `not_validated`, confidence, retention, or validation decision blocks.
 
@@ -128,6 +132,12 @@ Run the generator with:
 
 ```text
 scripts/generate_html_report.py --analyze projectPath/.evenbetter/analyze-{N}.json --manifest projectPath/.evenbetter/manifest.json --output projectPath/.evenbetter/evenbetter-validate-{N}.html
+```
+
+For legacy report regeneration only, the generator also accepts:
+
+```text
+scripts/generate_html_report.py --analyze projectPath/.evenbetter/analyze-{N}.json --validation projectPath/.evenbetter/evenbetter-validate-{N}.json --manifest projectPath/.evenbetter/manifest.json --output projectPath/.evenbetter/evenbetter-validate-{N}.html
 ```
 
 ## Chat Summary

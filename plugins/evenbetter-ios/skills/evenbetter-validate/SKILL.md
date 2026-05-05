@@ -32,7 +32,7 @@ Load only what the current phase needs:
 - `references/output-contract.md`: Analyzer JSON mutation and HTML output contract.
 - `references/architecture.md`: Analyzer-to-validator-to-fixer flow.
 - `scripts/verify_url.py`: Deterministic URL verifier for Apple guideline and developer documentation sources.
-- `scripts/generate_html_report.py`: Deterministic analyzer-only HTML issue report generator.
+- `scripts/generate_html_report.py`: Deterministic HTML issue report generator for corrected analyzer reports, with legacy validation-report compatibility.
 
 ## Validation Scope
 
@@ -76,7 +76,7 @@ For large reports, especially 20 or more actionable findings, validate in visibl
 - Do not create, revise, or backfill `ai_fix_prompt`. If it is missing or inaccurate, reject the finding with a clear `state.reason` so the analyzer can be rerun.
 - Update `.evenbetter/manifest.json` so run `N` has `validated: true`, `status: "validated"` unless already `fixed` or `partially_fixed`, and `html_report: ".evenbetter/evenbetter-validate-{N}.html"`. Preserve `latest.validate` as legacy compatibility data and set `latest.html_report` to the generated HTML path when the `latest` object exists.
 - Update `analyze-{N}.json` `run.status` to `validated` unless it is already `fixed` or `partially_fixed`.
-- Generate `.evenbetter/evenbetter-validate-{N}.html` from the corrected analyzer JSON. The HTML must render current issues, not validation status.
+- Generate `.evenbetter/evenbetter-validate-{N}.html` from the corrected analyzer JSON. The HTML must render current issues and their analyzer `ai_fix_prompt` values, not validation status. For legacy validation JSON reports, the generator may read kept/severity-adjusted validation buckets only to recover the same issue-card data and evidence links.
 - In interactive chat, after a successful run, provide a concise summary of current issues remaining, severities corrected, guideline references corrected, and findings rejected. Include the HTML path, tell the user they can open it in a browser by holding Command and clicking the left mouse button, and tell them to use `$evenbetter-fix` if they want to apply corrections.
 
 Load `references/workflow.md` next.

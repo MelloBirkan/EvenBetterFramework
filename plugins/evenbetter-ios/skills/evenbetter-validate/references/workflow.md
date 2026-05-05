@@ -228,6 +228,8 @@ scripts/generate_html_report.py --analyze projectPath/.evenbetter/analyze-{N}.js
 
 The HTML report is a derived view of current issues using the EvenBetter iOS HIG adaptation of the supplied template. It must include only analyzer findings with `state.status = "open"` or `state.status = "deferred"`, render issue-level HIG/evidence links from `guideline_reference.url`, use `html_report_data` for dashboard and scan-context fields, and avoid validation-status language.
 
+When regenerating HTML for older projects that still have `.evenbetter/evenbetter-validate-{N}.json`, pass that file through the generator's optional `--validation` argument if needed. The visual report must still remain issue-focused: include kept and severity-adjusted legacy findings as issue cards, populate their analyzer `ai_fix_prompt` values from `original_violation`, include legacy supporting evidence links, and exclude dropped findings.
+
 In interactive chat, keep the response concise:
 
 ```text
@@ -254,6 +256,7 @@ If context is compacted, preserve these facts:
 - revalidating an already validated run requires `revalidate: true`
 - validation does not create `.evenbetter/evenbetter-validate-{N}.json`
 - HTML report path is `.evenbetter/evenbetter-validate-{N}.html`
+- HTML generation can read old validation JSON only as compatibility input, never as a new output artifact
 - every actionable finding is validated, regardless of severity
 - canonical threshold is `0.7`
 - real issues remain analyzer violations

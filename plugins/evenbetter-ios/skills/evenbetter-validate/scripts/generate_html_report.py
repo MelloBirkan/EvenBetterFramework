@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Generate comprehensive EvenBetter iOS HIG HTML reports with a bold modern aesthetic.
 
-The report is a derived artifact. It reads the corrected analyzer JSON,
-renders only current issues, and keeps rejected, fixed, and duplicate findings
-out of the browser view.
+The report is a derived artifact. It reads the corrected analyzer JSON, or a
+legacy validation JSON when older skill output is supplied, renders current
+issues, and keeps rejected, fixed, duplicate, and dropped findings out of the
+browser view.
 """
 
 from __future__ import annotations
@@ -11,11 +12,13 @@ from __future__ import annotations
 import argparse
 import json
 from datetime import datetime, timezone
+from html import escape
 from pathlib import Path
 from typing import Any
 
 
-VISIBLE_STATES = {"open", "deferred"}
+HIDDEN_STATES = {"fixed", "rejected", "duplicate_of", "duplicate"}
+LEGACY_VISIBLE_DECISIONS = {"kept", "severity_adjusted", "downgraded"}
 SEVERITY_TO_TEMPLATE = {
     "error": "critical",
     "warning": "high",
@@ -61,14 +64,51 @@ def _language_for_file(file_path: str) -> str:
     }.get(suffix, "plaintext")
 
 
+def _looks_like_validation_report(report: dict[str, Any]) -> bool:
+    return "files" not in report and any(
+        isinstance(report.get(bucket), list)
+        for bucket in ("kept", "severity_adjusted", "downgraded", "dropped")
+    )
+
+
 def _visible_issue(violation: dict[str, Any]) -> bool:
     state = violation.get("state") or {}
     status = state.get("status", "open") if isinstance(state, dict) else "open"
-    return status in VISIBLE_STATES
+    normalized = str(status or "open").lower()
+    return normalized not in HIDDEN_STATES
+
+
+def _validation_decision(validation: dict[str, Any] | None) -> str:
+    if not isinstance(validation, dict):
+        return ""
+    return str(validation.get("decision") or validation.get("_bucket") or "").lower()
+
+
+def _render_from_validation(validation: dict[str, Any] | None) -> bool:
+    return _validation_decision(validation) in LEGACY_VISIBLE_DECISIONS
+
+
+def _skip_from_validation(validation: dict[str, Any] | None) -> bool:
+    return _validation_decision(validation) in {"dropped", "rejected"}
 
 
 def _template_severity(severity: Any) -> str:
     return SEVERITY_TO_TEMPLATE.get(str(severity or "").lower(), "medium")
+
+
+def _source_severity(
+    violation: dict[str, Any],
+    validation: dict[str, Any] | None,
+) -> str:
+    if isinstance(validation, dict):
+        assessment = validation.get("severity_assessment")
+        if isinstance(assessment, dict) and assessment.get("correct"):
+            return str(assessment.get("correct"))
+        if validation.get("corrected_severity"):
+            return str(validation.get("corrected_severity"))
+        if validation.get("downgraded_severity"):
+            return str(validation.get("downgraded_severity"))
+    return str(violation.get("severity", "info"))
 
 
 def _add_evidence_link(
@@ -94,7 +134,10 @@ def _add_evidence_link(
     )
 
 
-def _evidence_links(violation: dict[str, Any]) -> list[dict[str, str]]:
+def _evidence_links(
+    violation: dict[str, Any],
+    validation: dict[str, Any] | None = None,
+) -> list[dict[str, str]]:
     links: list[dict[str, str]] = []
     seen: set[str] = set()
     guideline = violation.get("guideline_reference") or {}
@@ -106,51 +149,164 @@ def _evidence_links(violation: dict[str, Any]) -> list[dict[str, str]]:
             url=guideline.get("url"),
             reason="Primary guideline reference for this issue.",
         )
+
+    if isinstance(validation, dict):
+        corpus = validation.get("corpus_clause") or {}
+        if isinstance(corpus, dict):
+            _add_evidence_link(
+                links,
+                seen,
+                label=corpus.get("heading") or corpus.get("clause_id") or "Corpus source",
+                url=corpus.get("source_url"),
+                reason="Corpus source used while validating this issue.",
+            )
+        for link in validation.get("supporting_links") or []:
+            if not isinstance(link, dict):
+                continue
+            _add_evidence_link(
+                links,
+                seen,
+                label=link.get("label") or "Supporting evidence",
+                url=link.get("url"),
+                reason=str(link.get("reason") or "Additional validation evidence."),
+            )
     return links
 
 
-def _flatten_issues(analyzer_report: dict[str, Any]) -> list[dict[str, Any]]:
+def _validation_items(validation_report: dict[str, Any] | None) -> list[dict[str, Any]]:
+    if not isinstance(validation_report, dict):
+        return []
+
+    items: list[dict[str, Any]] = []
+    fallback_decisions = {
+        "kept": "kept",
+        "severity_adjusted": "severity_adjusted",
+        "downgraded": "severity_adjusted",
+        "dropped": "dropped",
+    }
+    for bucket in ("kept", "severity_adjusted", "downgraded", "dropped"):
+        for item in validation_report.get(bucket, []) or []:
+            if not isinstance(item, dict):
+                continue
+            normalized = dict(item)
+            normalized["_bucket"] = fallback_decisions[bucket]
+            normalized.setdefault("decision", fallback_decisions[bucket])
+            items.append(normalized)
+    return items
+
+
+def _validation_index(validation_report: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
+    by_id: dict[str, dict[str, Any]] = {}
+    for item in _validation_items(validation_report):
+        original = item.get("original_violation") or {}
+        if not isinstance(original, dict):
+            continue
+        violation_id = original.get("id")
+        if violation_id is None:
+            continue
+        normalized_id = str(violation_id)
+        if normalized_id:
+            by_id[normalized_id] = item
+    return by_id
+
+
+def _issue_id(violation: dict[str, Any], file_path: str, index: int) -> str:
+    violation_id = violation.get("id")
+    if violation_id is not None and str(violation_id):
+        return str(violation_id)
+    rule_id = str(violation.get("rule_id") or "issue")
+    line_number = str(violation.get("line_number") or "unknown")
+    path_slug = file_path.replace("/", "-") or "unknown-file"
+    return f"{rule_id}-{path_slug}-{line_number}-{index + 1}"
+
+
+def _issue_from_violation(
+    violation: dict[str, Any],
+    file_entry: dict[str, Any] | None,
+    validation: dict[str, Any] | None,
+    index: int,
+) -> dict[str, Any]:
+    file_entry = file_entry or {}
+    source_context = validation.get("source_context") if isinstance(validation, dict) else {}
+    if not isinstance(source_context, dict):
+        source_context = {}
+
+    file_path = str(
+        violation.get("file_path")
+        or file_entry.get("file_path")
+        or source_context.get("file_path")
+        or ""
+    )
+    fix_code = violation.get("fix_code")
+    fix_description = str(violation.get("fix_description") or "")
+    source_severity = _source_severity(violation, validation)
+
+    return {
+        "id": _issue_id(violation, file_path, index),
+        "title": str(violation.get("summary") or "Untitled issue"),
+        "description": str(
+            violation.get("why_fix")
+            or (validation or {}).get("reasoning")
+            or fix_description
+            or "No additional description was provided."
+        ),
+        "severity": _template_severity(source_severity),
+        "source_severity": source_severity,
+        "hig_criteria": str(violation.get("rule_id") or ""),
+        "hig_area": str(violation.get("dimension") or "").upper(),
+        "file_path": file_path,
+        "line_number": violation.get("line_number") or source_context.get("line_start") or "",
+        "code_snippet": str(violation.get("code_snippet") or source_context.get("excerpt") or ""),
+        "recommended_fix": str(fix_code or fix_description),
+        "fix_description": fix_description,
+        "ai_fix_prompt": str(violation.get("ai_fix_prompt") or ""),
+        "language": _language_for_file(file_path),
+        "dimension": str(violation.get("dimension") or ""),
+        "domain": str(violation.get("domain") or ""),
+        "rule_id": str(violation.get("rule_id") or ""),
+        "guideline_reference": violation.get("guideline_reference") or {},
+        "state": violation.get("state") or {},
+        "evidence_links": _evidence_links(violation, validation),
+    }
+
+
+def _flatten_issues(
+    analyzer_report: dict[str, Any],
+    validation_report: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    validations = _validation_index(validation_report)
+    matched_validation_ids: set[str] = set()
     issues: list[dict[str, Any]] = []
 
     for file_entry in analyzer_report.get("files", []) or []:
         if not isinstance(file_entry, dict):
             continue
         for violation in file_entry.get("violations", []) or []:
-            if not isinstance(violation, dict) or not _visible_issue(violation):
+            if not isinstance(violation, dict):
+                continue
+            validation = validations.get(str(violation.get("id") or ""))
+            if _skip_from_validation(validation):
+                continue
+            if not _visible_issue(violation) and not _render_from_validation(validation):
                 continue
 
-            file_path = str(violation.get("file_path") or file_entry.get("file_path") or "")
-            fix_code = violation.get("fix_code")
-            fix_description = str(violation.get("fix_description") or "")
+            issues.append(_issue_from_violation(violation, file_entry, validation, len(issues)))
+            violation_id = str(violation.get("id") or "")
+            if violation_id:
+                matched_validation_ids.add(violation_id)
 
-            issues.append(
-                {
-                    "id": str(violation.get("id") or ""),
-                    "title": str(violation.get("summary") or "Untitled issue"),
-                    "description": str(
-                        violation.get("why_fix")
-                        or fix_description
-                        or "No additional description was provided."
-                    ),
-                    "severity": _template_severity(violation.get("severity", "info")),
-                    "source_severity": str(violation.get("severity", "info")),
-                    "hig_criteria": str(violation.get("rule_id") or ""),
-                    "hig_area": str(violation.get("dimension") or "").upper(),
-                    "file_path": file_path,
-                    "line_number": violation.get("line_number") or "",
-                    "code_snippet": str(violation.get("code_snippet") or ""),
-                    "recommended_fix": str(fix_code or fix_description),
-                    "fix_description": fix_description,
-                    "ai_fix_prompt": str(violation.get("ai_fix_prompt") or ""),
-                    "language": _language_for_file(file_path),
-                    "dimension": str(violation.get("dimension") or ""),
-                    "domain": str(violation.get("domain") or ""),
-                    "rule_id": str(violation.get("rule_id") or ""),
-                    "guideline_reference": violation.get("guideline_reference") or {},
-                    "state": violation.get("state") or {},
-                    "evidence_links": _evidence_links(violation),
-                }
-            )
+    for validation in _validation_items(validation_report):
+        if not _render_from_validation(validation):
+            continue
+        original = validation.get("original_violation") or {}
+        if not isinstance(original, dict):
+            continue
+        violation_id = str(original.get("id") or "")
+        if violation_id and violation_id in matched_validation_ids:
+            continue
+        if not _visible_issue(original) and not _render_from_validation(validation):
+            continue
+        issues.append(_issue_from_violation(original, None, validation, len(issues)))
 
     return issues
 
@@ -176,14 +332,15 @@ def _manifest_run(manifest: dict[str, Any] | None, run_number: int | None) -> di
 def build_report_data(
     analyzer_report: dict[str, Any],
     manifest: dict[str, Any] | None,
+    validation_report: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    issues = _flatten_issues(analyzer_report)
+    issues = _flatten_issues(analyzer_report, validation_report)
     severity_counts = _severity_counts(issues)
     run = analyzer_report.get("run") or {}
-    analyzer_run = run.get("number")
+    analyzer_run = run.get("number") or (validation_report or {}).get("analyzer_run")
     manifest_run = _manifest_run(manifest, analyzer_run if isinstance(analyzer_run, int) else None)
-    project_path = str(analyzer_report.get("project_path") or "")
-    created_at = run.get("createdAt")
+    project_path = str(analyzer_report.get("project_path") or (validation_report or {}).get("project_path") or "")
+    created_at = run.get("createdAt") or (validation_report or {}).get("createdAt")
     if not created_at:
         created_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -248,22 +405,17 @@ def build_report_data(
 def build_html(data: dict[str, Any]) -> str:
     """Build the complete HTML document with bold modern aesthetic."""
     json_data = _safe_script_json(data)
+    project_name = escape(str(data.get("project_name") or "Unknown Project"))
 
     template = """<!DOCTYPE html>
-<html lang="en" x-data="reportApp()" x-init="initApp()" :class="{ 'dark': darkMode }">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EvenBetter iOS HIG Report | {{ data.project_name }}</title>
+    <title>EvenBetter iOS HIG Report | __REPORT_PROJECT_NAME__</title>
 
     <!-- Tailwind CSS v4 Browser -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
-    <!-- Alpine.js Collapse Plugin (must load before Alpine) -->
-    <script defer src="https://unpkg.com/@alpinejs/collapse"></script>
-
-    <!-- Alpine.js -->
-    <script defer src="https://unpkg.com/alpinejs"></script>
 
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -341,6 +493,13 @@ def build_html(data: dict[str, Any]) -> str:
 
         body {
             font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .report-root {
+            min-height: 100vh;
             background: var(--bg-primary);
             color: var(--text-primary);
             transition: background-color 0.3s ease, color 0.3s ease;
@@ -597,7 +756,8 @@ def build_html(data: dict[str, Any]) -> str:
         }
     </style>
 </head>
-<body class="min-h-screen antialiased selection:bg-[var(--accent)] selection:text-black">
+<body class="min-h-screen">
+    <div x-data="window.reportApp()" x-init="initApp()" :class="{ 'dark': darkMode }" class="report-root antialiased selection:bg-[var(--accent)] selection:text-black">
 
     <!-- Geometric Background Accents -->
     <div class="geo-accent" style="top: -200px; right: -100px;"></div>
@@ -721,7 +881,7 @@ def build_html(data: dict[str, Any]) -> str:
         </section>
 
         <!-- Scan Context Section (Collapsible) -->
-        <section class="glass-card rounded-xl mb-6 overflow-hidden" x-show="data.scan_context" x-data="{ contextExpanded: false }">
+        <section class="glass-card rounded-xl mb-6 overflow-hidden" x-show="data.scan_context">
             <!-- Header -->
             <div @click="contextExpanded = !contextExpanded"
                  class="w-full p-4 flex items-center justify-between cursor-pointer select-none hover:opacity-90">
@@ -869,7 +1029,7 @@ def build_html(data: dict[str, Any]) -> str:
         </section>
 
         <!-- AI Prompts Quick Reference Section -->
-        <section class="glass-card rounded-xl mb-6 overflow-hidden" x-data="{ promptsExpanded: false }">
+        <section class="glass-card rounded-xl mb-6 overflow-hidden">
             <!-- Header (Always Visible) -->
             <div class="w-full p-5 flex items-center justify-between select-none"
                  style="background: var(--accent-muted);">
@@ -1134,11 +1294,14 @@ def build_html(data: dict[str, Any]) -> str:
         </div>
     </div>
 
+    </div>
+
     <script>
         // Inject report data from Python
         const reportData = __REPORT_DATA__;
+        window.reportData = reportData;
 
-        function reportApp() {
+        window.reportApp = function reportApp() {
             return {
                 data: reportData,
                 darkMode: true,
@@ -1146,6 +1309,8 @@ def build_html(data: dict[str, Any]) -> str:
                 filters: {
                     severity: []
                 },
+                contextExpanded: false,
+                promptsExpanded: false,
                 toast: {
                     visible: false,
                     message: ''
@@ -1291,8 +1456,8 @@ def build_html(data: dict[str, Any]) -> str:
                 async copyAllPrompts() {
                     try {
                         const allPrompts = this.data.issues.map(issue =>
-                            `[#${issue.id}] ${issue.title}\n${issue.ai_fix_prompt}`
-                        ).join('\n\n---\n\n');
+                            `[#${issue.id}] ${issue.title}\\n${issue.ai_fix_prompt}`
+                        ).join('\\n\\n---\\n\\n');
                         await navigator.clipboard.writeText(allPrompts);
                         this.showToast(`${this.data.issues.length} prompts copied!`);
                     } catch (err) {
@@ -1329,22 +1494,41 @@ def build_html(data: dict[str, Any]) -> str:
                     }, 2500);
                 }
             }
-        }
+        };
     </script>
+
+    <!-- Alpine loads after reportApp is defined so file:// reports initialize reliably. -->
+    <script src="https://unpkg.com/@alpinejs/collapse"></script>
+    <script src="https://unpkg.com/alpinejs"></script>
 </body>
 </html>
 """
-    return template.replace("__REPORT_DATA__", json_data)
+    return template.replace("__REPORT_DATA__", json_data).replace("__REPORT_PROJECT_NAME__", project_name)
 
 
 def generate_html_report(
     analyze_path: Path,
     output_path: Path,
     manifest_path: Path | None = None,
+    validation_path: Path | None = None,
 ) -> str:
     analyzer_report = _read_json(analyze_path)
+    validation_report = _read_json(validation_path) if validation_path and validation_path.exists() else None
+    if _looks_like_validation_report(analyzer_report):
+        validation_report = analyzer_report
+        paired_path = validation_report.get("input_report") or validation_report.get("validates")
+        if isinstance(paired_path, str) and paired_path:
+            candidate = Path(paired_path)
+            if not candidate.is_absolute():
+                candidate = analyze_path.parent / candidate
+            if candidate.exists():
+                analyzer_report = _read_json(candidate)
+            else:
+                analyzer_report = {}
+        else:
+            analyzer_report = {}
     manifest = _read_json(manifest_path) if manifest_path and manifest_path.exists() else None
-    data = build_report_data(analyzer_report, manifest)
+    data = build_report_data(analyzer_report, manifest, validation_report)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(build_html(data), encoding="utf-8")
     return str(output_path)
@@ -1352,12 +1536,18 @@ def generate_html_report(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate an EvenBetter HTML issue report.")
-    parser.add_argument("--analyze", required=True, type=Path, help="Path to .evenbetter/analyze-{N}.json")
+    parser.add_argument(
+        "--analyze",
+        required=True,
+        type=Path,
+        help="Path to .evenbetter/analyze-{N}.json or a legacy evenbetter-validate-{N}.json",
+    )
     parser.add_argument("--output", required=True, type=Path, help="Path to write .evenbetter/evenbetter-validate-{N}.html")
     parser.add_argument("--manifest", type=Path, help="Optional path to .evenbetter/manifest.json")
+    parser.add_argument("--validation", type=Path, help="Optional legacy .evenbetter/evenbetter-validate-{N}.json")
     args = parser.parse_args()
 
-    output = generate_html_report(args.analyze, args.output, args.manifest)
+    output = generate_html_report(args.analyze, args.output, args.manifest, args.validation)
     print(json.dumps({"html_report": output}, sort_keys=True))
     return 0
 
