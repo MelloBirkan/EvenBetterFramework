@@ -710,20 +710,14 @@ def build_html(data: dict[str, Any]) -> str:
                                 <p class="mt-2 text-xs font-mono" style="color: var(--text-muted);" x-show="issue.validation.confidence !== null && issue.validation.confidence !== undefined">
                                     Confidence: <span x-text="Math.round(issue.validation.confidence * 100) + '%'"></span>
                                 </p>
-                                <div class="mt-3" x-show="issue.supporting_links && issue.supporting_links.length">
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <i data-lucide="link" class="w-3 h-3" style="color: var(--accent);"></i>
-                                        <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--text-muted);">Evidence Links</span>
-                                    </div>
-                                    <div class="flex flex-wrap gap-2">
-                                        <template x-for="link in issue.supporting_links" :key="link.url">
-                                            <a :href="link.url" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono transition-colors hover:opacity-80" style="background: var(--accent-muted); color: var(--accent);" :title="link.reason || link.url">
-                                                <i data-lucide="external-link" class="w-3 h-3"></i>
-                                                <span x-text="truncate(link.label, 44)"></span>
-                                            </a>
-                                        </template>
-                                    </div>
-                                </div>
+                                <p class="mt-2 text-xs font-mono" style="color: var(--text-muted);" x-show="issue.supporting_links && issue.supporting_links.length">
+                                    Evidence:
+                                    <template x-for="(link, index) in issue.supporting_links" :key="link.url">
+                                        <span>
+                                            <a :href="link.url" target="_blank" rel="noopener noreferrer" class="hover:underline" style="color: var(--accent);" :title="link.reason || link.url" x-text="truncate(link.label, 44)"></a><span x-show="index < issue.supporting_links.length - 1"> · </span>
+                                        </span>
+                                    </template>
+                                </p>
                             </div>
                             <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
                                 <div class="rounded-lg overflow-hidden" style="background: var(--bg-tertiary); border: 1px solid var(--error); border-opacity: 0.3;">
