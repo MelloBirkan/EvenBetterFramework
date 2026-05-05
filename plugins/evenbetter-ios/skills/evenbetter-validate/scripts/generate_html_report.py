@@ -220,10 +220,129 @@ def _issue_id(violation: dict[str, Any], file_path: str, index: int) -> str:
     return f"{rule_id}-{path_slug}-{line_number}-{index + 1}"
 
 
+def _text_from_any(value: Any) -> str:
+    if isinstance(value, str):
+        return value
+    if value is None:
+        return ""
+    return str(value)
+
+
+def _first_text(*values: Any) -> str:
+    for value in values:
+        text = _text_from_any(value)
+        if text.strip():
+            return text
+    return ""
+
+
+def _int_from_any(value: Any) -> int | None:
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        return None
+    return number if number > 0 else None
+
+
+def _source_context_from_violation(violation: dict[str, Any]) -> dict[str, Any]:
+    for key in ("source_context", "sourceContext", "source", "location"):
+        value = violation.get(key)
+        if isinstance(value, dict):
+            return value
+    return {}
+
+
+def _code_from_source_file(
+    project_path: str,
+    file_path: str,
+    violation: dict[str, Any],
+    source_context: dict[str, Any],
+) -> str:
+    if not project_path or not file_path:
+        return ""
+
+    project_root = Path(project_path).expanduser()
+    candidate = Path(file_path).expanduser()
+    if not candidate.is_absolute():
+        candidate = project_root / candidate
+
+    try:
+        resolved_root = project_root.resolve()
+        resolved_candidate = candidate.resolve()
+        if resolved_root not in resolved_candidate.parents and resolved_candidate != resolved_root:
+            return ""
+        lines = resolved_candidate.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeDecodeError):
+        return ""
+
+    line_start = _int_from_any(
+        source_context.get("line_start")
+        or source_context.get("start_line")
+        or violation.get("line_start")
+        or violation.get("start_line")
+        or violation.get("line_number")
+    )
+    if line_start is None:
+        return ""
+
+    line_end = _int_from_any(
+        source_context.get("line_end")
+        or source_context.get("end_line")
+        or violation.get("line_end")
+        or violation.get("end_line")
+    ) or line_start
+
+    start_index = max(line_start - 1, 0)
+    end_index = min(max(line_end, line_start), len(lines))
+    if start_index >= len(lines) or start_index >= end_index:
+        return ""
+    return "\n".join(lines[start_index:end_index])
+
+
+def _code_snippet(
+    violation: dict[str, Any],
+    validation: dict[str, Any] | None,
+    project_path: str,
+    file_path: str,
+) -> str:
+    violation_context = _source_context_from_violation(violation)
+    validation_context = validation.get("source_context") if isinstance(validation, dict) else {}
+    if not isinstance(validation_context, dict):
+        validation_context = {}
+
+    explicit = _first_text(
+        violation.get("code_snippet"),
+        violation.get("current_code"),
+        violation.get("currentCode"),
+        violation.get("current_snippet"),
+        violation.get("source_code"),
+        violation.get("sourceCode"),
+        violation.get("source_snippet"),
+        violation.get("offending_code"),
+        violation.get("offendingCode"),
+        violation.get("problematic_code"),
+        violation.get("problematicCode"),
+        violation.get("snippet"),
+        violation_context.get("excerpt"),
+        violation_context.get("code"),
+        violation_context.get("snippet"),
+        violation_context.get("text"),
+        validation_context.get("excerpt"),
+        validation_context.get("code"),
+        validation_context.get("snippet"),
+        validation_context.get("text"),
+    )
+    if explicit:
+        return explicit
+
+    return _code_from_source_file(project_path, file_path, violation, violation_context or validation_context)
+
+
 def _issue_from_violation(
     violation: dict[str, Any],
     file_entry: dict[str, Any] | None,
     validation: dict[str, Any] | None,
+    project_path: str,
     index: int,
 ) -> dict[str, Any]:
     file_entry = file_entry or {}
@@ -240,6 +359,7 @@ def _issue_from_violation(
     fix_code = violation.get("fix_code")
     fix_description = str(violation.get("fix_description") or "")
     source_severity = _source_severity(violation, validation)
+    code_snippet = _code_snippet(violation, validation, project_path, file_path)
 
     return {
         "id": _issue_id(violation, file_path, index),
@@ -256,7 +376,7 @@ def _issue_from_violation(
         "hig_area": str(violation.get("dimension") or "").upper(),
         "file_path": file_path,
         "line_number": violation.get("line_number") or source_context.get("line_start") or "",
-        "code_snippet": str(violation.get("code_snippet") or source_context.get("excerpt") or ""),
+        "code_snippet": code_snippet,
         "recommended_fix": str(fix_code or fix_description),
         "fix_description": fix_description,
         "ai_fix_prompt": str(violation.get("ai_fix_prompt") or ""),
@@ -299,6 +419,7 @@ def _flatten_issues(
     validations = _validation_index(validation_report)
     matched_validation_ids: set[str] = set()
     issues: list[dict[str, Any]] = []
+    project_path = str(analyzer_report.get("project_path") or (validation_report or {}).get("project_path") or "")
 
     for file_entry in _file_entries(analyzer_report):
         for violation in file_entry.get("violations", []) or []:
@@ -310,7 +431,7 @@ def _flatten_issues(
             if not _visible_issue(violation) and not _render_from_validation(validation):
                 continue
 
-            issues.append(_issue_from_violation(violation, file_entry, validation, len(issues)))
+            issues.append(_issue_from_violation(violation, file_entry, validation, project_path, len(issues)))
             violation_id = str(violation.get("id") or "")
             if violation_id:
                 matched_validation_ids.add(violation_id)
@@ -326,7 +447,7 @@ def _flatten_issues(
             continue
         if not _visible_issue(original) and not _render_from_validation(validation):
             continue
-        issues.append(_issue_from_violation(original, None, validation, len(issues)))
+        issues.append(_issue_from_violation(original, None, validation, project_path, len(issues)))
 
     return issues
 

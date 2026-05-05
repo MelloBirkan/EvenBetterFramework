@@ -121,6 +121,7 @@ Generate `projectPath/.evenbetter/evenbetter-validate-{N}.html` with `scripts/ge
 - Populate issues from canonical `files[].violations[]`; if `files[]` is missing and top-level `violations[]` exists, group flat violations by `file_path` and render those as issue cards.
 - Render only current issues: `state.status = "open"` or `state.status = "deferred"`.
 - Exclude `fixed`, `rejected`, and `duplicate_of` findings.
+- Populate the Current Code panel from `code_snippet` when present. If older analyzer output used another source-code field name, or if the snippet is missing, use available source-context excerpts or read the cited source file from `project_path` and `file_path` at the reported line range.
 - Tolerate legacy per-finding visible states or validation decisions such as `validated`, `kept`, and `severity_adjusted` when regenerating HTML from older reports.
 - When a legacy validation report is supplied, include the validator-kept and severity-adjusted issue cards, exclude dropped findings, and source issue details and `ai_fix_prompt` from each result's `original_violation` when the paired analyzer report cannot be loaded.
 - Use `html_report_data` for the EvenBetter iOS HIG dashboard and scan context, correcting it before generation when needed.
