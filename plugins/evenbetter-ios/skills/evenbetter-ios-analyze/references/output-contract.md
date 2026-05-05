@@ -75,7 +75,7 @@ Create `projectPath/.evenbetter/` if needed, write the final analyzer report JSO
 }
 ```
 
-`critical_count` = number of violations with `severity = "error"`. `html_report_data` carries the dashboard and scan-context fields consumed by the EvenBetter iOS HIG HTML template; the issue list itself is still sourced from `files[].violations[]` so validation and fix state remain authoritative. Budget mode uses the same envelope; per-violation shape is the slimmer one from the schema. Every violation in `files[].violations[]` must include `id`, `state`, and an analyzer-generated `ai_fix_prompt`.
+`critical_count` = number of violations with `severity = "error"`. `html_report_data` carries the dashboard and scan-context fields consumed by the EvenBetter iOS HIG HTML template; the issue list itself is still sourced from `files[].violations[]` so validation and fix state remain authoritative. Budget mode uses the same envelope; per-violation shape is the slimmer one from the schema. Every violation in `files[].violations[]` must include `id`, `state`, an analyzer-generated `ai_fix_prompt`, and a `fix_options` array (1-4 entries, exactly one `recommended: true`).
 
 ## Run Fields
 
@@ -147,9 +147,9 @@ The analyzer report is the source of truth for fix prompts. Validator reports ma
 The EvenBetter browser report is based on the supplied bold modern audit template, adapted for iOS and Apple HIG. Analyze must produce all source fields needed by that template:
 
 - Dashboard/header fields come from `html_report_data`: `project_name`, `project_path`, `framework`, `hig_standard`, `scan_date`, `summary`, and `scan_context`.
-- Issue cards come from each violation: `id`, `summary`, `severity`, `rule_id`, `dimension`, `file_path`, `line_number`, `code_snippet`, `fix_description`, optional `fix_code`, `ai_fix_prompt`, and `guideline_reference`.
+- Issue cards come from each violation: `id`, `summary`, `severity`, `rule_id`, `dimension`, `file_path`, `line_number`, `code_snippet`, `fix_description`, optional `fix_code`, `ai_fix_prompt`, `fix_options`, and `guideline_reference`.
 - The HTML generator maps violation severities for display: `error -> critical`, `warning -> high`, `info -> medium`, and reserves `low` for future lower-priority issue types.
-- The HTML generator maps `rule_id` to the displayed HIG criteria, `dimension` to the displayed HIG area, and `guideline_reference.url` to the inline Evidence link.
+- The HTML generator maps `rule_id` to the displayed HIG criteria, `dimension` to the displayed HIG area, `fix_options` to the per-issue remediation menu, and `guideline_reference.url` to the inline Evidence link.
 
 Do not duplicate violations inside `html_report_data.issues`; current issues are always derived from `files[].violations[]` so validator corrections and fixer state changes remain authoritative.
 

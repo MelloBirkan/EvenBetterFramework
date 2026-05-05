@@ -18,6 +18,7 @@ Every violation object carries a stable identity and a mutable state block in bo
 | `guideline_reference` | object | `{ "label": string, "url": string }` - URL must resolve to a real Apple HIG or Apple Developer page |
 | `fix_description` | string | recommended remediation in prose |
 | `ai_fix_prompt` | string | analyzer-generated, self-contained prompt another AI could follow to apply the fix |
+| `fix_options` | array | 1-4 concrete remediation alternatives the fixer can present to the user (see Fix Options). |
 | `state` | object | Decision state for this violation. |
 
 Full mode also requires:
@@ -41,6 +42,30 @@ Each `ai_fix_prompt` must:
 - Reference the analyzer's `fix_description` and, in full mode, the intended `fix_code` direction without requiring blind copy-paste.
 - Include acceptance criteria specific enough for a fixer agent to know when the issue is remediated.
 - Stay scoped to the cited issue and avoid unrelated refactors, formatting churn, or broad redesign.
+
+## Fix Options
+
+`fix_options` is the structured menu of remediation alternatives the Fix skill presents to the user before editing. The recommended option must mirror the same intent as the violation's top-level `fix_description`, `fix_code`, and `ai_fix_prompt`; alternatives offer different but legitimate ways to satisfy the same Apple HIG, SwiftUI, or accessibility outcome.
+
+Each entry in `fix_options[]`:
+
+| Field | Type | Allowed values / shape |
+|---|---|---|
+| `id` | string | Stable kebab-case option ID, unique within the violation. Examples: `enlarge-frame`, `wrap-in-button`, `move-to-toolbar`. |
+| `label` | string | Short user-facing label (≤ 60 chars), suitable as an `AskUserQuestion` choice. |
+| `description` | string | One-sentence explanation of what changes in the source and why it satisfies the rule. |
+| `kind` | string | `minimal` \| `structural` \| `alternative-component` \| `accessibility-only` \| `defer-to-user`. |
+| `recommended` | boolean | Exactly one option per violation has `recommended: true`. |
+| `code` | string | Optional corrected snippet in full mode; omit in budget mode. |
+| `ai_fix_prompt` | string | Optional, option-specific fix prompt. When omitted, the Fix skill reuses the violation's top-level `ai_fix_prompt` for the recommended option. |
+
+Rules:
+
+- Provide 1 entry when only one reasonable remediation exists. Provide 2-4 entries when multiple legitimate paths exist (e.g., enlarge tap target vs. wrap content in a `Button` vs. promote to a Tab Bar item).
+- Mark exactly one entry `recommended: true` and place the same content in the violation's `fix_description`, `fix_code`, and `ai_fix_prompt`.
+- Keep options mutually distinct — do not list two near-identical entries.
+- Do not invent options that violate the cited rule. Each option must end with the file in compliance with `rule_id`.
+- The Fix skill may add `defer-to-user` style choices ("skip", "defer", "reject") at runtime; analyzers must not include those in `fix_options`.
 
 ## Stable ID
 
@@ -100,6 +125,24 @@ Only analyzer, validator, and fixer skills may mutate `state`. Analyzer creates 
   "fix_description": "Recommended remediation in prose.",
   "fix_code": "Text(\"Title\").font(.title)",
   "ai_fix_prompt": "Self-contained prompt for another AI to apply the fix.",
+  "fix_options": [
+    {
+      "id": "use-dynamic-type",
+      "label": "Use Dynamic Type token (.title)",
+      "description": "Replace the fixed point size with the .title text style so the label scales with user settings.",
+      "kind": "minimal",
+      "recommended": true,
+      "code": "Text(\"Title\").font(.title)"
+    },
+    {
+      "id": "custom-scaled-font",
+      "label": "Adopt @ScaledMetric for custom size",
+      "description": "Keep the visual weight but make the size respect Dynamic Type via @ScaledMetric.",
+      "kind": "structural",
+      "recommended": false,
+      "code": "@ScaledMetric var titleSize: CGFloat = 28\nText(\"Title\").font(.system(size: titleSize))"
+    }
+  ],
   "auto_fixable": true,
   "state": {
     "status": "open",
@@ -130,6 +173,15 @@ Only analyzer, validator, and fixer skills may mutate `state`. Analyzer creates 
   },
   "fix_description": "Recommended remediation in prose.",
   "ai_fix_prompt": "Self-contained prompt for another AI to apply the fix.",
+  "fix_options": [
+    {
+      "id": "use-dynamic-type",
+      "label": "Use Dynamic Type token (.title)",
+      "description": "Replace the fixed point size with the .title text style so the label scales with user settings.",
+      "kind": "minimal",
+      "recommended": true
+    }
+  ],
   "state": {
     "status": "open",
     "decidedIn": null,
@@ -151,4 +203,6 @@ Only analyzer, validator, and fixer skills may mutate `state`. Analyzer creates 
 - `code_snippet` must be the offending code, not a paraphrase.
 - `guideline_reference.url` must be a verified Apple HIG or Apple Developer URL.
 - `ai_fix_prompt` must be non-empty, grounded in the violation fields, and specific enough to execute without adding new remediation requirements.
+- `fix_options` must contain 1-4 entries; one option must be `recommended: true`; option `id` values must be unique within the violation; `kind` must use one of the allowed values; in budget mode, omit each option's `code` field.
+- `fix_options[].label` and `fix_options[].description` must be filled, distinct between options, and aligned with the cited rule.
 - `state.status = "duplicate_of"` requires `state.duplicateOf`; every other status requires `state.duplicateOf = null`.

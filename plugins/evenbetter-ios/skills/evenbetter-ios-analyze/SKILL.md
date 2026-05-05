@@ -1,13 +1,13 @@
 ---
 name: evenbetter-ios-analyze
-description: iOS SwiftUI design-guidelines compliance analyzer for Apple Human Interface Guidelines and iOS accessibility. Use when run from or given a SwiftUI iOS project directory and asked to audit typography, color and theming, components, layout and interaction, navigation and flow, or accessibility; defaults to the current working directory when no project path is provided, spawns specialized read-only domain sub-agents when the host supports Claude Code or Codex subagents, creates the EvenBetter iOS HIG HTML-template data in the analyzer JSON, creates self-contained fix prompts directly in each JSON violation, and stores the report in the project's .evenbetter folder.
+description: iOS SwiftUI Apple HIG, UX, UI, and accessibility analyzer. Use when run from or given a SwiftUI iOS project directory and asked to audit typography, color and theming, components, layout and interaction, navigation and flow, or accessibility; defaults to the current working directory when no project path is provided, dispatches one read-only Claude Code sub-agent per iOS domain (or sequential passes when sub-agents are unavailable), uses the bundled corpus first and falls back to Ref/Exa for primary-source documentation when the corpus is uncertain, generates analyzer-owned ai_fix_prompt and fix_options for every finding, populates the EvenBetter iOS HIG html_report_data block, and stores numbered reports in the project's .evenbetter folder.
 ---
 
 # evenbetter-ios-analyze
 
 ## Overview
 
-Analyze an iOS SwiftUI project for Apple Human Interface Guidelines and iOS accessibility compliance. The analyzer reads source files without modifying them, creates the first-pass violation records and their self-contained `ai_fix_prompt` values, and writes the `html_report_data` dashboard/context fields required by the EvenBetter iOS HIG browser template. It then stores each final JSON report at `projectPath/.evenbetter/analyze-{N}.json` and updates `projectPath/.evenbetter/manifest.json`. After a successful run, do not include the JSON report body in the chat response; reply only with a brief summary that names the written report path, finding counts, and prompts the user to run `$evenbetter-validate`.
+First pass of the EvenBetter iOS audit loop. Read SwiftUI source files without modifying them, dispatch one specialized read-only sub-agent per iOS domain, produce HIG-grounded violations with both an `ai_fix_prompt` and a structured `fix_options` menu, populate `html_report_data` for the browser template, and write the numbered report to `projectPath/.evenbetter/analyze-{N}.json`. After a successful run, do not echo the JSON body in chat — reply with the brief summary defined in `references/output-contract.md` and prompt the user to run `$evenbetter-validate`.
 
 Do not edit, delete, format, generate, or execute source/project files inside `projectPath`. The only permitted writes inside `projectPath` are creating `.evenbetter/` if needed, auto-migrating a legacy `.evenbetter/analyze.json` into numbered history, writing the final report JSON to `.evenbetter/analyze-{N}.json`, and updating `.evenbetter/manifest.json`.
 
@@ -22,8 +22,8 @@ Resolve `projectPath` to an absolute path before use. If the user supplies a rel
 
 Load these files only when their phase runs:
 
-- `references/workflow.md`: Full coordinator workflow, domain dispatch, aggregation, scoring, executive summary style, and compaction-safe invariants.
-- `references/schema.md`: Violation object schema for `full` and `budget` modes.
+- `references/workflow.md`: Coordinator workflow, domain dispatch, aggregation, scoring, executive summary style, and compaction-safe invariants.
+- `references/schema.md`: Violation object schema for `full` and `budget` modes, including `fix_options`.
 - `references/output-contract.md`: Final JSON report envelope and field definitions.
 - Domain corpus modules: `../../corpus/ios/typography.md`, `../../corpus/ios/color-theming.md`, `../../corpus/ios/components-patterns.md`, `../../corpus/ios/layout-interaction.md`, `../../corpus/ios/navigation-flow.md`, and `../../corpus/ios/accessibility.md`.
 - Corpus index: `../../corpus/index.json` for stable clause metadata.
@@ -42,35 +42,47 @@ Then stop.
 
 ## Domain Analysis
 
-Run all six iOS SwiftUI domains. If the host environment supports independent sub-agents or worker contexts, such as Claude Code subagents or Codex sub-agents, spawn one specialized read-only sub-agent per domain and run them concurrently when practical. Otherwise run the same domain passes sequentially in the main agent. Each domain module is self-contained and must output only a JSON array of violation objects with analyzer-authored remediation fields, including `fix_description`, `fix_code` in full mode, and `ai_fix_prompt`. Only the analyzer orchestrator writes `.evenbetter/analyze-{N}.json` and `manifest.json`.
+Run all six iOS SwiftUI domains. When the host environment supports independent sub-agents, such as Claude Code's `Agent` tool or Codex sub-agents, spawn one specialized read-only sub-agent per domain and run them concurrently in a single message — this is the default execution path under Claude Code. When sub-agents are unavailable, run the same six domain passes sequentially in the main agent.
 
-- `typography`: load `../../corpus/ios/typography.md`
-- `color-theming`: load `../../corpus/ios/color-theming.md`
-- `components-patterns`: load `../../corpus/ios/components-patterns.md`
-- `layout-interaction`: load `../../corpus/ios/layout-interaction.md`
-- `navigation-flow`: load `../../corpus/ios/navigation-flow.md`
-- `accessibility`: load `../../corpus/ios/accessibility.md`
+In Claude Code specifically, dispatch each domain via `Agent` with `subagent_type: "general-purpose"` and pass it (1) the resolved `projectPath`, (2) the file inventory, (3) the matching domain corpus path, and (4) a strict instruction to return a JSON array only. Use parallel `Agent` calls in one message when sub-agents are available.
 
-Pass each domain the normalized `projectPath`, `mode`, and the discovered SwiftUI file list with relative paths and line-indexed contents. The domain must use only clauses from its corpus file, emit `rule_id` values matching corpus H2 clause IDs, and must not inspect unrelated platforms or emit findings outside its own `domain` value. The domain must write each `ai_fix_prompt` as a precise, self-contained prompt that another agent can follow later without inventing scope, finding context, or acceptance criteria.
+| Domain | Corpus path |
+|---|---|
+| `typography` | `../../corpus/ios/typography.md` |
+| `color-theming` | `../../corpus/ios/color-theming.md` |
+| `components-patterns` | `../../corpus/ios/components-patterns.md` |
+| `layout-interaction` | `../../corpus/ios/layout-interaction.md` |
+| `navigation-flow` | `../../corpus/ios/navigation-flow.md` |
+| `accessibility` | `../../corpus/ios/accessibility.md` |
+
+Each domain worker is read-only. Workers must use only H2 corpus clauses from their assigned file, set `rule_id` to the matching clause ID, emit findings only inside their own `domain`, and never modify source/project files, `.evenbetter` files, cache files, or notes.
+
+Each finding must include both an `ai_fix_prompt` (for autonomous fix workflows) and a `fix_options` array of 1-4 concrete remediation alternatives (for the user-facing `$evenbetter-fix` flow). One option must be `recommended: true` and must mirror the violation's top-level `fix_description`/`fix_code`/`ai_fix_prompt`. Provide alternatives whenever multiple legitimate paths satisfy the same rule (e.g., for an undersized tap target: enlarge frame, wrap content in a `Button`, promote to a Tab Bar item).
+
+## Documentation Lookup Fallbacks
+
+Prefer the bundled corpus. When a corpus clause is genuinely ambiguous for a real-world Swift snippet, the analyzer (or any domain worker) may consult primary-source Apple documentation through the host AI agent's native tools — `WebSearch` and `WebFetch` in Claude Code, equivalent native lookups in other hosts. Do not rely on third-party MCP search servers.
+
+Only use these tools to confirm a finding or correct a `guideline_reference.url`. They must not generate violations that lack a corresponding corpus clause: the analyzer's `rule_id` always maps to `../../corpus/index.json`. If documentation research uncovers a real issue without a matching corpus clause, drop the finding rather than emit an unsupported `rule_id`.
 
 ## Aggregation
 
 After all six domain arrays return:
 
-1. Validate every violation against `references/schema.md`, including non-empty analyzer-generated fix prompt fields.
-2. Reject findings whose `ai_fix_prompt` is missing, generic, or not grounded in the cited source file, rule, severity, and intended remediation.
+1. Validate every violation against `references/schema.md`, including non-empty `ai_fix_prompt` and a well-formed `fix_options` array with exactly one `recommended: true` entry.
+2. Reject findings whose `ai_fix_prompt` or recommended `fix_options` entry is missing, generic, or not grounded in the cited source file, rule, severity, and intended remediation.
 3. Add stable `id` and default `state` fields to every violation.
 4. Load `.evenbetter/manifest.json` when present and carry forward the latest prior state for matching violation IDs.
 5. Group violations by `file_path`.
-6. Compute per-file scores and project-wide `overall_score`, `ui_score`, and `a11y_score`.
+6. Compute per-file scores and project-wide `overall_score`, `ui_score`, `ux_score`, and `a11y_score`.
 7. Compute `domain_summaries`.
 8. Produce a 3-5 sentence non-technical `executive_summary`.
 9. Populate `html_report_data` for the EvenBetter iOS HIG HTML template, including project metadata, severity dashboard counts, and scan context.
 10. Store exactly that JSON object at `projectPath/.evenbetter/analyze-{N}.json`, creating `.evenbetter/` if needed.
 11. Update `.evenbetter/manifest.json` with run `N`, latest analyzer path, validation status, and state summary.
-12. Reply with a concise human-readable summary matching `references/output-contract.md`. Do not include the analyzer report JSON body in the chat response.
+12. Reply with the concise human-readable summary defined in `references/output-contract.md`. Do not include the analyzer report JSON body in the chat response.
 
-Budget mode uses the same final envelope but slimmer violation objects.
+Budget mode uses the same final envelope but slimmer violation objects (no `why_fix`, `fix_code`, `auto_fixable`, and no per-option `code`).
 
 ## Output Rules
 
@@ -92,7 +104,7 @@ Next: use $evenbetter-validate to confirm the findings and generate the HTML rep
 - Generate stable violation IDs from `rule_id`, relative `file_path`, line or symbol anchor, and normalized summary text.
 - Include `run` metadata and violation `state` objects exactly as defined in `references/output-contract.md` and `references/schema.md`.
 - Include `html_report_data` exactly as defined in `references/output-contract.md`; it provides the EvenBetter iOS HIG report dashboard and scan-context data, while issue cards are derived from violations.
-- Include a specific `ai_fix_prompt` in every violation. The validator may later judge prompt accuracy, but the analyzer is the only skill that creates fix prompts.
+- Include both a specific `ai_fix_prompt` and a structured `fix_options` array in every violation. Validators may judge their accuracy; only the analyzer creates them.
 - Never modify source or project files inside `projectPath`.
 - The only permitted project writes are numbered analyzer reports, `manifest.json`, and documented legacy report migration inside `projectPath/.evenbetter/`.
 - End the chat summary by prompting the user to run `$evenbetter-validate`; validation corrects the analyzer JSON in place and generates the browser report.

@@ -360,6 +360,7 @@ def _issue_from_violation(
     fix_description = str(violation.get("fix_description") or "")
     source_severity = _source_severity(violation, validation)
     code_snippet = _code_snippet(violation, validation, project_path, file_path)
+    fix_options = _fix_options(violation, fix_description, fix_code)
 
     return {
         "id": _issue_id(violation, file_path, index),
@@ -380,6 +381,7 @@ def _issue_from_violation(
         "recommended_fix": str(fix_code or fix_description),
         "fix_description": fix_description,
         "ai_fix_prompt": str(violation.get("ai_fix_prompt") or ""),
+        "fix_options": fix_options,
         "language": _language_for_file(file_path),
         "dimension": str(violation.get("dimension") or ""),
         "domain": str(violation.get("domain") or ""),
@@ -388,6 +390,48 @@ def _issue_from_violation(
         "state": violation.get("state") or {},
         "evidence_links": _evidence_links(violation, validation),
     }
+
+
+def _fix_options(
+    violation: dict[str, Any],
+    fix_description: str,
+    fix_code: Any,
+) -> list[dict[str, Any]]:
+    raw = violation.get("fix_options")
+    options: list[dict[str, Any]] = []
+
+    if isinstance(raw, list):
+        for entry in raw:
+            if not isinstance(entry, dict):
+                continue
+            options.append(
+                {
+                    "id": str(entry.get("id") or ""),
+                    "label": str(entry.get("label") or "Recommended fix"),
+                    "description": str(entry.get("description") or ""),
+                    "kind": str(entry.get("kind") or ""),
+                    "recommended": bool(entry.get("recommended")),
+                    "code": str(entry.get("code") or ""),
+                    "ai_fix_prompt": str(entry.get("ai_fix_prompt") or ""),
+                }
+            )
+
+    if options:
+        return options
+
+    fallback_code = str(fix_code) if isinstance(fix_code, str) else ""
+    fallback_description = fix_description or "Apply the analyzer's recommended remediation."
+    return [
+        {
+            "id": "analyzer-recommended",
+            "label": "Apply analyzer recommendation",
+            "description": fallback_description,
+            "kind": "minimal",
+            "recommended": True,
+            "code": fallback_code,
+            "ai_fix_prompt": str(violation.get("ai_fix_prompt") or ""),
+        }
+    ]
 
 
 def _file_entries(analyzer_report: dict[str, Any]) -> list[dict[str, Any]]:
@@ -1374,6 +1418,45 @@ def build_html(data: dict[str, Any]) -> str:
                                     </div>
                                     <div class="p-3 overflow-x-auto">
                                         <pre class="text-sm font-mono"><code :class="'language-' + issue.language" x-text="issue.recommended_fix"></code></pre>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Remediation Options -->
+                            <div class="mt-6" x-show="issue.fix_options && issue.fix_options.length > 0">
+                                <div class="rounded-lg overflow-hidden" style="background: var(--bg-tertiary); border: 1px solid var(--accent); border-opacity: 0.3;">
+                                    <div class="px-4 py-2 flex items-center justify-between" style="background: var(--accent-muted); border-bottom: 1px solid var(--accent); border-opacity: 0.2;">
+                                        <span class="flex items-center gap-2 text-xs font-mono uppercase tracking-wider" style="color: var(--accent);">
+                                            <i data-lucide="list-checks" class="w-3 h-3"></i>
+                                            Remediation Options
+                                        </span>
+                                        <span class="text-xs" style="color: var(--text-muted);">
+                                            $evenbetter-fix will ask which one to apply
+                                        </span>
+                                    </div>
+                                    <div class="p-4 space-y-3">
+                                        <template x-for="(option, optIndex) in issue.fix_options" :key="option.id || optIndex">
+                                            <div class="rounded-md p-3" :style="option.recommended ? 'background: var(--low-bg); border: 1px solid var(--low);' : 'background: var(--bg-secondary); border: 1px solid var(--border);'">
+                                                <div class="flex items-center justify-between gap-2 flex-wrap">
+                                                    <span class="flex items-center gap-2 text-sm font-bold" :style="option.recommended ? 'color: var(--low);' : 'color: var(--text-primary);'">
+                                                        <i data-lucide="check-circle" class="w-3 h-3" x-show="option.recommended"></i>
+                                                        <i data-lucide="circle" class="w-3 h-3" x-show="!option.recommended"></i>
+                                                        <span x-text="option.label"></span>
+                                                        <span class="text-xs px-2 py-0.5 rounded font-mono uppercase tracking-wider" style="background: var(--bg-tertiary); color: var(--text-muted);" x-text="option.kind"></span>
+                                                        <span x-show="option.recommended" class="text-xs px-2 py-0.5 rounded font-mono uppercase tracking-wider" style="background: var(--low); color: var(--bg-primary);">Recommended</span>
+                                                    </span>
+                                                    <button x-show="option.code"
+                                                            @click="copyText(option.code, 'Option code copied!')"
+                                                            class="copy-btn p-1 rounded transition-colors hover:opacity-80"
+                                                            style="color: var(--text-muted);"
+                                                            title="Copy option code">
+                                                        <i data-lucide="copy" class="w-3 h-3"></i>
+                                                    </button>
+                                                </div>
+                                                <p class="mt-2 text-sm" style="color: var(--text-secondary);" x-text="option.description"></p>
+                                                <pre class="mt-2 text-sm font-mono p-2 rounded" x-show="option.code" style="background: var(--bg-tertiary);"><code :class="'language-' + issue.language" x-text="option.code"></code></pre>
+                                            </div>
+                                        </template>
                                     </div>
                                 </div>
                             </div>

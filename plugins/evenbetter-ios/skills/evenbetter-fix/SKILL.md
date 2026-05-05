@@ -1,18 +1,20 @@
 ---
 name: evenbetter-fix
-description: Workflow skill that scopes and executes agent-driven remediation from numbered EvenBetter analyzer findings in the current or supplied project directory. Use when asked to fix issues from analyze-{N}.json, apply fixes after evenbetter-validate has corrected analyzer JSON, resolve findings with sub-agents, fix only severe issues first, or coordinate remediation batches for an analyzed project with .evenbetter/manifest.json history. Defaults to the current working directory when no project path is provided.
+description: Per-issue interactive remediator for EvenBetter iOS analyzer findings in the current or supplied project directory. Use when asked to fix issues from analyze-{N}.json, apply fixes after evenbetter-validate has corrected analyzer JSON, walk through findings with the user, or coordinate remediation batches for an analyzed project with .evenbetter/manifest.json history. The skill scopes severity once, then asks per-issue which problem to address and which fix_options option to apply (with skip/defer/reject as alternatives) using Claude Code AskUserQuestion or Codex request_user_input, dispatches sub-agents per file group to apply only the user-selected options, never invents new fix prompts, and updates analyzer state and manifest after each fix. Defaults to the current working directory when no project path is provided.
 ---
 
 # evenbetter-fix
 
 ## Overview
 
-Coordinate the fix step of the EvenBetter loop after analysis and validation. Read numbered findings from the target project's `.evenbetter/analyze-{N}.json` reports, merge unresolved work across analyzer runs, ask a short scoping round before editing, plan deterministic remediation groups, and always execute source edits through sub-agents. This skill does not create additional fix prompts; it consumes analyzer-generated `ai_fix_prompt` values and modifies code for the issues the user selects.
+Coordinate the fix step of the EvenBetter loop. Read numbered findings from `.evenbetter/analyze-{N}.json`, scope once, then walk the user through findings one at a time using closed-ended choices grounded in the analyzer's `fix_options`. The user picks which issues to address and exactly how to address each one (e.g., for a small tap target: enlarge frame, wrap content in a `Button`, promote to a Tab Bar item, or skip). Sub-agents apply only the user-approved option per file group.
+
+This skill never invents new `ai_fix_prompt` or `fix_options`; both come from the analyzer report and pass through unchanged.
 
 ## Inputs
 
 - `projectPath` (optional): Filesystem path to the analyzed project. Default to the host's current working directory when omitted or `.`.
-- Optional user intent from the prompt: severity scope, domain or file filters, batch size, remediation preference, or request to use raw analyzer findings.
+- Optional user intent from the prompt: severity scope, domain or file filters, batch size, remediation preference, request to use raw analyzer findings.
 
 Resolve `projectPath` to an absolute path before use. If the user supplies a relative path, resolve it against the host's current working directory. Do not ask for a full path solely because `projectPath` is omitted or relative.
 
@@ -21,176 +23,171 @@ Resolve `projectPath` to an absolute path before use. If the user supplies a rel
 Load reports from `projectPath/.evenbetter/` in this order:
 
 1. `manifest.json` as the source of truth for numbered report history.
-2. The newest validated analyzer report, `analyze-{N}.json`, where the matching manifest run has `validated: true`.
-3. The newest analyzer report, `analyze-{N}.json`, for unvalidated findings only when validation has not run yet or the user explicitly asks for unvalidated scope.
-4. Older analyzer runs listed in the manifest for unresolved items that remain open or deferred.
+2. Newest validated analyzer report `analyze-{N}.json` (manifest run has `validated: true`).
+3. Newest unvalidated analyzer report only when validation has not run yet, or when the user explicitly asks for unvalidated scope.
+4. Older analyzer runs listed in the manifest for unresolved items still `open` or `deferred`.
 5. Legacy `analyze.json` only when no manifest exists; perform the documented auto-migration to `analyze-1.json` and initialize `manifest.json` before continuing.
 
-Treat validated analyzer JSON as the preferred source. By default, act only on current analyzer issues where `state.status` is `open`; include `deferred` only when the user explicitly opts in. Skip `fixed`, `rejected`, and `duplicate_of` findings.
+Default to `state.status = "open"` findings. Include `deferred` only when the user explicitly opts in. Skip `fixed`, `rejected`, and `duplicate_of`.
 
-Use unvalidated `analyze-{N}.json` only when validation has not run yet or when the user explicitly asks for unvalidated findings.
+Before writing any state update, reread `manifest.json` from disk. Only one analyzer/validator/fixer run writes `.evenbetter/` at a time.
 
-Before writing any state update, reread `manifest.json` from disk. EvenBetter assumes serial execution: only one analyzer, validator, or fixer run writes `.evenbetter/` at a time.
+## Step 1 — Build The Working Set
 
-## Build The Merged Working Set
+Build work items keyed by violation `id` across all manifest runs:
 
-Build work items by violation `id` across all manifest runs:
+- Keep the latest occurrence of each ID as the display/source context.
+- Preserve the originating analyzer run path so the mutable `state` can be written back there.
+- Skip `fixed`, `rejected`, `duplicate_of`. Include `deferred` only when explicitly opted in.
 
-- For each violation ID, keep the latest occurrence as the display/source context.
-- Preserve the originating analyzer run and report path where the selected violation state must be written.
-- If the latest known `state.status` is `fixed`, `rejected`, or `duplicate_of`, skip it.
-- If the latest known `state.status` is `deferred`, include it only when the user explicitly opts into deferred work.
-- If the latest known `state.status` is `open`, include it.
+Each work item must carry: `work_item_id` (== violation `id`), `source_report` path, `originating_run`, `rule_id`, `severity`, `domain`, `dimension`, `file_path`, `line_number`, `summary`, `fix_description`, optional `fix_code`, `ai_fix_prompt`, `fix_options`, `guideline_reference`, and current `state`.
 
-When reports disagree, newest analyzer state wins. Per-run analyzer files remain the source of truth for the mutable `state` block.
+Reject path traversal: resolve source files as `projectPath / file_path` and ensure they stay inside `projectPath`; resolve report paths inside `.evenbetter/` only.
 
-## Scoping Before Fixes
+## Step 2 — One-Shot Scoping
 
-Do not start remediation before a short closed-ended scoping step. If a question tool is available, use it. In Codex Plan mode, use `request_user_input`; otherwise ask concise plain-text questions and wait. Do not simulate an unavailable tool call.
+Ask scoping questions in a single turn using a question tool:
 
-Ask only what materially changes the run. Cover these decisions unless already clear from the user request:
+- **Claude Code:** `AskUserQuestion` with up to 4 questions per call, 2-4 options each. The "Other" choice is added automatically.
+- **Codex Plan mode:** `request_user_input` when available with the same shape (1-3 questions, 2-3 choices each).
+- **Otherwise:** plain-text closed questions; do not simulate an unavailable tool.
 
-- Severity scope:
-  - Most serious only, usually validated `error` findings.
-  - Serious and medium, usually `error` plus `warning`.
-  - Everything, including `info`.
-  - Selected domain or file set.
-- Prioritization:
-  - Accessibility and user-impacting issues first.
-  - Severity first.
-  - Files with the highest concentration of findings first.
-- Deferred findings:
-  - Exclude deferred findings, which is the default.
-  - Include deferred findings in this run.
-  - Review deferred findings only, without editing.
-- Remediation approach for ambiguous fixes:
-  - Apply the strict standards-compliant fix.
-  - Apply a compatibility-oriented fix.
-  - Reject selected findings as not applicable and record the reason.
-  - Defer selected findings and record the reason.
+Cover these decisions only when not already clear from the prompt. Pick at most 3-4 questions:
 
-Each closed-ended question must offer 3 or 4 concrete options with one marked as recommended when there is a safe default. Avoid open-ended questions unless the required decision cannot be represented as structured choices.
+| Question | Header | Default options |
+|---|---|---|
+| "Severity scope?" | `Severity` | `Errors only` (Recommended) / `Errors + warnings` / `Everything` / `Pick by file` |
+| "Prioritization?" | `Order` | `Accessibility first` (Recommended) / `Severity first` / `Files w/ most findings` / `Source order` |
+| "Include deferred findings?" | `Deferred` | `No` (Recommended) / `Yes` / `Review-only, no edits` |
+| "Default for ambiguous fixes?" | `Default` | `Apply recommended` (Recommended) / `Ask me each time` / `Skip ambiguous` |
 
-## Normalize Findings
+Do not ask open-ended questions. The user always retains "Other" via the question tool's built-in escape hatch.
 
-Convert each selected finding into a traceable work item before grouping:
+## Step 3 — Per-Issue Remediation Selection
 
-- `source_report`: absolute path to the report used.
-- `source_kind`: `manifest` or `analyze`.
-- `source_analyze_report`: absolute path to the originating `analyze-{N}.json`.
-- `originating_run`: analyzer run number where the mutable state must be written.
-- `work_item_id`: the stable violation `id`; use `<rule_id>:<file_path>:<line_number>` only for legacy reports without IDs.
-- `state`: the current violation state object.
-- `rule_id`, `severity`, `domain`, `dimension`, `file_path`, and `line_number`.
-- `summary`, `why_fix`, `fix_description`, `fix_code`, `ai_fix_prompt`, and `auto_fixable`; `ai_fix_prompt` must come from the analyzer report and must not be synthesized by the fixer.
-- `guideline_reference` and corpus clause/source details when available.
+For every selected work item, in remediation order, ask one closed question. This is the central loop the user expects: every code change is preceded by an explicit choice.
 
-When normalizing work items, load `../../corpus/index.json` when it exists and enrich each `rule_id` with matching `clause_id`, `corpus_version`, `source_url`, `retrieved`, `reference_file`, and `anchor`. If the index is unavailable, continue from the report's `guideline_reference` and note the missing corpus metadata in the final verification gap.
+Order remediation by:
 
-Reject path traversal. Resolve source files as `projectPath / file_path` and ensure the result stays inside `projectPath`. Resolve report paths as `projectPath/.evenbetter / filename` and ensure they stay inside `.evenbetter/`.
-
-## Plan Remediation Order
-
-Sort selected work items by:
-
-1. Severity, with `error` before `warning` before `info`.
-2. User impact, with accessibility and interaction blockers before visual cleanup.
-3. Validation state, with validated analyzer runs before explicitly requested unvalidated runs.
-4. Concentration of findings in the same file.
+1. Severity (`error` > `warning` > `info`).
+2. User impact (accessibility and interaction blockers before visual cleanup).
+3. Validation state (validated runs before unvalidated).
+4. Files with the highest concentration of findings.
 5. Source order by file path and line number.
 
-Group work items for edit safety:
+For each work item:
 
-- Same `file_path` always belongs to one group.
-- Findings that touch shared components, navigation roots, theme tokens, build settings, package files, schemas, generated files, or public APIs must be sequential unless independence is obvious.
-- Disjoint leaf files with no shared symbols, imports, or generated outputs may run in parallel.
-- If uncertain whether two groups conflict, make them sequential.
+1. Compose the question text:
 
-Present a brief execution plan before edits when the plan includes more than one group or any parallelism. The plan may reference existing analyzer `ai_fix_prompt` values, but must not create new prompts.
+   ```text
+   How do you want to fix [<rule_id>] <file_path>:<line_number> — <summary>?
+   ```
 
-## Execute Fixes
+2. Compose option list from the work item's `fix_options`:
+   - The first option is the analyzer's `recommended: true` entry, labeled `<label> (Recommended)`.
+   - Then the next 1-2 alternatives from `fix_options` in their original order.
+   - Always include a final `Skip / defer / reject` option that triggers a follow-up question (skip, defer, reject — with reason).
 
-Use the existing codebase patterns. Do not rewrite unrelated code, reformat entire files, or revert user changes. Keep each change tied to one or more work items.
+   Caps:
+   - `AskUserQuestion` allows 2-4 options. With one always-present `Skip / defer / reject`, present at most 3 `fix_options` entries. If `fix_options` has 4 entries, drop the option whose `kind` ranks lowest (`accessibility-only` > `minimal` > `structural` > `alternative-component` > `defer-to-user`) or split into two consecutive questions.
+   - If `fix_options` is empty (legacy report), present `Apply analyzer recommendation`, `Skip`, `Defer`, `Reject` and rely on `ai_fix_prompt` for the recommended path.
 
-Always spawn sub-agents for source edits:
+3. Use the option's `description` as the AskUserQuestion option `description`. When the host supports preview content, pass each option's `code` (full mode) as `preview` so the user can compare snippets side-by-side.
 
-- Spawn one worker per independent group, not per finding.
-- Give each worker exclusive file ownership for its group.
-- Tell workers they are not alone in the codebase, must not revert edits by others, and must adjust to existing changes.
-- Include only the relevant work items, analyzer `ai_fix_prompt` values, source report path, file ownership, acceptance criteria, and verification expectations.
-- Require workers to list changed files and work item IDs addressed.
+4. Record the user's choice on the work item:
+   - `selected_option_id`
+   - `selected_option_kind`
+   - `apply_decision` ∈ `apply | skip | defer | reject`
+   - For `defer` / `reject`, prompt for a one-line reason.
 
-If the environment cannot spawn sub-agents, stop before editing and report that this fixer requires sub-agent execution. Do not fall back to sequential local remediation or static prompt generation.
+The user always sees the same options that appear in the EvenBetter HTML report's per-issue remediation menu, so they can review the report first and then drive the fix loop with consistent labels.
 
-If a selected work item lacks an analyzer `ai_fix_prompt`, do not create a replacement prompt. Ask the user whether to skip, reject/defer the item, or rerun analysis/validation so the analyzer can provide a corrected prompt.
+## Step 4 — Plan And Group
 
-After each completed fix attempt, update the originating analyzer report's violation state:
+After all per-issue choices are collected:
 
-- `state.status`: `fixed`
-- `state.decidedIn`: current manifest `currentRun`
-- `state.decidedBy`: `fix-skill`
-- `state.reason`: null unless a concise fix note is useful
-- `state.duplicateOf`: null
+- Drop work items where `apply_decision` is `skip`, `defer`, or `reject`. Persist `defer` and `reject` decisions immediately in the originating analyzer report (see Step 6).
+- Group remaining `apply` work items by `file_path`. Same file is always one group.
+- Keep groups that touch shared symbols, navigation roots, theme tokens, build settings, package files, schemas, generated files, or public APIs sequential; disjoint leaf files may run in parallel.
+- When unsure if two groups conflict, make them sequential.
 
-Then update the matching manifest run summary. Set report/run status to `fixed` when no `open` or `deferred` items remain for that run; otherwise set it to `partially_fixed`.
+Present a brief execution plan to the user when the run includes more than one group or any parallelism. The plan lists per group: file, work item IDs, chosen option labels.
 
-Never claim a work item is fixed before the source change is complete and verification was attempted or the verification gap is explicitly stated.
+## Step 5 — Execute With Sub-Agents
 
-## Ambiguous Remediation
+Always spawn sub-agents to apply source edits. The fixer never edits Swift files directly.
 
-Proceed without interruption when the finding is clear, low risk, source context still matches, and the fix follows local code patterns.
+- **Claude Code:** dispatch `Agent` calls (subagent_type `general-purpose`) — one per independent group, multiple in a single message for parallel groups.
+- **Codex:** dispatch sub-agents with the equivalent isolation.
+- If the environment cannot spawn sub-agents, stop before editing and report that this fixer requires sub-agent execution.
 
-Pause for a closed-ended resolution decision when any of these are true:
+Each worker receives only:
 
-- `auto_fixable` is false or missing and the fix changes behavior.
-- The cited snippet or line no longer matches source.
-- The analyzer report is unvalidated, source evidence is ambiguous, or the fix prompt is missing.
-- Multiple plausible fixes affect product behavior, compatibility, accessibility semantics, navigation, data persistence, public APIs, or visual direction.
-- The fix would suppress the finding instead of remediating it.
+- file ownership (a single `file_path`)
+- the selected work items for that file with the user's selected option ID and label
+- the analyzer's `ai_fix_prompt` for the recommended option, or the option-specific `ai_fix_prompt` from `fix_options[]` when present
+- the analyzer's `fix_description` and `fix_code` when in full mode
+- acceptance criteria taken verbatim from the analyzer's prompt
+- a reminder that they are not alone in the codebase, must not revert other workers' edits, and must adapt to existing changes
 
-Use 3 or 4 concrete options and mark one recommended choice. Recommended defaults should favor standards-compliant, user-impacting fixes over suppression. Acceptable options include:
+Workers must list changed files and addressed work item IDs in their reply. They must not generate new fix prompts; if the option is unclear, they return the work item with a "needs-user-clarification" status and the orchestrator pauses to ask.
 
-- Apply the strict standards-compliant fix (recommended).
-- Apply a compatibility-oriented fix.
-- Reject the finding as not applicable and record the reason.
-- Defer this item and record the reason.
+## Step 6 — Persist State
 
-Persist the selected option immediately in the originating analyzer report when it is a decision rather than a source fix:
+After each work item resolution:
 
-- Reject: `state.status = "rejected"`, `state.decidedIn = currentRun`, `state.decidedBy = "user"`, `state.reason = <user reason>`.
-- Defer: `state.status = "deferred"`, `state.decidedIn = currentRun`, `state.decidedBy = "user"`, `state.reason = <user reason>`.
-
-Record the selected option in the final summary with the originating work item ID.
-
-## State Persistence
-
-Only mutate violation `state` blocks in analyzer reports. Do not rewrite older analyzer report content except for the specific `state` object of the affected violation. Do not change rule metadata, source excerpts, scoring, summaries, or validator result arrays.
+- `apply` succeeded: set `state.status = "fixed"`, `state.decidedIn = currentRun`, `state.decidedBy = "fix-skill"`, `state.reason = null` unless a concise note is useful, `state.duplicateOf = null`. Optionally record `state.applied_option_id` to remember which option was applied (extension field, ignored by older readers).
+- `skip`: leave `state.status = "open"` unchanged.
+- `defer`: `state.status = "deferred"`, `state.decidedIn = currentRun`, `state.decidedBy = "user"`, `state.reason`.
+- `reject`: `state.status = "rejected"`, `state.decidedIn = currentRun`, `state.decidedBy = "user"`, `state.reason`.
 
 After every state mutation:
 
 1. Reread `manifest.json`.
-2. Recompute the affected run's `summary` counts from its analyzer report.
-3. Update the affected run's `status` to `fixed`, `partially_fixed`, or preserve `validated`/`pending_validation` when no fix decision was made.
-4. Update the analyzer report `run.status` to match the manifest run status when applicable.
-5. Preserve `latest.analyze`, `latest.validate`, `latest.html_report`, `currentRun`, and unrelated run entries.
+2. Recompute the affected run's `summary` from its analyzer report.
+3. Update the run's `status` to `fixed` (no remaining `open` or `deferred` for that run), `partially_fixed` (some remain), or preserve `validated`/`pending_validation` when no fix decision was made.
+4. Update `analyze-{N}.json` `run.status` to match where applicable.
+5. Preserve `latest.analyze`, `latest.validate`, `latest.html_report`, `currentRun`, and unrelated runs.
 
-Project memory may mirror these decisions for convenience, but the in-repo manifest and analyzer report state are the only authoritative records.
+Only mutate violation `state` blocks in analyzer reports. Do not change rule metadata, source excerpts, scoring summaries, `ai_fix_prompt`, `fix_options`, or validator results.
 
-## Progress And Verification
+## Step 7 — Verify
 
-Track group status deterministically. In Codex, use `update_plan` when available for multi-group runs. Keep status labels aligned to the actual workflow: pending, in progress, blocked for user decision, fixed, skipped, or failed verification.
+After each group, inspect the diff for scope creep and run the most relevant available verification. For SwiftUI/iOS fixes:
 
-After each group, inspect the diff for scope creep and run the most relevant available verification. For SwiftUI/iOS fixes, prefer the project's normal build or test command when discoverable; otherwise perform static checks and explain any verification gap.
+- Prefer the project's normal build or test command when discoverable.
+- Otherwise, perform static checks (does the file still parse? do the cited symbols still exist?) and explain the verification gap.
+- When the change touched accessibility, suggest re-running `XCUIApplication.performAccessibilityAudit()` as a follow-up; do not run it on the user's behalf without permission.
+
+Never claim a finding is fixed unless the source change is complete and verification was attempted or the gap is explicitly stated.
+
+## Step 8 — Final Summary
 
 At the end, summarize:
 
 - Report source used and scope selected.
-- Work item IDs fixed or skipped.
-- Work item IDs rejected or deferred with reasons.
+- Work items fixed, with the option label chosen for each.
+- Work items skipped / deferred / rejected with reasons.
 - Files changed.
-- User decisions made for ambiguous remediation.
 - Analyzer report state files and manifest entries updated.
 - Verification commands run and results.
 - Remaining findings or recommended next batch.
 
-Never claim a finding is fixed unless the source change is complete and verification was attempted or the verification gap is explicitly stated.
+## Edge Cases
+
+- **`fix_options` missing or empty.** Legacy analyzer output. Present `Apply analyzer recommendation` (using `ai_fix_prompt`), `Skip`, `Defer`, `Reject`.
+- **`ai_fix_prompt` missing or generic.** Do not synthesize one. Ask the user whether to skip, reject, defer, or rerun analysis/validation so the analyzer can provide a corrected prompt.
+- **Source no longer matches the cited snippet.** Mark the work item as needing re-analysis and ask the user before editing.
+- **Sub-agent reports needs-user-clarification.** Pause, ask one closed question, then resume.
+- **No question tool available.** Use plain-text closed questions; do not silently fall back to "apply recommended" without asking.
+
+## Compaction-Safe Invariants
+
+- `projectPath` defaults to the invocation working directory.
+- `manifest.json` is the source of truth for runs.
+- Default working set is `state.status = "open"` from the newest validated analyzer run.
+- Per-issue Q&A is mandatory — never apply a fix without a recorded user decision.
+- Options come from analyzer `fix_options`; the fixer does not invent them.
+- Source edits go through sub-agents; if sub-agents are unavailable, stop and report.
+- Only mutate violation `state` in analyzer reports; never change rule metadata or analyzer prompts.
+- Re-read manifest before every write.

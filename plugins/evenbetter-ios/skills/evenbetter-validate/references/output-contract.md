@@ -98,7 +98,7 @@ Required `html_report_data` fields:
 - `scan_context.confidence`
 - `scan_context.custom_utilities`
 
-Issue-card fields remain sourced from analyzer violations: canonical `files[].violations[]`, or top-level `violations[]` only when reading older flat analyzer reports. Required issue-card fields are `id`, `summary`, `severity`, `rule_id`, `dimension`, `file_path`, `line_number`, `code_snippet`, `fix_description`, optional `fix_code`, `ai_fix_prompt`, and `guideline_reference`.
+Issue-card fields remain sourced from analyzer violations: canonical `files[].violations[]`, or top-level `violations[]` only when reading older flat analyzer reports. Required issue-card fields are `id`, `summary`, `severity`, `rule_id`, `dimension`, `file_path`, `line_number`, `code_snippet`, `fix_description`, optional `fix_code`, `ai_fix_prompt`, `fix_options`, and `guideline_reference`. The `fix_options` array is rendered as a remediation menu in the HTML so users see the same alternatives `$evenbetter-fix` will offer.
 
 ## Manifest
 
@@ -127,6 +127,7 @@ Generate `projectPath/.evenbetter/evenbetter-validate-{N}.html` with `scripts/ge
 - Use `html_report_data` for the EvenBetter iOS HIG dashboard and scan context, correcting it before generation when needed.
 - Derive issue-card display fields such as title, description, recommended fix, language, HIG criteria, and HIG area from analyzer violations.
 - Render inline HIG/evidence links per issue from `guideline_reference.url`, legacy validation `supporting_links`, and validation `corpus_clause.source_url` when present.
+- Render `fix_options` as a labeled remediation menu inside each issue card, marking the recommended option clearly and showing each option's label, description, and (in full mode) code preview.
 - Keep the supplied visual standard adapted to EvenBetter and iOS HIG: summary dashboard, severity filtering, search, AI prompt copying, code/fix comparison, and the same compact inline evidence style.
 - Avoid validation-status UI: no `kept`, `dropped`, `severity_adjusted`, `not_validated`, confidence, retention, or validation decision blocks.
 
