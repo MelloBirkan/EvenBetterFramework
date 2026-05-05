@@ -26,9 +26,13 @@ flowchart LR
   K --> M
   L --> M
   M --> N[".evenbetter/evenbetter-validate-{N}.json"]
+  H --> P["generate_html_report.py"]
+  N --> P
+  O --> P
+  P --> Q[".evenbetter/evenbetter-validate-{N}.html"]
   N --> O
 ```
 
-The analyzer workers make first-pass domain judgments and store each run as a numbered analyzer report indexed by `manifest.json`. The validator does not assume those judgments are correct; it reloads code, reloads the rule clause, verifies the source URL, and writes a separate numbered validation report with retention statistics for the same run number.
+The analyzer workers make first-pass domain judgments and store each run as a numbered analyzer report indexed by `manifest.json`. The validator does not assume those judgments are correct; it reloads code, reloads the rule clause, verifies the source URL, and writes a separate numbered validation report with retention statistics for the same run number. After the validation artifacts are stored, the bundled HTML generator derives a browser report from the analyzer findings plus validator decisions.
 
 This separation makes the hallucination-control claim citable: the first pass produces candidate violations, while the second pass filters high-severity findings through independently checked evidence.

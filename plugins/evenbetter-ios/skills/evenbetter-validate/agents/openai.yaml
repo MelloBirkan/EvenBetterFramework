@@ -1,4 +1,4 @@
 interface:
   display_name: "EB Validate"
-  short_description: "Validate high-severity audit findings"
-  default_prompt: "Use $evenbetter-validate to validate high-severity findings from an EvenBetter iOS analysis report."
+  short_description: "Validate findings and generate an HTML report"
+  default_prompt: "Use $evenbetter-validate to validate high-severity findings from an EvenBetter iOS analysis report and generate the HTML browser report."

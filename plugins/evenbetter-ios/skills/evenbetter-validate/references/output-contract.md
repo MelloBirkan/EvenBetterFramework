@@ -8,6 +8,7 @@ Write the final validation report to `projectPath/.evenbetter/evenbetter-validat
   "input_report": "/abs/path/.evenbetter/analyze-3.json",
   "validates": "analyze-3.json",
   "analyzer_run": 3,
+  "html_report": ".evenbetter/evenbetter-validate-3.html",
   "createdAt": "2026-04-28T12:40:00Z",
   "confidence_threshold": 0.7,
   "total_high_input": 0,
@@ -30,6 +31,7 @@ Write the final validation report to `projectPath/.evenbetter/evenbetter-validat
 | `input_report` | string | Absolute path to `.evenbetter/analyze-{N}.json`. |
 | `validates` | string | Analyzer report filename, e.g. `analyze-3.json`. |
 | `analyzer_run` | integer | Analyzer run number `N`; must match both report filenames. |
+| `html_report` | string | Relative path to the generated browser report, e.g. `.evenbetter/evenbetter-validate-3.html`. |
 | `createdAt` | string | UTC ISO-8601 timestamp with `Z`. |
 
 The validator must update `.evenbetter/manifest.json` after a successful write so the matching `runs[]` entry has:
@@ -41,6 +43,8 @@ The validator must update `.evenbetter/manifest.json` after a successful write s
 - `latest.validate: "evenbetter-validate-{N}.json"` when this is the newest validation report by `createdAt`
 
 It may also update `analyze-{N}.json` `run.status` to `validated`. It must not rewrite analyzer violation objects except for preserving existing state when the file is touched for the run status update.
+
+After the JSON report and manifest updates succeed, the validator must generate the derived HTML report at `projectPath/.evenbetter/evenbetter-validate-{N}.html`. The HTML report is populated from the paired analyzer report plus this validation report; it is not the source of truth for decisions.
 
 ## Result Object
 
@@ -83,6 +87,7 @@ Every item in `kept` must satisfy:
 | Field | Type | Description |
 |---|---|---|
 | `project_path` | string | Absolute `projectPath` received as input. |
+| `html_report` | string | Relative path to `.evenbetter/evenbetter-validate-{N}.html`. |
 | `confidence_threshold` | number | Threshold used for `kept` decisions. |
 | `total_high_input` | integer | Count of input violations where `severity` is `error` and state is actionable. |
 | `kept_count` | integer | Number of retained high-severity findings. |
@@ -96,6 +101,16 @@ Every item in `kept` must satisfy:
 
 If no `manifest.json` exists but `.evenbetter/analyze.json` exists, perform the analyzer legacy migration first: write `analyze-1.json`, add missing `run`, `id`, and `state` fields when possible, initialize `manifest.json`, and validate run 1. Do not treat `.evenbetter/analyze.json` as the latest report once the manifest exists.
 
+## HTML Report
+
+Generate `projectPath/.evenbetter/evenbetter-validate-{N}.html` with `scripts/generate_html_report.py` after the validation JSON is written. The generator must:
+
+- Read `analyze-{N}.json`, `evenbetter-validate-{N}.json`, and `manifest.json` when present.
+- Flatten all analyzer `files[].violations[]` into the HTML `issues[]` view.
+- Join validation decisions by matching each validation result's `original_violation.id` to analyzer violation `id`.
+- Derive template-only fields such as `title`, `description`, `recommended_fix`, `language`, and `scan_context` without adding them to the analyzer JSON.
+- Show analyzer warnings and info findings as `not_validated` unless a future validator explicitly processes them.
+
 ## JSON-Only Rule
 
-When invoked headless, output only the validation report object. Do not wrap it in Markdown fences, add commentary, or include partial diagnostic output. The manifest is written as a side effect and is not included in stdout.
+When invoked headless, output only the validation report object. Do not wrap it in Markdown fences, add commentary, or include partial diagnostic output. The manifest and HTML report are written as side effects and are not included in stdout beyond the `html_report` path field.

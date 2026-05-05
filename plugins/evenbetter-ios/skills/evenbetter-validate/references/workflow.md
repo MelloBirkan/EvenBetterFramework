@@ -119,6 +119,7 @@ Compute:
 - `validates`: `analyze-{N}.json`
 - `analyzer_run`: `N`
 - `input_report`: absolute path to `analyze-{N}.json`
+- `html_report`: `.evenbetter/evenbetter-validate-{N}.html`
 - `createdAt`: current UTC ISO-8601 timestamp with `Z`
 - `total_high_input`: number of input `error` violations with actionable state
 - `kept_count`, `downgraded_count`, `dropped_count`
@@ -136,7 +137,7 @@ Create `projectPath/.evenbetter/` if needed and write:
 projectPath/.evenbetter/evenbetter-validate-{N}.json
 ```
 
-This validation file, `manifest.json`, and the paired analyzer report's `run.status` are the only permitted writes inside `projectPath`.
+This validation file, the derived HTML report, `manifest.json`, and the paired analyzer report's `run.status` are the only permitted writes inside `projectPath`.
 
 After the validation file is written:
 
@@ -147,9 +148,34 @@ After the validation file is written:
 5. Recompute the run entry `summary` from violation `state.status` values in `analyze-{N}.json`.
 6. Update `analyze-{N}.json` `run.status` to `validated` unless it is already `fixed` or `partially_fixed`.
 
-Emit the validation report object on stdout when running headless.
+## 9. Generate HTML Report
 
-## 9. Compaction-Safe Invariants
+After the validation report, manifest, and paired analyzer `run.status` updates complete, generate the browser report:
+
+```text
+projectPath/.evenbetter/evenbetter-validate-{N}.html
+```
+
+Run the bundled generator with:
+
+```text
+scripts/generate_html_report.py --analyze projectPath/.evenbetter/analyze-{N}.json --validate projectPath/.evenbetter/evenbetter-validate-{N}.json --manifest projectPath/.evenbetter/manifest.json --output projectPath/.evenbetter/evenbetter-validate-{N}.html
+```
+
+The HTML report is a derived view. It must include all analyzer findings from `files[].violations[]` and annotate findings with validator decisions by matching each validation result's `original_violation.id`. Do not duplicate template-only fields such as `recommended_fix` or `language` into `analyze-{N}.json`; the generator derives them for display.
+
+When running headless, emit the validation report object on stdout and no prose. The `html_report` field in that JSON points to the generated report. In interactive chat, keep the response concise and include:
+
+```text
+Validation complete.
+- Wrote: .evenbetter/evenbetter-validate-{N}.json
+- HTML report: .evenbetter/evenbetter-validate-{N}.html
+- Retained: <kept> kept, <downgraded> downgraded, <dropped> dropped
+
+Click here to open .evenbetter/evenbetter-validate-{N}.html
+```
+
+## 10. Compaction-Safe Invariants
 
 If context is compacted, preserve these facts:
 
@@ -158,7 +184,9 @@ If context is compacted, preserve these facts:
 - explicit `run` requires a matching `analyze-{N}.json`
 - revalidating an already validated run requires `revalidate: true`
 - output report path is `.evenbetter/evenbetter-validate-{N}.json`
+- HTML report path is `.evenbetter/evenbetter-validate-{N}.html`
 - validation report includes `validates: "analyze-{N}.json"` and `analyzer_run: N`
+- validation report includes `html_report: ".evenbetter/evenbetter-validate-{N}.html"`
 - only actionable `severity: "error"` findings are validated
 - canonical threshold is `0.7`
 - kept findings require verified URL, resolved clause, coherent reasoning, and confidence at or above threshold

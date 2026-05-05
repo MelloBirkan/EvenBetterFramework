@@ -1,6 +1,6 @@
 ---
 name: evenbetter-validate
-description: Validator for numbered EvenBetter iOS analyzer reports. Use to validate audit results, check evenbetter-analyze findings for hallucination, verify high-severity violations, recompute confidence, verify guideline URLs, and write .evenbetter/evenbetter-validate-{N}.json from .evenbetter/analyze-{N}.json using .evenbetter/manifest.json.
+description: Validator for numbered EvenBetter iOS analyzer reports. Use to validate audit results, check evenbetter-analyze findings for hallucination, verify high-severity violations, recompute confidence, verify guideline URLs, write .evenbetter/evenbetter-validate-{N}.json from .evenbetter/analyze-{N}.json using .evenbetter/manifest.json, and generate .evenbetter/evenbetter-validate-{N}.html for browser review.
 ---
 
 # evenbetter-validate
@@ -20,7 +20,7 @@ If `projectPath` is missing or not absolute, return a JSON error object with an 
 
 ## Source Safety
 
-Do not edit, delete, format, generate, or execute source/project files inside `projectPath`. The only permitted writes inside `projectPath` are creating `.evenbetter/` if needed, writing the final validation report to `.evenbetter/evenbetter-validate-{N}.json`, updating `.evenbetter/manifest.json`, and setting `run.status` in `.evenbetter/analyze-{N}.json` to `validated`.
+Do not edit, delete, format, generate, or execute source/project files inside `projectPath`. The only permitted writes inside `projectPath` are creating `.evenbetter/` if needed, writing the final validation report to `.evenbetter/evenbetter-validate-{N}.json`, writing the derived browser report to `.evenbetter/evenbetter-validate-{N}.html`, updating `.evenbetter/manifest.json`, and setting `run.status` in `.evenbetter/analyze-{N}.json` to `validated`.
 
 ## Required References
 
@@ -30,6 +30,7 @@ Load only what the current phase needs:
 - `references/output-contract.md`: Stable JSON envelope and finding result fields.
 - `references/architecture.md`: Orchestrator-worker-with-validators decomposition and citation note.
 - `scripts/verify_url.py`: Deterministic URL verifier for Apple and W3C sources.
+- `scripts/generate_html_report.py`: Deterministic HTML report generator for all analyzer findings plus validator decisions.
 
 ## Validation Scope
 
@@ -50,12 +51,14 @@ When the host supports isolated subagents, run the judgment in a fresh validator
 ## Output Rules
 
 - Write one JSON object to `projectPath/.evenbetter/evenbetter-validate-{N}.json`.
+- Generate `projectPath/.evenbetter/evenbetter-validate-{N}.html` after the validation JSON and manifest updates complete.
 - Emit the same JSON object on stdout when running headless.
 - Use `kept`, `downgraded`, and `dropped` arrays exactly as defined in `references/output-contract.md`.
 - Keep only findings with `confidence >= confidence_threshold`, valid source evidence, resolved corpus clause, coherent reasoning, and a verified source URL.
 - Include `drop_reason` for every dropped finding.
 - Include `validates: "analyze-{N}.json"` and `analyzer_run: N`.
+- Include `html_report: ".evenbetter/evenbetter-validate-{N}.html"` in the validation report object.
 - Update `.evenbetter/manifest.json` so run `N` has `validate: "evenbetter-validate-{N}.json"` and `validated: true`.
-- Do not wrap JSON in Markdown fences or add prose to JSON-only outputs.
+- Do not wrap JSON in Markdown fences or add prose to JSON-only outputs. In interactive chat, after a successful run, provide a concise summary and include `Click here to open .evenbetter/evenbetter-validate-{N}.html`.
 
 Load `references/workflow.md` next.
