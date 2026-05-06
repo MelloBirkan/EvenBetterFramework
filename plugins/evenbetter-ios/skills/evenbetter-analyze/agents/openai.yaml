@@ -1,0 +1,4 @@
+interface:
+  display_name: "EB iOS Analyzer"
+  short_description: "Swift HIG/accessibility analyzer with HTML report"
+  default_prompt: "Use $evenbetter-analyze to scan this Swift project for Apple Human Interface Guidelines and accessibility (WCAG) violations and produce an interactive HTML report with file/line evidence and AI fix prompts."

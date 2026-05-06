@@ -121,6 +121,7 @@ Do not maintain parallel copies of installable plugin skills under the repositor
 - `evenbetter-swiftui-performance-audit`
 - `evenbetter-swiftui-ui-patterns`
 - `evenbetter-swiftui-view-refactor`
+- `evenbetter-analyze`
 
 `evenbetter-general` contains:
 
