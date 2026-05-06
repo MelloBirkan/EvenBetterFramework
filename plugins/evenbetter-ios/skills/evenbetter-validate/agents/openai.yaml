@@ -1,0 +1,4 @@
+interface:
+  display_name: "EB iOS Validator"
+  short_description: "Validates and auto-corrects an evenbetter-analyze HTML report"
+  default_prompt: "Use $evenbetter-validate to re-check every finding in .evenbetter/<project>/evenbetter-analyze-report.html against the source code and Apple HIG / Apple Developer Documentation, then auto-correct severities and fixes in place — or reply OK when nothing needs to change."
