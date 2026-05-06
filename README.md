@@ -114,9 +114,6 @@ Do not maintain parallel copies of installable plugin skills under the repositor
 
 - `evenbetter-ios-feature`
 - `evenbetter-ios-epic`
-- `evenbetter-ios-analyze`
-- `evenbetter-validate`
-- `evenbetter-fix`
 - `evenbetter-ios-app-intents`
 - `evenbetter-ios-debugger-agent`
 - `evenbetter-swiftui-accessibility`

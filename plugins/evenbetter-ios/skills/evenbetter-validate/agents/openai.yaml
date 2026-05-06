@@ -1,4 +1,0 @@
-interface:
-  display_name: "EB Validate"
-  short_description: "Fast second pass that confirms analyzer findings and generates the EvenBetter iOS HIG HTML report"
-  default_prompt: "Use $evenbetter-validate to run a fast deterministic verification pass over the latest EvenBetter iOS analyzer report (URL reachability, corpus clause, source line, ai_fix_prompt and fix_options sanity), escalate only ambiguous findings to a sub-agent or host-native web research, correct severity, guideline references, and html_report_data directly in analyze-{N}.json, reject unsupported findings in analyzer state, and generate the HTML browser report. Do not stop after a progress message."

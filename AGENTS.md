@@ -49,43 +49,6 @@ For Codex:
 
 For iOS UX/HIG workflow skills, questions should be closed and multiple-choice by default. Avoid open-ended questions, ask for screenshots or simulator evidence when reviewing UI states, and keep feature-scale and epic-scale flows separate.
 
-## Analyzer, Validator, and Fixer Contract
-
-The current EvenBetter report contract is manifest-first:
-
-- `.evenbetter/manifest.json` is the source of truth for report history.
-- Analyzer reports are numbered as `.evenbetter/analyze-{N}.json`.
-- Validate updates the selected `.evenbetter/analyze-{N}.json` in place and generates `.evenbetter/evenbetter-validate-{N}.html`.
-- Legacy singleton files such as `.evenbetter/analyze.json`, `.evenbetter/eb-analyze.json`, `.evenbetter/validate.json`, and `.evenbetter/evenbetter-validate.json` are compatibility or migration cases only.
-- Analyzer, validator, and fixer `projectPath` inputs default to the invocation working directory when omitted. Relative paths resolve against that directory; do not ask for a full path solely because the user is running from the target app directory.
-
-Analyzer behavior:
-
-- Read project source files without modifying them.
-- When Claude Code, Codex, or another host supports sub-agents, dispatch one specialized read-only analyzer sub-agent per iOS domain; otherwise run the same domain passes sequentially.
-- Only write numbered analyzer reports, documented legacy migrations, and `manifest.json` inside the analyzed project's `.evenbetter/` directory.
-- Preserve stable violation IDs and carry forward prior mutable state when matching violations recur.
-- Include `html_report_data` in analyzer reports so the EvenBetter iOS HIG HTML template has complete dashboard and scan-context fields.
-
-Validator behavior:
-
-- Select runs from `manifest.json` by default.
-- Validate the newest unvalidated run unless an explicit run is requested.
-- When Claude Code, Codex, or another host supports sub-agents, dispatch specialized validator sub-agents by domain or domain-sized batch; only the validator orchestrator mutates reports.
-- Do not end validation after a "validation is running" status message. Continue with visible sub-agent dispatch or sequential batches, then write outputs or return a concrete blocker.
-- Correct severity and guideline references directly in `analyze-{N}.json`.
-- Correct missing or stale analyzer `html_report_data` directly in `analyze-{N}.json`.
-- Reject unsupported findings by setting violation `state.status` to `rejected` with `decidedBy: "validator"`.
-- Generate the matching `.evenbetter/evenbetter-validate-{N}.html` report and update manifest validation/html metadata.
-- Do not write new `.evenbetter/evenbetter-validate-{N}.json` reports.
-
-Fixer behavior:
-
-- Do a short closed-ended scoping step before remediation.
-- Use precedence: manifest, newest validated analyzer report, newest analyzer report, then older unresolved manifest runs.
-- Skip `fixed` and `rejected` findings. Include `deferred` only when explicitly requested.
-- Reread `manifest.json` before writing state updates. EvenBetter assumes serial writes to `.evenbetter/`.
-
 ## Validation Commands
 
 Always run these checks after marketplace, skill, or corpus edits:

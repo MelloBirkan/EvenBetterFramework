@@ -1,4 +1,0 @@
-interface:
-  display_name: "EB Fix"
-  short_description: "Walk through audit findings, ask per-issue, then orchestrate sub-agent fixes"
-  default_prompt: "Use $evenbetter-fix to walk through EvenBetter analyzer findings interactively. The skill scopes severity once, then for each finding asks how to fix it using the analyzer's fix_options (or skip / defer / reject), and applies only the user-selected option through file-grouped sub-agents. Never invents fix prompts; reads them from analyze-{N}.json."
