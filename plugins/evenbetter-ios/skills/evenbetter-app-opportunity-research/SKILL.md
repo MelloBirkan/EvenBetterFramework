@@ -1,33 +1,45 @@
 ---
 name: evenbetter-app-opportunity-research
 description: >
-  Full-pipeline iOS App Store opportunity research using Tavily, Exa, and Firecrawl. Discovers
-  underserved niches, analyzes competitor gaps, produces revenue-validated top-3 opportunity
-  reports, and writes MVP concept briefs — all through automated web research. Use this skill
-  whenever the user wants to find profitable iOS app ideas, research App Store categories,
-  analyze competitor apps, validate an app concept, or explore what's working in a specific
-  niche. Trigger on phrases like "find app opportunities", "app store research", "what app
-  should I build", "research this app category", "find a gap in the app store", "iOS app idea",
-  "is this app idea good", "what's trending on the App Store", or any question about mobile app
-  market viability. Also trigger when the user mentions wanting to build an app but isn't sure
-  what to build, or wants to validate whether a concept has legs.
+  Full-pipeline iOS App Store opportunity research using built-in `WebSearch` and `WebFetch`
+  tools. Discovers underserved niches, analyzes competitor gaps, produces revenue-validated
+  top-3 opportunity reports, and writes MVP concept briefs — all through automated web
+  research. Use this skill whenever the user wants to find profitable iOS app ideas, research
+  App Store categories, analyze competitor apps, validate an app concept, or explore what's
+  working in a specific niche. Trigger on phrases like "find app opportunities", "app store
+  research", "what app should I build", "research this app category", "find a gap in the app
+  store", "iOS app idea", "is this app idea good", "what's trending on the App Store", or any
+  question about mobile app market viability. Also trigger when the user mentions wanting to
+  build an app but isn't sure what to build, or wants to validate whether a concept has legs.
 metadata:
   tags: app-store, research, ios, mobile-app, competitor-analysis, market-research, indie-hacker, startup, app-idea
 ---
 
 # evenbetter-app-opportunity-research
 
-Research and validate iOS app opportunities using three complementary research tools. The goal is to go from a vague category interest to a validated, ranked shortlist of app concepts the user could realistically build and monetize — without ever opening Xcode.
+Research and validate iOS app opportunities using built-in web research tools. The goal is to go from a vague category interest to a validated, ranked shortlist of app concepts the user could realistically build and monetize — without ever opening Xcode.
 
 ## Research Toolchain
 
-Each tool has a specific role in the pipeline. Use the right tool for each job:
+Two tools cover the entire pipeline. Use the right one for each job:
 
 | Tool | Best At | Use For |
 |------|---------|---------|
-| **Exa** | Semantic/neural search, domain-filtered search, synthesized multi-angle answers | User sentiment, Reddit complaints, competitor comparisons, market landscape overviews |
-| **Tavily** | General search with date filtering, revenue data lookups, deep multi-subtopic research | Revenue estimates, trend validation, broad niche research, recent news |
-| **Firecrawl** | Structured scraping of specific pages, autonomous multi-site research agents | App Store listing extraction, competitor page scraping, data-heavy deep dives |
+| **`WebSearch`** | Discovering pages, sources, and signals across the web | Market landscapes, revenue lookups, trend validation, user complaints, competitor comparisons, finding App Store URLs |
+| **`WebFetch`** | Reading the full content of a known URL and extracting structured data via a prompt | App Store listing details (rating, price, features), specific blog posts, competitor pages, threads, articles surfaced by `WebSearch` |
+
+Pair them: `WebSearch` finds promising URLs, `WebFetch` reads them. The pattern is `search → triage results → fetch the strongest 3–5 → extract structured data with a prompt`.
+
+### Search query patterns
+
+Build precise queries instead of relying on a "research mode". The key levers are:
+
+- **Site filter:** `site:reddit.com`, `site:apps.apple.com`, `site:sensortower.com`, `site:appfigures.com`, `site:data.ai`, `site:news.ycombinator.com`, `site:producthunt.com`.
+- **Year qualifier:** include `2025` or `2026` to bias toward recent results.
+- **Sentiment language:** include words like "complaints", "missing features", "wish", "alternative", "vs", "review", "disappointed" to surface opinionated content.
+- **Source language:** include "ARR", "MRR", "revenue", "indie", "solo developer", "App Store" to bias toward analytics and indie blogs.
+
+When one search isn't enough, fan out with 3–5 variations and merge the results.
 
 ## Pipeline
 
@@ -61,88 +73,103 @@ Once you have a niche, move to research.
 
 ## Step 2: Market Research
 
-Run searches across all three tools to build a layered picture of the landscape. No single search gives the full picture — triangulate.
+Run a layered set of `WebSearch` queries to triangulate the landscape. No single search gives the full picture — combine angles.
 
-### 2a. Market Landscape Overview → Exa deep_search
+### 2a. Market Landscape Overview
 
-Use `Exa:deep_search_exa` for the initial landscape scan. Its multi-angle query expansion and synthesized answers are ideal for open-ended "what's out there" questions.
-
-```
-Exa:deep_search_exa
-  objective: "Current iOS app market for {niche}: top competitors, their ratings, pricing models, common user complaints, underserved segments, and revenue benchmarks for indie developers"
-  numResults: 10
-  type: "deep"
-```
-
-This gives a synthesized overview with citations — use it to build the initial competitor list.
-
-### 2b. Revenue Signals → Tavily search
-
-Use `Tavily:tavily_search` for revenue data. Tavily's domain filtering and date range support make it best for finding specific data points from analytics sources.
+Run 3–5 broad `WebSearch` queries to identify the top competitors and the shape of the category.
 
 ```
-Tavily:tavily_search
-  query: "indie iOS app revenue {category} ARR MRR"
-  search_depth: "advanced"
-  time_range: "year"
-
-Tavily:tavily_search
-  query: "{category} app revenue estimates sensor tower appfigures"
-  search_depth: "advanced"
-  include_domains: ["sensortower.com", "appfigures.com", "data.ai", "appmagic.rocks"]
+WebSearch: top {category} iOS apps 2026 best
+WebSearch: best {category} app iPhone 2025 review
+WebSearch: {category} iOS app comparison ranked
+WebSearch: most popular {category} apps App Store 2025 2026
 ```
 
-### 2c. User Complaints & Sentiment → Exa advanced search
-
-Use `Exa:web_search_advanced_exa` for Reddit and forum complaints. Exa's neural search mode excels at finding opinionated, sentiment-rich content, and its domain filtering cleanly targets community sources.
+For each promising article (review roundups, "best of" lists, competitor comparisons), follow up with `WebFetch` to read the full content:
 
 ```
-Exa:web_search_advanced_exa
-  query: "best {category} app disappointed missing features wish"
-  type: "neural"
-  includeDomains: ["reddit.com"]
-  numResults: 10
-  enableHighlights: true
-  highlightsQuery: "complaints missing features wish alternative"
-
-Exa:web_search_advanced_exa
-  query: "{category} app alternatives better than"
-  type: "neural"
-  includeDomains: ["reddit.com", "news.ycombinator.com"]
-  numResults: 8
-  enableHighlights: true
+WebFetch: <URL of competitor roundup or review article>
+  prompt: "List every {category} app mentioned. For each: name, developer, pricing,
+           rating, and any quoted strengths or weaknesses."
 ```
 
-Neural search surfaces posts where users describe what they want but can't find — these are direct gap signals.
+Use these to build the initial competitor list (target 8–12 names).
 
-### 2d. Trend Validation → Tavily search
+### 2b. Revenue Signals
 
-Use `Tavily:tavily_search` with time filtering to check whether the niche is growing or declining.
+Search for revenue data points using `site:` filters that target analytics and indie sources.
 
 ```
-Tavily:tavily_search
-  query: "{category} app trend growing 2025 2026"
-  time_range: "year"
-  search_depth: "advanced"
+WebSearch: indie iOS {category} app revenue MRR ARR 2025 2026
+WebSearch: {category} app revenue site:sensortower.com
+WebSearch: {category} app revenue site:appfigures.com
+WebSearch: {category} app revenue site:data.ai
+WebSearch: solo developer {category} app income report 2025
+```
 
-Tavily:tavily_search
-  query: "{category} iOS app new launches 2025 2026"
-  time_range: "month"
+For each strong hit, pull the exact numbers with `WebFetch`:
+
+```
+WebFetch: <URL of revenue/analytics article>
+  prompt: "Extract every {category}-related app mentioned with its estimated monthly
+           or annual revenue, download numbers, and the source/date of the estimate."
+```
+
+### 2c. User Complaints & Sentiment
+
+Reddit, Hacker News, and forums are the richest source of unmet-need signal. Use `site:` filters to target community sources, and language that surfaces opinionated content.
+
+```
+WebSearch: best {category} app site:reddit.com disappointed missing
+WebSearch: {category} app alternatives site:reddit.com better than
+WebSearch: {category} app wish had feature site:reddit.com
+WebSearch: {category} app frustrating site:news.ycombinator.com
+```
+
+`WebFetch` the threads that look promising:
+
+```
+WebFetch: <Reddit / HN thread URL>
+  prompt: "Extract every concrete user complaint, missing feature request, and
+           'I wish X did Y' comment. Group by app name when possible."
+```
+
+These threads are direct gap signals — users describing what they want but can't find.
+
+### 2d. Trend Validation
+
+Check whether the niche is growing or declining by biasing queries toward recent activity.
+
+```
+WebSearch: {category} app trend growing 2025 2026
+WebSearch: {category} iOS app new launch 2026
+WebSearch: {category} app market size growth
+WebSearch: new {category} app site:producthunt.com 2025 2026
 ```
 
 Recent launches signal a growing category. No new entrants in 12+ months could mean the niche is saturated or dead.
 
-### 2e. Deep Niche Research (optional) → Tavily research
+### 2e. Deep Niche Research (optional)
 
-If the niche warrants a thorough investigation, use `Tavily:tavily_research` in pro mode. This autonomous research agent searches across many subtopics and produces a comprehensive report.
+For a primary niche worth deep investment, run a structured fan-out. Issue 8–12 targeted `WebSearch` queries across these subtopics, then synthesize:
+
+1. Top competitors with ratings and pricing
+2. Common user complaints across apps
+3. Underserved user segments
+4. Revenue benchmarks for solo/indie developers
+5. Recent trends and new entrants
+6. Most common monetization strategies
 
 ```
-Tavily:tavily_research
-  input: "Research the current iOS app market for {niche}. Cover: top 10 competitors with ratings and pricing, common user complaints across apps, underserved user segments, revenue benchmarks for solo/indie developers, recent trends and new entrants, and the most common monetization strategies."
-  model: "pro"
+WebSearch: top 10 {category} apps ratings pricing 2026
+WebSearch: {category} app underserved audience unmet need
+WebSearch: indie {category} app monetization subscription
+WebSearch: {category} app new entrants 2025 2026 launch
+WebSearch: {category} app freemium vs subscription conversion rate
 ```
 
-Reserve this for your primary niche — it's thorough but slower.
+`WebFetch` the deepest 3–5 articles for full quotes and numbers. Reserve this for your primary niche — it's the most thorough but slowest pass.
 
 ---
 
@@ -150,79 +177,79 @@ Reserve this for your primary niche — it's thorough but slower.
 
 Pick the 5–8 most relevant competitors and research each one more closely.
 
-### 3a. App Store Listing Data → Firecrawl scrape
+### 3a. App Store Listing Data
 
-Use `Firecrawl:firecrawl_scrape` with JSON extraction to pull structured data from App Store listing pages. This is far more reliable than parsing search snippets.
-
-```
-Firecrawl:firecrawl_scrape
-  url: "https://apps.apple.com/us/app/{app-slug}/{app-id}"
-  formats: ["json"]
-  jsonOptions:
-    prompt: "Extract the app name, developer, star rating, number of ratings, price, in-app purchase prices, category, description summary, and key features listed"
-    schema:
-      type: "object"
-      properties:
-        name: { type: "string" }
-        developer: { type: "string" }
-        starRating: { type: "number" }
-        ratingsCount: { type: "string" }
-        price: { type: "string" }
-        inAppPurchases: { type: "array", items: { type: "string" } }
-        category: { type: "string" }
-        descriptionSummary: { type: "string" }
-        keyFeatures: { type: "array", items: { type: "string" } }
-```
-
-If you don't have the exact App Store URL, use `Firecrawl:firecrawl_search` first:
+If you don't have the exact App Store URL, find it with `WebSearch`:
 
 ```
-Firecrawl:firecrawl_search
-  query: "{app name} site:apps.apple.com"
-  limit: 3
+WebSearch: {app name} site:apps.apple.com
 ```
 
-### 3b. Revenue & Business Data per Competitor → Tavily search
+Then use `WebFetch` to pull structured data from the listing page. The extraction prompt is what gives you a clean, comparable record per competitor.
 
 ```
-Tavily:tavily_search
-  query: "{app name} app revenue ARR"
-  search_depth: "advanced"
-  max_results: 5
-
-Tavily:tavily_search
-  query: "{app name} app funding raised"
-  search_depth: "basic"
+WebFetch: https://apps.apple.com/us/app/{app-slug}/{app-id}
+  prompt: "Extract these fields as a structured JSON object:
+           - name (string)
+           - developer (string)
+           - starRating (number)
+           - ratingsCount (string, e.g. '12.4K')
+           - price (string)
+           - inAppPurchases (array of strings with name + price)
+           - category (string)
+           - descriptionSummary (string, 2–3 sentences)
+           - keyFeatures (array of strings, the bullet/list highlights)"
 ```
 
-### 3c. Competitor Comparisons & Review Sentiment → Exa advanced search
+This is far more reliable than parsing search snippets — `WebFetch` reads the rendered listing page, and the extraction prompt produces structured output you can compare side-by-side across competitors.
+
+### 3b. Revenue & Business Data per Competitor
 
 ```
-Exa:web_search_advanced_exa
-  query: "{app name} review complaints problems"
-  type: "neural"
-  numResults: 8
-  enableHighlights: true
-  highlightsQuery: "problems complaints missing slow buggy"
+WebSearch: {app name} app revenue ARR
+WebSearch: {app name} app downloads MAU
+WebSearch: {app name} indie hacker income report
+WebSearch: {app name} app funding raised seed
+```
 
-Exa:web_search_advanced_exa
-  query: "{app name} vs alternatives comparison"
-  type: "neural"
-  numResults: 6
-  enableSummary: true
+For each strong hit, `WebFetch` the article and pull the exact numbers:
+
+```
+WebFetch: <article URL>
+  prompt: "Extract the dollar revenue, download count, MAU, and any funding mentioned
+           for {app name}, with the date or quarter of the figure and the source it
+           cites. Note whether the number is reported, estimated, or self-disclosed."
+```
+
+### 3c. Competitor Comparisons & Review Sentiment
+
+```
+WebSearch: {app name} review complaints problems
+WebSearch: {app name} site:reddit.com problems missing
+WebSearch: {app name} vs {competitor name} comparison
+WebSearch: {app name} alternatives better
+```
+
+`WebFetch` the strongest review and comparison articles:
+
+```
+WebFetch: <comparison article URL>
+  prompt: "Summarize how {app name} compares to its competitors. List its top 3
+           strengths, top 3 weaknesses, the most-cited missing features, and which
+           competitor wins for which use case."
 ```
 
 ### Data to collect per competitor
 
-| Field | Best Tool | Source |
-|-------|-----------|--------|
-| Name, rating, price | **Firecrawl scrape** | App Store listing page |
-| Ratings count | **Firecrawl scrape** | App Store listing page |
-| Key features | **Firecrawl scrape** | App Store description |
-| Estimated revenue | **Tavily search** | SensorTower, AppFigures, press, indie blogs |
-| Top complaints | **Exa neural search** | Reddit, forums, review sites |
-| Missing features | **Exa neural search** | Comparison posts, "wish" threads |
-| Competitor comparisons | **Exa advanced search** | Blog posts, review articles |
+| Field | Tool | Source |
+|-------|------|--------|
+| Name, rating, price | **`WebFetch`** | App Store listing page |
+| Ratings count | **`WebFetch`** | App Store listing page |
+| Key features | **`WebFetch`** | App Store description |
+| Estimated revenue | **`WebSearch` + `WebFetch`** | SensorTower, AppFigures, indie hacker blogs |
+| Top complaints | **`WebSearch` + `WebFetch`** | Reddit, HN, forums, review sites |
+| Missing features | **`WebSearch` + `WebFetch`** | Comparison posts, "wish" threads |
+| Competitor comparisons | **`WebSearch` + `WebFetch`** | Blog posts, review articles |
 
 ### Revenue estimation heuristics
 
@@ -339,18 +366,30 @@ Save the brief as a Markdown file: `{AppConceptName}-brief.md`
 
 ## Quick Reference: Tool Selection by Task
 
-| Research Task | Tool | Why |
-|---------------|------|-----|
-| Market landscape overview | `Exa:deep_search_exa` | Multi-angle synthesis with citations |
-| Revenue estimates | `Tavily:tavily_search` (domain-filtered) | Targets analytics sources like SensorTower |
-| Reddit/forum complaints | `Exa:web_search_advanced_exa` (neural + domain filter) | Semantic matching finds sentiment-rich posts |
-| Trend validation | `Tavily:tavily_search` (time-filtered) | Date range filtering catches recency signals |
-| Comprehensive niche report | `Tavily:tavily_research` (pro mode) | Deep autonomous research across subtopics |
-| App Store listing data | `Firecrawl:firecrawl_scrape` (JSON extraction) | Structured data from actual listing pages |
-| Find App Store URLs | `Firecrawl:firecrawl_search` (site:apps.apple.com) | Search operator support for site-scoped search |
-| Competitor review sentiment | `Exa:web_search_advanced_exa` (neural + highlights) | Neural search surfaces opinionated content |
-| Competitor revenue/funding | `Tavily:tavily_search` (advanced) | Best at finding specific financial data points |
-| Competitor comparisons | `Exa:web_search_advanced_exa` (with summaries) | Finds and summarizes "X vs Y" content |
+| Research Task | Tool | Query / Prompt Pattern |
+|---------------|------|------------------------|
+| Market landscape overview | `WebSearch` → `WebFetch` | `top {category} iOS apps 2026 best`, then fetch the strongest roundups |
+| Revenue estimates | `WebSearch` → `WebFetch` | `{category} app revenue site:sensortower.com` (and similar), extract numbers from each result |
+| Reddit / forum complaints | `WebSearch` → `WebFetch` | `best {category} app site:reddit.com disappointed missing`, then fetch threads |
+| Trend validation | `WebSearch` | `{category} app trend growing 2025 2026` |
+| Comprehensive niche report | `WebSearch` (fan-out) → `WebFetch` | 8–12 targeted queries across subtopics, fetch the deepest 3–5 articles |
+| App Store listing data | `WebFetch` | URL of listing page + extraction prompt for name / rating / price / features |
+| Find App Store URLs | `WebSearch` | `{app name} site:apps.apple.com` |
+| Competitor review sentiment | `WebSearch` → `WebFetch` | `{app name} review complaints site:reddit.com`, then fetch threads |
+| Competitor revenue / funding | `WebSearch` → `WebFetch` | `{app name} app revenue ARR funding raised`, then fetch articles |
+| Competitor comparisons | `WebSearch` → `WebFetch` | `{app name} vs {competitor name} comparison`, then fetch the comparison post |
+
+## Tool equivalents
+
+This skill assumes Claude-style `WebSearch` and `WebFetch`. For other agents, swap in the equivalent built-in tool — the workflow is unchanged.
+
+| Claude command instruction | Codex / other agents equivalent |
+| --- | --- |
+| `WebSearch` | available web-search tooling |
+| `WebFetch` | available page-fetch tooling, or direct URL reader |
+| `AskUserQuestion` | `request_user_input` in Plan mode when available, otherwise a concise closed question |
+
+If current system or developer instructions conflict with this skill, follow the higher-priority instruction.
 
 ---
 
@@ -394,4 +433,4 @@ A complete session produces:
 3. **Top 3 Opportunity Report** — ranked concepts with revenue validation
 4. **MVP Concept Brief** — enough detail to start building with any tool or framework
 
-All driven by Exa, Tavily, and Firecrawl research — each used where it performs best.
+All driven by `WebSearch` + `WebFetch` — the two built-in primitives that work across Claude Code, Codex, and other agent hosts.
