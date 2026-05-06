@@ -136,6 +136,32 @@ if items.isEmpty {
 .sensoryFeedback(.success, trigger: didSave)
 ```
 
+## LAY-UX-009 - Map sensoryFeedback variant to HIG haptic tier
+
+**Severity:** info
+**Dimension:** ux
+**Platform:** ios
+**Source:** [Apple HIG: Playing haptics](https://developer.apple.com/design/human-interface-guidelines/playing-haptics)
+**Retrieved:** 2026-05-06
+
+**Check.** Flag `.sensoryFeedback` calls whose variant is not aligned with the HIG-defined tier for the event being signalled:
+
+- Notification tier (`.success`, `.warning`, `.error`) for outcomes of significant tasks or actions.
+- Impact tier (`.impact`, `.impact(weight:intensity:)`, `.impact(flexibility:intensity:)`) for collisions, snap-into-place metaphors, and physical impacts complementing visual motion.
+- Selection tier (`.selection`) for changes to a UI element's value, not for notification outcomes.
+- Change tier (`.increase`, `.decrease`, `.levelChange`, `.alignment`, `.pathComplete`, `.start`, `.stop`) for activity transitions and value-threshold crossings.
+
+**Why.** Apple groups haptics into Notification, Impact, and Selection categories with documented meanings. Mixing tiers (using `.impact` for a save success, or `.success` for a slider tick) breaks the learned association between pattern and outcome and degrades recognizability.
+
+**Correct code.**
+
+```swift
+view
+    .sensoryFeedback(.success, trigger: didSave)         // notification tier
+    .sensoryFeedback(.impact, trigger: collisionCount)   // impact tier
+    .sensoryFeedback(.selection, trigger: selectedTab)   // selection tier
+```
+
 ## LAY-A11Y-001 - Enforce 44x44 accessibility hit areas
 
 **Severity:** error

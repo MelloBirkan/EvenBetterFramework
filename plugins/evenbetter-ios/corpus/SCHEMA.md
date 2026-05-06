@@ -63,6 +63,7 @@ Domains:
 - `LAY`: layout and interaction
 - `NAV`: navigation and flow
 - `A11Y`: accessibility
+- `HAPT`: haptics
 
 Dimensions:
 

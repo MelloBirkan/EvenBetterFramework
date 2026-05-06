@@ -294,6 +294,62 @@
     "title": "Use alerts for high-consequence confirmations"
   },
   {
+    "anchor": "#hapt-ux-001-match-sensoryfeedback-variant-to-its-documented-event",
+    "clause_id": "HAPT-UX-001",
+    "corpus_version": "development",
+    "dimension": "ux",
+    "domain": "haptics",
+    "file_path": "corpus/ios/haptics.md",
+    "platform": "ios",
+    "retrieved": "2026-05-06",
+    "severity": "warning",
+    "source_label": "Apple HIG: Playing haptics",
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics",
+    "title": "Match sensoryFeedback variant to its documented event"
+  },
+  {
+    "anchor": "#hapt-ux-002-apply-haptics-consistently-for-the-same-outcome",
+    "clause_id": "HAPT-UX-002",
+    "corpus_version": "development",
+    "dimension": "ux",
+    "domain": "haptics",
+    "file_path": "corpus/ios/haptics.md",
+    "platform": "ios",
+    "retrieved": "2026-05-06",
+    "severity": "info",
+    "source_label": "Apple HIG: Playing haptics",
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics#Best-practices",
+    "title": "Apply haptics consistently for the same outcome"
+  },
+  {
+    "anchor": "#hapt-ux-003-pair-haptics-with-visual-or-audio-feedback",
+    "clause_id": "HAPT-UX-003",
+    "corpus_version": "development",
+    "dimension": "ux",
+    "domain": "haptics",
+    "file_path": "corpus/ios/haptics.md",
+    "platform": "ios",
+    "retrieved": "2026-05-06",
+    "severity": "error",
+    "source_label": "Apple HIG: Feedback",
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/feedback",
+    "title": "Pair haptics with visual or audio feedback"
+  },
+  {
+    "anchor": "#hapt-ux-004-gate-core-haptics-on-device-capability",
+    "clause_id": "HAPT-UX-004",
+    "corpus_version": "development",
+    "dimension": "ux",
+    "domain": "haptics",
+    "file_path": "corpus/ios/haptics.md",
+    "platform": "ios",
+    "retrieved": "2026-05-06",
+    "severity": "warning",
+    "source_label": "Apple Developer: Preparing your app to play haptics",
+    "source_url": "https://developer.apple.com/documentation/corehaptics/preparing-your-app-to-play-haptics",
+    "title": "Gate Core Haptics on device capability"
+  },
+  {
     "anchor": "#lay-a11y-001-enforce-44x44-accessibility-hit-areas",
     "clause_id": "LAY-A11Y-001",
     "corpus_version": "development",
@@ -404,6 +460,20 @@
     "source_label": "Apple Developer: sensoryFeedback",
     "source_url": "https://developer.apple.com/documentation/swiftui/view/sensoryfeedback(_:trigger:)",
     "title": "Use sensoryFeedback for meaningful state changes"
+  },
+  {
+    "anchor": "#lay-ux-009-map-sensoryfeedback-variant-to-hig-haptic-tier",
+    "clause_id": "LAY-UX-009",
+    "corpus_version": "development",
+    "dimension": "ux",
+    "domain": "layout-interaction",
+    "file_path": "corpus/ios/layout-interaction.md",
+    "platform": "ios",
+    "retrieved": "2026-05-06",
+    "severity": "info",
+    "source_label": "Apple HIG: Playing haptics",
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics",
+    "title": "Map sensoryFeedback variant to HIG haptic tier"
   },
   {
     "anchor": "#nav-a11y-001-announce-major-screen-changes",
