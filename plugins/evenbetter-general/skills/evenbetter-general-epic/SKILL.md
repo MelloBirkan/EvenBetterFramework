@@ -7,13 +7,21 @@ description: Platform-agnostic product-first epic workflow for larger scoped wor
 
 ## Operating model
 
-Use this skill as a staged, question-driven product and engineering workflow for platform-agnostic work. The goal is shared understanding before artifacts, with product decisions flowing into technical decisions.
+Use this skill as a staged, question-driven product and engineering workflow for platform-agnostic work. The goal is shared understanding before artifacts, with product decisions flowing into technical decisions. Optimize for exhaustive clarification: do not infer anything you could ask, and do not draft from a one-sentence prompt.
 
-- Ask questions until the problem, user journeys, technical approach, or validation decision is genuinely clear.
-- Surface assumptions explicitly before committing them to artifacts.
-- Keep artifacts in `.evenbetter/<epic-name>/`.
+- Ask interview questions until the problem, audience, user journeys, technical approach, data model, integration boundaries, failure handling, and validation decisions are genuinely clear. Before ticket breakdown, expect roughly 3-10 questions per phase on average across `0-trigger-workflow`, `1-epic-brief`, `2-core-flows`, `3-prd-validation`, `4-tech-plan`, and `5-architecture-validation`. The cumulative pre-ticket interview can and should exceed 10 questions when complexity warrants it.
+- Do not treat 10 as a total cap. When the request is large or ambiguous (new product, multi-area epic, ambiguous audience, novel domain), 20-40 cumulative questions across rounds is normal. Stop asking only when each artifact section can be drafted from explicit decisions rather than assumptions.
+- Treat `0-trigger-workflow`, `1-epic-brief`, and `2-core-flows` as discovery-heavy. Do not draft `epic-brief.md` or `core-flows.md` from a vague prompt; ask enough closed questions to make the intended audience, scope boundaries, primary flows, edge cases, success criteria, dependencies, and constraints explicit.
+- In `2-core-flows`, ask flow-by-flow questions before writing `core-flows.md`. Every primary flow needs a decided entry point, step sequence, primary action, feedback/state model, completion destination, cancellation/back behavior, failure/recovery path, and notable edge cases.
+- Prefer concrete multiple-choice options with a recommended default when one is defensible. Use open-text follow-ups only when the answer space cannot reasonably be enumerated (for example, naming an external system, citing a regulatory requirement, or pasting an existing schema).
+- If the user chooses "Other," convert their answer into a concrete assumption and immediately continue with another closed question if any uncertainty remains.
+- Use early questions in each phase to close gaps and assumptions. Use later rounds to cover edge cases, failure states, auth/permissions, offline/degraded behavior, data conflicts, destructive actions, scaling concerns, and any decisions the user has not explicitly confirmed.
+- Prefer returning to the relevant earlier phase over carrying an unresolved assumption forward. Do not proceed to ticket breakdown while a high-impact product, flow, data, integration, failure-mode, or architecture decision is still implicit.
+- Surface your key assumptions explicitly before drafting any section and ask the user to confirm or correct each one.
+- Ground recommendations in the actual codebase before planning or reviewing implementation.
+- Keep artifacts in `.evenbetter/<epic-name>/`, reusing an existing EvenBetter epic folder when the target is clear.
 - Treat the Epic Brief, Core Flows, and Tech Plan as source specs; tickets derive from those specs.
-- Load only the reference for the current stage, then follow that stage precisely.
+- Load only the reference for the current stage plus `question-patterns.md` when option banks would help close gaps faster.
 
 Former slash-command names in the references are aliases. Interpret `/epic:4-tech-plan` as "use `$evenbetter-general-epic` with stage `4-tech-plan`."
 
@@ -21,11 +29,12 @@ Former slash-command names in the references are aliases. Interpret `/epic:4-tec
 
 For all interviews, clarification rounds, refinement choices, and user decisions, use the best available user-question mechanism:
 
-- Claude Code: keep using `AskUserQuestion`.
-- Codex Plan mode: use `request_user_input` when it is available. Ask 1-3 short questions, give 2-3 mutually exclusive choices per question, put the recommended choice first when there is one, and rely on the client-added "Other" option.
+- Claude Code: use `AskUserQuestion` with 2-4 mutually exclusive options per question. Up to 4 questions per round.
+- Codex Plan mode: use `request_user_input` when it is available. Ask 1-3 short questions per round, give 2-3 mutually exclusive choices per question, put the recommended choice first when there is one, and rely on the client-added "Other" option.
 - Codex Default mode or any environment without a structured question tool: ask concise plain-text questions and wait for the user. Do not simulate a tool call.
+- Cursor or other agents with an ask-question tool: use the native structured question tool with mutually exclusive options.
 
-Keep each round focused. Claude references allow up to 4 questions per round; Codex `request_user_input` supports up to 3. Multiple clarification rounds are expected.
+Keep each round focused. Multiple clarification rounds per phase are expected. Use the first questions in a phase to close gaps and assumptions, then use later rounds to cover edge cases, failure states, integration risks, data conflicts, security/permissions, and cross-spec consistency. Prefer returning to the relevant earlier phase over carrying unresolved assumptions forward.
 
 ## Tool equivalents
 
@@ -77,3 +86,13 @@ Infer the stage from the user request. If the user gives no stage and there is n
 Ground technical recommendations in the actual codebase before proposing architecture. Use current, primary documentation when API behavior, library constraints, platform rules, or framework guidance might matter.
 
 When documentation research is needed, prefer official docs through Ref MCP if available. If using web search, compare dates and source authority, and cite sources when reporting externally.
+
+## Anti-patterns
+
+Do not:
+
+- Draft any source spec (`epic-brief.md`, `core-flows.md`, `tech-plan.md`) before the relevant phase questions are answered.
+- Skip clarification rounds for efficiency. Treat questions as investments in correctness; treat inference as a cost.
+- Ask "anything else?" or broad discovery questions. Convert open uncertainty into concrete closed questions.
+- Stop at one round of answers when the user's request is large, ambiguous, or new-domain. Multiple rounds per phase are normal.
+- Carry uncommunicated assumptions forward. Either ask, or record the assumption in-spec with a confidence note so the user can correct it.

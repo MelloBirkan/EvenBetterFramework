@@ -41,26 +41,38 @@ All artifacts live in `.evenbetter/<epic-folder>/`. Scan `.evenbetter/` to find 
 
 ## Processing User Request
 
-1. Internalize and try to understand the user's request. Try and understand what the user is trying to accomplish at a product level.
-2. For any ambiguities in the user's request, use interview questions to gain shared understanding.
-3. Using the responses from the user, build a better understanding of the user's request and problem.
-4. Ask yourself, if you are completely confident and clear on the product level of what the user demands. If no, present further interview questions to develop a better understanding.
-
-Remember that:
-
-```other
-- The goal is shared understanding, not speed
-- Don't feel pressured to draft after one round of answers
-- Multiple rounds of clarification is normal and encouraged
-
-If yes, proceed to point 5.
-```
-
-1. Once aligned, write the Epic Brief artifact to `.evenbetter/<epic-folder>/epic-brief.md` with:
-    - Summary: 3-8 sentences describing what this Epic is about
-    - Context & Problem: Who's affected, where in the product, the current pain
+1. Internalize the gathered requirements and try to understand what the user is trying to accomplish at a product level.
+2. Read `question-patterns.md`, especially `1 Epic Brief`.
+3. Ask roughly 3-10 multiple-choice questions in this phase, across one or more rounds before drafting when complexity warrants it. Use early questions to close gaps and assumptions; use later questions to cover edge cases, dependency risks, cross-team coordination, non-functional priorities, and evidence/acceptance plans.
+4. Map every material answer to the brief sections below. If any section still depends on an unstated assumption, ask another closed question before drafting.
+5. Once aligned, write the Epic Brief artifact to `.evenbetter/<epic-folder>/epic-brief.md` with:
+   - Summary: 3-8 sentences describing what this Epic is about
+   - Context & Problem: Who's affected, where in the product, the current pain
+   - Scope: Included scope, explicitly excluded scope, and named follow-ups
+   - Success criteria: How we know the epic worked (user-visible, operational, or system-level)
+   - Constraints: Hard regulatory, performance, deadline, or budget constraints when stated upfront
+   - Assumptions: Any decisions taken without an explicit user answer, flagged so the user can correct them
 
 Keep the Epic Brief compact, under 50 lines. No UI flows, UI specifics, or technical design.
+
+## Brief Interview
+
+Use `question-patterns.md` section `1 Epic Brief`. Ask at least one product-level round and at least one risk round for new-product or multi-area epics.
+
+1. Audience and context: audience priority, context of use, and adjacent product context.
+2. Scope and boundary: scope boundary, dependency posture, and cross-team boundary.
+3. Success and evidence: success criteria, non-functional priorities, and evidence/acceptance plan. Include a risk-state question for any epic with data writes, payments, account changes, permissions, sync, deletion, or external integrations.
+
+## Drafting Gate
+
+Do not write `epic-brief.md` until these decisions are explicit:
+
+- Primary audience and the usage context that shapes the experience.
+- Included and excluded scope, plus named follow-ups.
+- Dependency posture (existing systems, systems to build, external contracts) and cross-team coordination.
+- Success criteria, including any non-functional priorities (correctness, performance, security/privacy, reliability).
+- Acceptance evidence plan (manual verification, automated tests, stakeholder demo).
+- Hard constraints (regulatory, performance, deadline, budget) when they exist.
 
 ## Next Step
 
@@ -68,5 +80,6 @@ Suggest the user proceed with `$evenbetter-general-epic 2-core-flows` to design 
 
 ## Acceptance Criteria
 
-- The problem and context are aligned with the user, with all assumptions clarified
-- User confirms the brief captures the core problem and who's affected
+- The problem and context are aligned with the user, with all assumptions clarified.
+- Scope, success criteria, dependencies, and constraints are explicit, not inferred.
+- User confirms the brief captures the core problem, who's affected, and what counts as success.

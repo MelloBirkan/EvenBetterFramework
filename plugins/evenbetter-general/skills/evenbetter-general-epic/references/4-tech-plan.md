@@ -51,20 +51,21 @@ All artifacts live in `.evenbetter/<epic-folder>/`. Scan `.evenbetter/` to find 
 
 ## Processing User Request
 
-1. Internalize the problem from the epic brief and core flows. Understand what we're solving and why.
-2. Analyze the existing codebase thoroughly - architecture patterns, technical constraints, integration points. Ground all recommendations in what you actually observe, not assumptions about how systems typically work.
-3. Think through the high-level design approach before clarifying with the user.
+1. Internalize the problem from the Epic Brief and Core Flows. Understand what we're solving and why.
+2. Analyze the existing codebase thoroughly — architecture patterns, technical constraints, integration points. Ground all recommendations in what you actually observe, not assumptions about how systems typically work.
+3. Read `question-patterns.md`, especially `4 Tech Plan`.
+4. Think through the high-level design approach before clarifying with the user.
 
 Thoroughly think through your mental model:
 
     - Trace a request through the proposed architecture end-to-end
-    - Change a requirement - what ripples through the design?
-    - Inject failures at each point - what breaks, what recovers?
-1. Surface assumptions and use interview questions to align on the approach.
+    - Change a requirement — what ripples through the design?
+    - Inject failures at each point — what breaks, what recovers?
+5. Surface assumptions and use interview questions to align on the approach.
 
-Present your proposed direction, key assumptions, and anything that surfaced during step 3. Align on the overall approach before diving into sections. Multiple rounds of clarification is acceptable.
+Present your proposed direction, key assumptions, and anything that surfaced during step 4. Align on the overall approach before diving into sections. Ask roughly 3-10 multiple-choice questions in this phase when needed to close architecture, data, integration, failure-handling, and observability assumptions. Multiple rounds of clarification are expected.
 
-1. For each section, reach alignment through interview questions before documenting.
+6. For each section, reach alignment through interview questions before documenting.
 
 Work through sections one at a time (Architectural Approach → Data Model → Component Architecture):
 
@@ -74,7 +75,7 @@ Trace through this section's implications. What are the key decisions? What has 
 
 Interview the user:
 
-Surface key decisions and uncertainties to the user as interview questions. Don't assume - get input on choices that shape the architecture. Iterate until you have shared understanding.
+Surface key decisions and uncertainties to the user as multiple-choice interview questions, using option banks from `question-patterns.md` (Architectural style, Service boundary, Sync vs async, Concurrency posture, Storage shape, Schema change strategy, Identity and ownership, Data lifecycle, Integration boundary, Failure handling, Idempotency posture, Observability). Don't assume — get input on choices that shape the architecture. Iterate until you have shared understanding.
 
 Then document:
 
@@ -82,7 +83,20 @@ Write the section only after alignment. The spec captures decisions made, not on
 
 Complete each section (think → clarify → document) before moving to the next.
 
+7. If the technical plan cannot map a flow to a concrete approach without inventing implementation assumptions, return to `2-core-flows` or `3-prd-validation` before drafting.
+
 Structure each section as described in the Tech Plan Template section below.
+
+## Planning Gate
+
+Do not write `tech-plan.md` until the source specs answer:
+
+- Which area or component owns each primary flow.
+- Whether each step is synchronous, asynchronous, or mixed.
+- What data is created, read, updated, or deleted by each flow.
+- Which existing systems, services, or external integrations each flow touches.
+- How failures, conflicts, and idempotency are handled on the critical path.
+- Which acceptance evidence (tests, manual verification, or observability) proves the technical contract.
 
 ## Tech Plan Template
 
@@ -122,12 +136,14 @@ Note: Draft only these 3 sections. DO NOT draft any other sections.
 ## Next Step
 
 Present the following options to the user:
-1. `$evenbetter-general-epic 6-ticket-breakdown` — break the plan into implementation tickets (required next step)
-2. `$evenbetter-general-epic 5-architecture-validation` — stress-test the architecture before committing to implementation (optional intermediate step)
+
+1. `$evenbetter-general-epic 5-architecture-validation` — stress-test the architecture before committing to implementation (recommended when the plan introduces new patterns, crosses service boundaries, has non-trivial failure modes, or deviates from existing codebase patterns)
+2. `$evenbetter-general-epic 6-ticket-breakdown` — break the plan into implementation tickets (acceptable when the plan extends existing patterns with low risk and the user has confirmed all critical decisions)
 
 ## Acceptance Criteria
 
 - The architectural approach is aligned with the user, with all assumptions clarified
+- Each Tech Plan section (Architectural Approach, Data Model, Component Architecture) was confirmed through closed questions before drafting
 - Key decisions and trade-offs have been captured with user alignment
 - User confirms the technical direction
 

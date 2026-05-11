@@ -70,8 +70,9 @@ All artifacts live in `.evenbetter/<feature-folder>/`. Scan `.evenbetter/` to fi
 
 1. Internalize the problem from the gathered requirements. Understand what we're solving and why.
 2. Analyze the existing codebase thoroughly — architecture patterns, technical constraints, integration points. Ground all recommendations in what you actually observe, not assumptions about how systems typically work.
-3. Determine which plan sections are relevant based on the nature of the work (see Adaptive Planning above).
-4. Think through the high-level approach before clarifying with the user.
+3. Read `question-patterns.md`, especially `1 Plan`.
+4. Determine which plan sections are relevant based on the nature of the work (see Adaptive Planning above).
+5. Think through the high-level approach before clarifying with the user.
 
 Thoroughly think through your mental model:
 
@@ -79,11 +80,11 @@ Thoroughly think through your mental model:
     - Change a requirement — what ripples through the design?
     - Inject failures at each point — what breaks, what recovers?
     - For product-facing work: trace the user journey — entry point, each action, each response, exit
-1. Surface assumptions and use interview questions to align on the approach.
+6. Surface assumptions and use interview questions to align on the approach.
 
-Present your proposed direction, key assumptions, and anything that surfaced during step 4. Align on the overall approach before diving into sections. Multiple rounds of clarification is acceptable.
+Present your proposed direction, key assumptions, and anything that surfaced during step 5. Align on the overall approach before diving into sections. Ask roughly 3-10 multiple-choice questions in this phase when needed to close behavior, data, integration, failure-handling, and acceptance assumptions. Multiple rounds of clarification are expected.
 
-1. For each relevant section, reach alignment through interview questions before documenting.
+7. For each relevant section, reach alignment through interview questions before documenting.
 
 Work through sections one at a time, in the order listed in the Plan Template below. Only include sections relevant to this work.
 
@@ -93,13 +94,26 @@ Trace through this section's implications. What are the key decisions? What has 
 
 Interview the user:
 
-Surface key decisions and uncertainties to the user as interview questions. Don't assume — get input on choices that shape the plan. Iterate until you have shared understanding.
+Surface key decisions and uncertainties to the user as multiple-choice interview questions, using the option banks in `question-patterns.md`. Don't assume — get input on choices that shape the plan. Iterate until you have shared understanding.
 
 Then document:
 
 Write the section only after alignment. The plan captures decisions made, not ongoing deliberation.
 
-Complete each section (think -> clarify -> document) before moving to the next.
+Complete each section (think → clarify → document) before moving to the next.
+
+8. If the plan cannot map a flow or technical decision to a concrete approach without inventing assumptions, return to `0-trigger-workflow` before drafting.
+
+## Planning Gate
+
+Do not write `plan.md` until the gathered requirements answer:
+
+- The work nature (product-facing, technical, or mixed) and which plan sections apply.
+- The primary user goal or improvement target.
+- For product-facing or mixed work: entry point, primary action, feedback model, completion, cancellation/back behavior, and failure/recovery for each affected flow.
+- For technical or mixed work: architectural style, service boundary, sync vs async, data model change, integration boundary, failure handling, and idempotency posture.
+- Hard constraints (regulatory, performance, deadline, budget) when they exist.
+- Acceptance evidence (manual verification, automated tests, stakeholder demo).
 
 ## Plan Template
 
@@ -166,13 +180,15 @@ Note: Draft only the relevant sections. DO NOT draft sections that aren't applic
 ## Next Step
 
 Present the following options to the user:
-1. `$evenbetter-general-feature 3-ticket-breakdown` — break the plan into implementation tickets (required next step)
-2. `$evenbetter-general-feature 2-plan-validation` — stress-test the plan's critical decisions before committing to implementation (optional intermediate step)
+
+1. `$evenbetter-general-feature 2-plan-validation` — stress-test the plan's critical decisions before committing to implementation (recommended when the plan introduces new patterns, crosses service boundaries, has non-trivial failure modes, mixes product/technical decisions, or deviates from existing codebase patterns)
+2. `$evenbetter-general-feature 3-ticket-breakdown` — break the plan into implementation tickets (acceptable when the plan extends existing patterns with low risk and the user has confirmed all critical decisions)
 
 ## Acceptance Criteria
 
 - The plan covers the aspects relevant to this work (product, technical, or both)
-- The approach is aligned with the user, with all assumptions clarified
+- The approach is aligned with the user, with all assumptions clarified through closed questions
+- Each relevant Plan section was confirmed before drafting; no inferred decisions remain
 - Key decisions and trade-offs have been captured with user alignment
 - User confirms the direction
 

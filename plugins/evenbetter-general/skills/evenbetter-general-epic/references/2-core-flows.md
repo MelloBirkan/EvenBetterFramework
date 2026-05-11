@@ -46,79 +46,92 @@ All artifacts live in `.evenbetter/<epic-folder>/`. Scan `.evenbetter/` to find 
 
 ## Processing User Request
 
-1. Internalize and understand what the user is trying to accomplish on a product level. Read and internalize the Epic Brief file to understand the problem and its background at hand.
-2. Given the background information, explore map out and visualize the current flows in the product. Explore the codebase to concretely understand the current interaction surface area, user journeys, and user actions.
-3. Think hard about the UX design decisions. These are not about visual aesthetics, but about interaction design and user experience architecture. Think about the following dimensions/ directions:
+1. Read `.evenbetter/<epic-folder>/epic-brief.md` to internalize the problem, audience, scope, and success criteria.
+2. Explore the codebase to concretely understand the current interaction surface area, user journeys, and user actions where relevant.
+3. Read `question-patterns.md`, especially `2 Core Flows`. Use multiple-choice questions for flow decisions.
+4. Run the core-flow interview below before drafting. Ask flow-by-flow questions for every primary flow; do not rely on a single generic question about navigation or interaction.
+5. For each flow, mentally trace entry, each action, each response, completion, cancellation, and recovery. Surface ambiguities as closed questions before documenting.
+6. Once all flows are aligned, write them to `.evenbetter/<epic-folder>/core-flows.md`.
 
-Information Hierarchy:
+Think about each flow across these dimensions before asking questions:
 
-    - What information is most critical in the system and should be prioritised for visibility.
-    - What's secondary and can be progressively disclosed or tucked away.
-    - The grouping and organization of information.
+- Information hierarchy: what's critical vs. secondary; how information is grouped and progressively disclosed.
+- User journey integration: entry point, post-completion destination, and adjacent workflow connections.
+- Placement and affordances: where actions live, how they integrate with existing patterns, and how the user discovers them.
+- Feedback and state communication: in-progress indicators, success signals, and error/edge-case communication.
 
-        User Journey Integration:
+## Core-Flow Interview
 
-    - What's the entry point to this flow
-    - Where does the user go after completing it
-    - How does this flow connect to adjacent workflows
+Use `question-patterns.md` section `2 Core Flows`. Ask roughly 3-10 questions in this phase when needed to close cross-flow assumptions, edge cases, and unspoken flow expectations. For multi-area epics, expect multiple rounds and exceed 10 total questions when the flow map is still ambiguous. Keep each round to 1-4 questions (Claude) or 1-3 (Codex).
 
-        Placement & Affordances:
+### Round 1: Flow Inventory
 
-    - How does it integrate with the existing UI layout and current interaction patterns
-    - Where do the actions live and how they behave
-    - The discoverability of the feature
+Clarify:
 
-        Feedback & State Communication:
+- The set of primary, secondary, and deferred flows.
+- The owning entry surface for each flow.
+- Whether each flow starts in-product, from onboarding/auth/permissions, or from an external trigger.
+- Whether the flow crosses integration boundaries (one or many).
 
-    - How will users know an action is in progress
-    - How should success, errors, or edge cases be communicated
-1. Seek clarity and alignment about these decisions with the user, through targeted interview questions. For points of ambiguity or uncertainty, present further interview questions to develop a better understanding.
+### Round 2: Per-Flow Decisions
 
-Remember that:
+Repeat this round for each primary flow. Do not write the flow until every item is decided or intentionally deferred:
 
-    - Multiple rounds of clarification is normal and encouraged
-    - The goal is shared understanding, not speed
-    - Don't feel pressured to draft after one round of answers
-1. Work through all flows in conversation, reach consensus through clarification before documenting.
+- Entry state: existing data loaded, empty/first-use, signed-out, permission-blocked, externally triggered.
+- Step sequence: root/list, focused task, confirmation, completion, plus any optional branch steps.
+- Primary action placement: prominent main action, inline per-item action, or externally triggered.
+- Primary and destructive actions: visible placement, disabled/loading behavior, confirmation, undo/recovery.
+- Completion: return target, success feedback, next suggested action, and cross-flow state update.
+- Cancellation/back behavior: standard back, dismiss, confirmation, draft preservation, or blocked dismissal.
+- Failure/recovery: inline retry, preserved input, error surface, permission education, offline queue, or central error/notification.
+- Branching: keep one happy path with explicit alternates, split by role/state/data availability, or split by environment.
 
-For each flow think deeply through the flow. Mentally trace the complete journey - entry point, each action, each response, exit. This detailed thinking surfaces ambiguities that weren't visible during earlier abstract clarification.
+### Round 3: Cross-Flow Edge Cases
 
-When you hit a decision point or uncertainty, surface it through interview questions:
+Ask this round before drafting when more than one flow or more than one user/system state exists:
 
-    - "Should initiating X be a button, shortcut, or contextual action?"
-    - "After completing Y, return to list or stay on detail?"
-    - "Should Z require confirmation or happen immediately?"
+- State restoration, draft persistence, and post-completion reset behavior.
+- Authentication, permissions, empty/loading/error states, destructive actions, offline/degraded mode, and data conflicts.
+- Feedback model across flows (inline near action, dedicated completion view, system-wide notification).
+- Acceptance evidence for default, completion, error/empty, and any cross-flow status transitions.
 
-        Only ask about substantive decisions that shape user experience. For nitpicky details where a reasonable default exists, state your assumption and continue.
+## Drafting Gate
 
-        Iterate until you reach shared understanding. Multiple rounds is normal.
+Do not write `core-flows.md` until every primary flow has:
 
-        Later flows may reveal insights that refine earlier ones - keeping everything in conversation makes this natural. Iterate until all flows have shared understanding.
+- Purpose and owning entry surface.
+- Step sequence with each meaningful step's purpose.
+- Primary action, visible feedback, and loading/disabled behavior.
+- Completion destination and cross-flow state update.
+- Failure, cancellation, back/dismiss, and recovery behavior.
+- Edge states (empty, loading, permission-blocked, offline, conflict) covered or explicitly deferred.
+- Acceptance evidence plan (manual verification, automated coverage, or stakeholder demo).
 
-1. Once all flows are aligned, document them together.
+## Flow Documentation Structure
 
 Structure each flow as:
 
-    - Name and short description
-    - Trigger / entry point
-    - Step-by-step description
-        - User actions and interactions
-        - UI feedback and navigation
-    - Wireframes or ASCII sketches where helpful
+- Name and short description
+- Trigger / entry point
+- Step-by-step description
+  - User actions and interactions
+  - System feedback, state changes, and navigation
+- Branches, edge states, failure, and cancellation behavior
+- Wireframes or ASCII sketches where helpful
 
-        Keep each flow under 30 lines. Don't mention file paths, or components names. No code or technical details.
-
-        No code or technical details. This is a product-level spec.
-
-        The spec records decisions made, not ongoing deliberation.
+Keep each flow under 30 lines. Don't mention file paths or component names. No code or technical details — this is a product-level spec. The spec records decisions made, not ongoing deliberation.
 
 ## Next Step
 
 Present the following options to the user:
-1. `$evenbetter-general-epic 4-tech-plan` — proceed to technical architecture (required next step)
-2. `$evenbetter-general-epic 3-prd-validation` — validate that requirements are clear and complete before moving to technical work (optional intermediate step)
+
+1. `$evenbetter-general-epic 3-prd-validation` — validate that requirements are clear and complete before moving to technical work (recommended when the epic is complex, multi-area, or high-risk)
+2. `$evenbetter-general-epic 4-tech-plan` — proceed directly to technical architecture (acceptable when flows are simple, fully aligned, and low-risk)
+
+Do not recommend ticket breakdown directly from core flows.
 
 ## Acceptance Criteria
 
-- All user flows are aligned with the user, with all assumptions clarified
-- User confirms the flows capture their intended experience
+- All user flows are aligned with the user, with all assumptions clarified.
+- Each primary flow has explicit entry, steps, completion, cancellation, failure/recovery, and edge-state decisions.
+- User confirms the flows capture their intended experience.

@@ -7,13 +7,22 @@ description: Platform-agnostic feature workflow for smaller scoped work. Use whe
 
 ## Operating model
 
-Use this skill as a staged, question-driven feature workflow for platform-agnostic product and engineering work. The goal is shared understanding before artifacts, not speed.
+Use this skill as a staged, question-driven feature workflow for platform-agnostic product and engineering work. The goal is shared understanding before artifacts, not speed. Optimize for exhaustive clarification: do not infer anything you could ask, and do not draft from a one-sentence prompt.
 
-- Ask questions until the feature requirement, plan, or validation decision is genuinely clear.
-- Surface assumptions explicitly before committing them to artifacts.
-- Keep artifacts in `.evenbetter/<feature-name>/`.
+- Ask interview questions until the feature's user goal, in-scope behavior, data shape, integration points, failure modes, and validation decisions are genuinely clear. Before ticket breakdown, expect roughly 3-10 questions per phase on average across `0-trigger-workflow`, `1-plan`, and `2-plan-validation`. The cumulative pre-ticket interview can and should exceed 10 questions when complexity warrants it.
+- Do not treat 10 as a total cap. When the request is ambiguous (mixed product/technical work, novel integration, unfamiliar domain), 15-30 cumulative questions across rounds is normal. Stop asking only when each plan section can be drafted from explicit decisions rather than assumptions.
+- Treat `0-trigger-workflow` and `1-plan` as discovery-heavy. Do not draft `plan.md` from a vague prompt; ask enough closed questions to make the user goal, in-scope behavior, key flow steps, edge cases, data changes, integration boundaries, and constraints explicit.
+- For product-facing work, ask flow-by-flow questions before drafting the User Experience section: each affected flow needs a decided entry point, primary action, feedback model, completion state, cancellation/back behavior, and failure/recovery path.
+- For technical work, ask architecture-by-decision questions before drafting the Technical Approach section: each defining choice needs a decided pattern, integration boundary, data shape, failure behavior, and codebase-fit justification.
+- Prefer concrete multiple-choice options with a recommended default when one is defensible. Use open-text follow-ups only when the answer space cannot reasonably be enumerated (for example, naming an external system, citing a regulatory requirement, or pasting an existing schema).
+- If the user chooses "Other," convert their answer into a concrete assumption and immediately continue with another closed question if any uncertainty remains.
+- Use early questions in each phase to close gaps and assumptions. Use later rounds to cover edge cases, failure states, auth/permissions, offline/degraded behavior, data conflicts, destructive actions, scaling concerns, and any decisions the user has not explicitly confirmed.
+- Prefer returning to `0-trigger-workflow` for missing requirements over carrying an unresolved assumption forward. Do not proceed to ticket breakdown while a high-impact product, flow, data, integration, failure-mode, or architecture decision is still implicit.
+- Surface your key assumptions explicitly before drafting any plan section and ask the user to confirm or correct each one.
+- Ground recommendations in the actual codebase before planning or reviewing implementation.
+- Keep artifacts in `.evenbetter/<feature-name>/`, reusing an existing EvenBetter feature folder when the target is clear.
 - Treat the feature plan as the source of truth and tickets as derivatives.
-- Load only the reference for the current stage, then follow that stage precisely.
+- Load only the reference for the current stage plus `question-patterns.md` when option banks would help close gaps faster.
 
 Former slash-command names in the references are aliases. Interpret `/feature:1-plan` as "use `$evenbetter-general-feature` with stage `1-plan`."
 
@@ -21,11 +30,12 @@ Former slash-command names in the references are aliases. Interpret `/feature:1-
 
 For all interviews, clarification rounds, refinement choices, and user decisions, use the best available user-question mechanism:
 
-- Claude Code: keep using `AskUserQuestion`.
-- Codex Plan mode: use `request_user_input` when it is available. Ask 1-3 short questions, give 2-3 mutually exclusive choices per question, put the recommended choice first when there is one, and rely on the client-added "Other" option.
+- Claude Code: use `AskUserQuestion` with 2-4 mutually exclusive options per question. Up to 4 questions per round.
+- Codex Plan mode: use `request_user_input` when it is available. Ask 1-3 short questions per round, give 2-3 mutually exclusive choices per question, put the recommended choice first when there is one, and rely on the client-added "Other" option.
 - Codex Default mode or any environment without a structured question tool: ask concise plain-text questions and wait for the user. Do not simulate a tool call.
+- Cursor or other agents with an ask-question tool: use the native structured question tool with mutually exclusive options.
 
-Keep each round focused. Claude references allow up to 4 questions per round; Codex `request_user_input` supports up to 3. Multiple clarification rounds are expected.
+Keep each round focused. Multiple clarification rounds per phase are expected. Use the first questions in a phase to close gaps and assumptions, then use later rounds to cover edge cases, failure states, integration risks, data conflicts, security/permissions, and cross-spec consistency. Prefer returning to `0-trigger-workflow` over carrying unresolved assumptions forward.
 
 ## Tool equivalents
 
@@ -72,3 +82,13 @@ Infer the stage from the user request. If the user gives no stage and there is n
 Ground technical recommendations in the actual codebase before proposing architecture. Use current, primary documentation when API behavior, library constraints, platform rules, or framework guidance might matter.
 
 When documentation research is needed, prefer official docs through Ref MCP if available. If using web search, compare dates and source authority, and cite sources when reporting externally.
+
+## Anti-patterns
+
+Do not:
+
+- Draft `plan.md` before the relevant phase questions are answered.
+- Skip clarification rounds for efficiency. Treat questions as investments in correctness; treat inference as a cost.
+- Ask "anything else?" or broad discovery questions. Convert open uncertainty into concrete closed questions.
+- Stop at one round of answers when the user's request is ambiguous, novel-domain, or mixed product/technical. Multiple rounds per phase are normal.
+- Carry uncommunicated assumptions forward. Either ask, or record the assumption in-plan with a confidence note so the user can correct it.

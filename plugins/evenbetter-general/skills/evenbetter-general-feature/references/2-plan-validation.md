@@ -202,15 +202,19 @@ For each critical decision, evaluate against the relevant focus areas:
     - Polish and refinements
 1. **Interview for Resolution**
 
-Present findings to the user as interview questions. Include detailed description of the issues for better understanding in the question statement itself. For each gap or concern:
+Present findings to the user as multiple-choice interview questions. Include a detailed description of the issue in the question statement so the user has the context they need to choose. For each gap or concern:
 
     - Explain the issue and why it matters
-    - Ask focused questions to understand the reasoning or fill the gap
+    - Ask focused closed questions to understand the reasoning or fill the gap, using disposition option banks from `question-patterns.md` section `2 Plan Validation` (Risk classification, Fix routing, Simplicity vs flexibility, Codebase fit, Cross-dimensional consistency)
     - Clarify and resolve before moving to the next issue
+
+    Ask additional multiple-choice questions when validation exposes hidden assumptions, edge cases, or missing acceptance evidence. This phase can reasonably add 3-10 questions when the plan is complex or mixed product/technical.
 
     Start with the most important issues first — things that would cause major rework or block implementation. Then work toward smaller observations.
 
-    Multiple rounds of clarification is normal and encouraged. The goal is shared understanding of the plan's strengths and gaps.
+    Route unresolved requirements gaps back to `0-trigger-workflow`; route unresolved plan decisions back to `1-plan`.
+
+    Multiple rounds of clarification are normal and encouraged. The goal is shared understanding of the plan's strengths and gaps.
 
 1. **Update Plan Based on Clarification**
 
@@ -227,6 +231,10 @@ Once issues are addressed:
     - Confirm the changes capture the agreed approach
     - Iterate if any new gaps emerge
 
+## Output
+
+Either confirm the plan is ready for `3-ticket-breakdown` or revise the plan with a short "Validation Updates" section. Proceed to ticket breakdown only after the cumulative pre-ticket questions have closed all material gaps and uncommunicated assumptions. If a ticket would still need to decide a service boundary, data shape, failure-handling strategy, integration contract, or critical flow behavior, the plan is not ready.
+
 ## Next Step
 
 Suggest the user proceed with `$evenbetter-general-feature 3-ticket-breakdown` to break the plan into implementation tickets.
@@ -234,7 +242,7 @@ Suggest the user proceed with `$evenbetter-general-feature 3-ticket-breakdown` t
 ## Acceptance Criteria
 
 - Baseline coverage check completed with no unaddressed gaps
-- Critical decisions have been identified and stress-tested
+- Critical decisions have been identified and stress-tested with closed disposition questions
 - Gaps and concerns have been clarified and resolved
 - Agreed-upon changes have been made to the Plan
 - Plan is confirmed ready for ticket breakdown

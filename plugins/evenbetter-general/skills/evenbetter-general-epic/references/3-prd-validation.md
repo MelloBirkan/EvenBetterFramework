@@ -68,31 +68,35 @@ Read and internalize the artifacts:
 
     - Epic Brief (the vision and scope)
     - Core Flows (the user journeys)
+    - `question-patterns.md`, especially `3 PRD Validation`, for disposition option banks
 1. **Evaluate Requirements**
 
-For each focus area, assess qualitatively-not "is this documented?" but "is this clear and actionable?"
+For each focus area, assess qualitatively — not "is this documented?" but "is this clear and actionable?"
 
-Identify gaps, ambiguities, and areas needing clarification. Prioritize by importance-address things that block understanding or implementation first, then work toward smaller refinements.
+Identify gaps, ambiguities, and areas needing clarification. Prioritize by importance — address things that block understanding or implementation first, then work toward smaller refinements.
 
 1. **Interview for Resolution**
 
 Present findings to the user as interview questions. For each gap or ambiguity:
 
     - Explain the area that needs clarification and why it matters
-    - Ask focused questions to fill the gap
+    - Ask focused multiple-choice questions to fill the gap
+    - Use the disposition option banks (`Gap disposition`, `Severity weighting`, `Source spec routing`) from `question-patterns.md`
     - Clarify and resolve before moving to the next issue
+
+    Ask additional multiple-choice questions when validation exposes hidden assumptions, edge cases, or missing acceptance evidence. This phase can reasonably add 3-10 questions when the epic is complex.
 
     Start with the most important issues first. Group related questions together to make the conversation efficient.
 
-    Multiple rounds of clarification is normal and encouraged-don't rush. The goal is shared understanding.
+    Multiple rounds of clarification are normal and encouraged. The goal is shared understanding, not speed.
 
 1. **Update Specs Based on Clarification**
 
-As issues are resolved through clarification:
+Route changes to the right source spec:
 
-    - Update the Epic Brief with missing information
-    - Refine or expand Core Flows as needed
-    - Keep changes targeted-don't rewrite unnecessarily
+    - Audience, scope, success, dependency, constraint, or non-functional gaps → return to `1-epic-brief`
+    - Entry, step sequence, presentation, completion, cancellation, recovery, edge-state, or evidence gaps → return to `2-core-flows`
+    - Keep changes targeted — don't rewrite unnecessarily
 1. **Confirm Readiness**
 
 Once issues are addressed:
@@ -102,6 +106,10 @@ Once issues are addressed:
     - Iterate if any new gaps emerge
     - Only proceed when specs are ready for technical architecture
 
+## Output
+
+Either confirm the specs are ready for `4-tech-plan` or revise source specs with a short "Validation Updates" section. Do not create tickets in this stage. The workflow must still pass through `5-architecture-validation` before `6-ticket-breakdown`. Do not mark the PRD ready while any primary flow is missing entry, steps, completion, failure/cancellation, edge states, or acceptance evidence.
+
 ## Next Step
 
 Suggest the user proceed with `$evenbetter-general-epic 4-tech-plan` to design the technical architecture.
@@ -109,7 +117,7 @@ Suggest the user proceed with `$evenbetter-general-epic 4-tech-plan` to design t
 ## Acceptance Criteria
 
 - All focus areas have been evaluated against existing specs
-- Gaps and ambiguities have been identified and resolved through clarification
+- Gaps and ambiguities have been identified and resolved through closed clarification questions
 - Original documents (Epic Brief, Core Flows) have been updated with agreed changes
 - User confirms the updated specs are complete and accurate
 - Requirements are ready for technical architecture phase
