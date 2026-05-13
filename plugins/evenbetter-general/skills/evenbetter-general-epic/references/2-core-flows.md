@@ -42,7 +42,9 @@ Before drafting any artifact:
 
 ## Artifacts
 
-All artifacts live in `.evenbetter/<epic-folder>/`. Scan `.evenbetter/` to find the epic folder. If multiple exist, use Claude `AskUserQuestion` or Codex `request_user_input` when available to ask which epic to work on. Read `.evenbetter/<epic-folder>/epic-brief.md` and write core flows to `.evenbetter/<epic-folder>/core-flows.md`.
+All artifacts live in `.evenbetter/<epic-folder>/`. Scan `.evenbetter/` to find the epic folder. If multiple exist, use Claude `AskUserQuestion` or Codex `request_user_input` when available to ask which epic to work on. Read `.evenbetter/<epic-folder>/epic-brief.md` and write core flows to `.evenbetter/<epic-folder>/core-flows.html`.
+
+Core flows are written as a single self-contained HTML file with inline CSS so the user can open it in any browser and see both the written spec and a visual preview of each flow. The preview does not need to be interactive — buttons should look right but do not need to fire events. The HTML replaces what used to be a Markdown spec; do not also write `core-flows.md`.
 
 ## Processing User Request
 
@@ -51,7 +53,7 @@ All artifacts live in `.evenbetter/<epic-folder>/`. Scan `.evenbetter/` to find 
 3. Read `question-patterns.md`, especially `2 Core Flows`. Use multiple-choice questions for flow decisions.
 4. Run the core-flow interview below before drafting. Ask flow-by-flow questions for every primary flow; do not rely on a single generic question about navigation or interaction.
 5. For each flow, mentally trace entry, each action, each response, completion, cancellation, and recovery. Surface ambiguities as closed questions before documenting.
-6. Once all flows are aligned, write them to `.evenbetter/<epic-folder>/core-flows.md`.
+6. Once all flows are aligned, write them to `.evenbetter/<epic-folder>/core-flows.html` using the structure in `HTML Output Structure` below.
 
 Think about each flow across these dimensions before asking questions:
 
@@ -97,7 +99,7 @@ Ask this round before drafting when more than one flow or more than one user/sys
 
 ## Drafting Gate
 
-Do not write `core-flows.md` until every primary flow has:
+Do not write `core-flows.html` until every primary flow has:
 
 - Purpose and owning entry surface.
 - Step sequence with each meaningful step's purpose.
@@ -109,7 +111,7 @@ Do not write `core-flows.md` until every primary flow has:
 
 ## Flow Documentation Structure
 
-Structure each flow as:
+For each flow, the HTML file must contain a `<section class="flow">` block with:
 
 - Name and short description
 - Trigger / entry point
@@ -117,9 +119,91 @@ Structure each flow as:
   - User actions and interactions
   - System feedback, state changes, and navigation
 - Branches, edge states, failure, and cancellation behavior
-- Wireframes or ASCII sketches where helpful
+- A visual preview (see `HTML Output Structure` below) that approximates the screen or surface for each meaningful step
 
-Keep each flow under 30 lines. Don't mention file paths or component names. No code or technical details — this is a product-level spec. The spec records decisions made, not ongoing deliberation.
+Keep each flow's prose under 30 lines. Don't mention file paths or component names. No code or technical details in the prose — this is a product-level spec. The visual preview is the only place where layout and styling appear, and it is intentionally rough: pixel fidelity is not the goal, recognizability is.
+
+## HTML Output Structure
+
+Write `core-flows.html` as one self-contained file. No external CSS, no external JS, no fonts loaded from CDNs. Use system font stacks. Buttons, links, and inputs must look correct but do not need to function.
+
+Minimum structure:
+
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Core Flows — <epic name></title>
+  <style>
+    /* See "Preview Styles" below. Keep all CSS in this single <style> block. */
+  </style>
+</head>
+<body>
+  <header class="doc-header">
+    <h1>Core Flows: <epic name></h1>
+    <p class="doc-summary">One-paragraph reminder of the epic's goal and audience.</p>
+  </header>
+
+  <main>
+    <section class="flow" id="flow-<kebab-name>">
+      <header class="flow-header">
+        <h2>Flow: <Name></h2>
+        <p class="flow-purpose"><short description></p>
+      </header>
+
+      <dl class="flow-meta">
+        <dt>Trigger / entry point</dt><dd>...</dd>
+        <dt>Primary action</dt><dd>...</dd>
+        <dt>Completion</dt><dd>...</dd>
+        <dt>Cancellation / back</dt><dd>...</dd>
+        <dt>Failure / recovery</dt><dd>...</dd>
+        <dt>Edge states</dt><dd>...</dd>
+      </dl>
+
+      <ol class="flow-steps">
+        <li>
+          <h3>Step 1 — <name></h3>
+          <p>User action and system response in plain prose.</p>
+          <figure class="preview">
+            <div class="surface" aria-hidden="true">
+              <!-- Visual approximation of the surface at this step. -->
+            </div>
+            <figcaption>Step 1 visual preview</figcaption>
+          </figure>
+        </li>
+        <!-- Repeat <li> per meaningful step. -->
+      </ol>
+    </section>
+    <!-- Repeat <section class="flow"> per primary flow. -->
+  </main>
+</body>
+</html>
+```
+
+### Preview Styles
+
+Include a single `<style>` block with at least these rules. Adjust spacing and colors to taste, but keep the structure so previews stay consistent across flows:
+
+- `body` uses a neutral background and a system font stack (`-apple-system, "Segoe UI", system-ui, sans-serif`).
+- `.flow` is a block with generous vertical spacing and a soft separator between flows.
+- `.flow-meta` renders as a two-column definition list (term on the left, value on the right).
+- `.flow-steps` renders each step as a card with the prose on the left and the `.preview` on the right on wide screens, stacked on narrow screens.
+- `.surface` is a fixed-width container (about 360–420px) with a light border, rounded corners, soft shadow, and an internal padding that suggests a generic device or web surface.
+- Buttons inside `.surface` use a filled primary style (rounded, accent color background, white text) and a secondary text-only style. Disabled states use reduced opacity. Use `<button type="button">` and do not attach handlers.
+- Form inputs inside `.surface` use a 1px border, rounded corners, and a clear focus ring style — even though focus is not exercised.
+- Empty, loading, error, and success states for the same step live as sibling `.surface` elements inside the same `<figure>`, each labeled with a small caption (`<span class="state-label">Loading</span>` etc.) so the user can compare states side by side.
+
+### Per-Step Preview Rules
+
+- Each preview must be recognizable as the surface described in the prose. Use real copy from the flow, not Lorem Ipsum.
+- Use only inline `style` attributes or classes defined in the single `<style>` block. Do not load remote assets. Use simple `<svg>` or CSS shapes for icons.
+- When a step has multiple branches (e.g., success vs. error), render each branch as its own `.surface` inside the same `<figure>` and caption it.
+- Mark destructive actions with the `.danger` button class so reviewers can spot them at a glance.
+- For empty, offline, permission-blocked, or conflict states, add a `.surface` with a `state-label` so the user can see what those states look like, even if the prose only lists them.
+
+The preview is a communication tool for the user, not an implementation target. Stop tweaking visuals once the surface is recognizable and the primary action, feedback, and edge states are visible.
 
 ## Next Step
 

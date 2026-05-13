@@ -6,7 +6,7 @@ Create the technical plan that turns the iOS UX brief and screen flows into a Sw
 
 ## Process
 
-1. Read `ios-ux-brief.md` and `screen-flows.md`.
+1. Read `ios-ux-brief.md` and `screen-flows.html`.
 2. Inspect the codebase for app entry points, navigation, environment dependencies, theming, shared components, and minimum OS.
 3. Use `evenbetter-swiftui-ui-patterns` references for app wiring, TabView, NavigationStack, sheets, split views, forms, controls, theming, async state, and previews.
 4. Use `official-sources.md` for Apple documentation links.
@@ -65,7 +65,7 @@ Do not write `ios-hig-tech-plan.md` until the source specs answer:
 - Prefer shared semantic theme tokens over raw colors.
 - Prefer previews and simulator screenshots for representative states.
 - Use App Intents only for user-valued system actions, not every screen.
-- Prefer resolving UX flow ambiguity in `screen-flows.md` before encoding routes, state, or component responsibilities.
+- Prefer resolving UX flow ambiguity in `screen-flows.html` before encoding routes, state, or component responsibilities.
 
 ## Next Step
 

@@ -47,7 +47,7 @@ Before drafting any artifact:
 
 ## Artifacts
 
-All artifacts live in `.evenbetter/<epic-folder>/`. Scan `.evenbetter/` to find the epic folder. If multiple exist, use Claude `AskUserQuestion` or Codex `request_user_input` when available to ask which epic to work on. Read `.evenbetter/<epic-folder>/epic-brief.md` and `.evenbetter/<epic-folder>/core-flows.md`, and write the tech plan to `.evenbetter/<epic-folder>/tech-plan.md`.
+All artifacts live in `.evenbetter/<epic-folder>/`. Scan `.evenbetter/` to find the epic folder. If multiple exist, use Claude `AskUserQuestion` or Codex `request_user_input` when available to ask which epic to work on. Read `.evenbetter/<epic-folder>/epic-brief.md` and `.evenbetter/<epic-folder>/core-flows.html` (the visual flow spec), and write the tech plan to `.evenbetter/<epic-folder>/tech-plan.md`. When reading the HTML, focus on the `<dl class="flow-meta">` blocks and step prose; treat preview markup as supporting visual context only.
 
 ## Processing User Request
 

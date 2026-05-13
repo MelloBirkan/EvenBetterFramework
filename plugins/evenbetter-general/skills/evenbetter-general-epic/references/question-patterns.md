@@ -136,7 +136,7 @@ Use these patterns before drafting `epic-brief.md`. Ask at least one round on au
 
 ## 2 Core Flows
 
-Use these patterns before writing `core-flows.md`. Ask at least one inventory round, one per-flow round for each primary flow, and one cross-flow round for edge cases.
+Use these patterns before writing `core-flows.html`. Ask at least one inventory round, one per-flow round for each primary flow, and one cross-flow round for edge cases.
 
 ### Flow Inventory
 

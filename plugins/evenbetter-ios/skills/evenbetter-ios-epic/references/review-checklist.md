@@ -4,7 +4,7 @@ Use this checklist for `8-ux-implementation-review` and whenever a user asks for
 
 ## Evidence
 
-- Read `.evenbetter/<epic-name>/ios-ux-brief.md`, `screen-flows.md`, `ios-hig-tech-plan.md`, and relevant `UX-TICKET-NNN.md` files.
+- Read `.evenbetter/<epic-name>/ios-ux-brief.md`, `screen-flows.html`, `ios-hig-tech-plan.md`, and relevant `UX-TICKET-NNN.md` files.
 - Inspect changed SwiftUI/iOS code with `git diff`, paths from tickets, or user-provided files.
 - Review screenshots when available. If missing, request only the states needed to resolve visual uncertainty.
 - Consult `official-sources.md` for current Apple links and relevant local iOS skills.

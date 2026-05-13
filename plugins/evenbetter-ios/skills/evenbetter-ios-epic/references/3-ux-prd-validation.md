@@ -6,7 +6,7 @@ Validate the UX brief and screen flows before technical planning.
 
 ## Process
 
-1. Read `ios-ux-brief.md` and `screen-flows.md`.
+1. Read `ios-ux-brief.md` and `screen-flows.html`.
 2. Read `official-sources.md` and consult Apple sources for any non-obvious HIG/accessibility claim.
 3. Validate requirements against the checklist below.
 4. Present findings by severity and ask closed disposition questions for unresolved tradeoffs. Ask additional multiple-choice questions when validation exposes hidden assumptions, edge cases, or missing review evidence; this phase can reasonably add 3-10 questions when the epic is complex.

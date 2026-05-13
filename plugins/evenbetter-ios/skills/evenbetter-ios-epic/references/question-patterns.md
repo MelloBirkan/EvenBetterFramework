@@ -69,7 +69,7 @@ Use these patterns before drafting `ios-ux-brief.md`:
 
 ## 2 Screen Flows
 
-Use these patterns before writing `screen-flows.md`. Ask at least one inventory round, one per-flow round for each primary flow, and one cross-flow round for edge cases and accessibility when the epic has more than one screen.
+Use these patterns before writing `screen-flows.html`. Ask at least one inventory round, one per-flow round for each primary flow, and one cross-flow round for edge cases and accessibility when the epic has more than one screen.
 
 ### Flow Inventory
 

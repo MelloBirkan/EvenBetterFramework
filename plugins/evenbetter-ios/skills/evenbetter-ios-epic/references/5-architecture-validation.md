@@ -6,7 +6,7 @@ Stress-test the HIG technical plan before ticketing or implementation.
 
 ## Process
 
-1. Read `ios-ux-brief.md`, `screen-flows.md`, and `ios-hig-tech-plan.md`.
+1. Read `ios-ux-brief.md`, `screen-flows.html`, and `ios-hig-tech-plan.md`.
 2. Inspect codebase constraints that could invalidate the plan.
 3. Use relevant local iOS skills for navigation, view structure, Liquid Glass, App Intents, or performance concerns.
 4. Validate the plan against the checklist below.

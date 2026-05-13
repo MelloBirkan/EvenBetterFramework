@@ -6,7 +6,7 @@ Review the implemented epic against the UX brief, screen flows, HIG technical pl
 
 ## Process
 
-1. Read `ios-ux-brief.md`, `screen-flows.md`, `ios-hig-tech-plan.md`, and relevant `UX-TICKET-NNN.md` files.
+1. Read `ios-ux-brief.md`, `screen-flows.html`, `ios-hig-tech-plan.md`, and relevant `UX-TICKET-NNN.md` files.
 2. Read `review-checklist.md` and `official-sources.md`.
 3. Inspect changed code with `git diff` or the files named by the user/tickets.
 4. Review screenshots when available. If screenshots are missing and visual evidence matters, ask for specific states from `question-patterns.md`.

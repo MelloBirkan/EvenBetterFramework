@@ -11,8 +11,8 @@ Use this skill as a staged, question-driven product and engineering workflow for
 
 - Ask interview questions until the problem, audience, user journeys, technical approach, data model, integration boundaries, failure handling, and validation decisions are genuinely clear. Before ticket breakdown, expect roughly 3-10 questions per phase on average across `0-trigger-workflow`, `1-epic-brief`, `2-core-flows`, `3-prd-validation`, `4-tech-plan`, and `5-architecture-validation`. The cumulative pre-ticket interview can and should exceed 10 questions when complexity warrants it.
 - Do not treat 10 as a total cap. When the request is large or ambiguous (new product, multi-area epic, ambiguous audience, novel domain), 20-40 cumulative questions across rounds is normal. Stop asking only when each artifact section can be drafted from explicit decisions rather than assumptions.
-- Treat `0-trigger-workflow`, `1-epic-brief`, and `2-core-flows` as discovery-heavy. Do not draft `epic-brief.md` or `core-flows.md` from a vague prompt; ask enough closed questions to make the intended audience, scope boundaries, primary flows, edge cases, success criteria, dependencies, and constraints explicit.
-- In `2-core-flows`, ask flow-by-flow questions before writing `core-flows.md`. Every primary flow needs a decided entry point, step sequence, primary action, feedback/state model, completion destination, cancellation/back behavior, failure/recovery path, and notable edge cases.
+- Treat `0-trigger-workflow`, `1-epic-brief`, and `2-core-flows` as discovery-heavy. Do not draft `epic-brief.md` or `core-flows.html` from a vague prompt; ask enough closed questions to make the intended audience, scope boundaries, primary flows, edge cases, success criteria, dependencies, and constraints explicit.
+- In `2-core-flows`, ask flow-by-flow questions before writing `core-flows.html`. Every primary flow needs a decided entry point, step sequence, primary action, feedback/state model, completion destination, cancellation/back behavior, failure/recovery path, and notable edge cases. The flows artifact is a self-contained HTML file with inline CSS that includes a visual preview of each flow alongside the prose; previews are visual only and do not need to be interactive.
 - Prefer concrete multiple-choice options with a recommended default when one is defensible. Use open-text follow-ups only when the answer space cannot reasonably be enumerated (for example, naming an external system, citing a regulatory requirement, or pasting an existing schema).
 - If the user chooses "Other," convert their answer into a concrete assumption and immediately continue with another closed question if any uncertainty remains.
 - Use early questions in each phase to close gaps and assumptions. Use later rounds to cover edge cases, failure states, auth/permissions, offline/degraded behavior, data conflicts, destructive actions, scaling concerns, and any decisions the user has not explicitly confirmed.
@@ -75,7 +75,7 @@ Infer the stage from the user request. If the user gives no stage and there is n
 - Create `.evenbetter/` if it does not exist.
 - Derive `<epic-name>` as short, descriptive kebab-case.
 - Store the epic brief at `.evenbetter/<epic-name>/epic-brief.md`.
-- Store core flows at `.evenbetter/<epic-name>/core-flows.md`.
+- Store core flows at `.evenbetter/<epic-name>/core-flows.html`. The file is self-contained HTML with inline CSS; each flow includes a non-interactive visual preview of every meaningful step.
 - Store the tech plan at `.evenbetter/<epic-name>/tech-plan.md`.
 - Store tickets at `.evenbetter/<epic-name>/tickets/TICKET-NNN.md`.
 - Update existing artifacts surgically. Preserve decisions that still hold.
@@ -91,7 +91,7 @@ When documentation research is needed, prefer official docs through Ref MCP if a
 
 Do not:
 
-- Draft any source spec (`epic-brief.md`, `core-flows.md`, `tech-plan.md`) before the relevant phase questions are answered.
+- Draft any source spec (`epic-brief.md`, `core-flows.html`, `tech-plan.md`) before the relevant phase questions are answered.
 - Skip clarification rounds for efficiency. Treat questions as investments in correctness; treat inference as a cost.
 - Ask "anything else?" or broad discovery questions. Convert open uncertainty into concrete closed questions.
 - Stop at one round of answers when the user's request is large, ambiguous, or new-domain. Multiple rounds per phase are normal.

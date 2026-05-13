@@ -7,7 +7,7 @@ Propagate changed UX/accessibility requirements through the epic specs, tickets,
 ## Process
 
 1. Identify the source of the change: user decision, implementation discovery, screenshot review, Apple guidance, or technical constraint.
-2. Read `ios-ux-brief.md`, `screen-flows.md`, `ios-hig-tech-plan.md`, relevant `UX-TICKET-NNN.md` files, and `ios-ux-review.md` if present.
+2. Read `ios-ux-brief.md`, `screen-flows.html`, `ios-hig-tech-plan.md`, relevant `UX-TICKET-NNN.md` files, and `ios-ux-review.md` if present.
 3. Ask multiple-choice questions only for decisions that materially change user experience, accessibility, navigation, scope, or implementation order.
 4. Update artifacts surgically.
 5. Summarize what changed and which tickets now need implementation or review.

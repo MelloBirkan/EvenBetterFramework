@@ -10,12 +10,12 @@ description: iOS UX and Apple HIG workflow for large epics, multi-screen SwiftUI
 Use this skill as a staged, question-driven iOS UX workflow for epic-scale work. Optimize for coherent multi-screen user journeys, accessible interaction architecture, platform-native navigation, and traceability from Apple guidance to tickets and review findings.
 
 - Ask multiple-choice questions until the app or epic's audience, screen set, navigation model, accessibility strategy, and review scope are genuinely clear. Before ticket breakdown, expect roughly 3-10 questions per phase on average, across multiple rounds when complexity warrants it; the cumulative pre-ticket interview can exceed 10 questions.
-- Treat the brief and core-flow stages as discovery-heavy. Do not draft `ios-ux-brief.md` or `screen-flows.md` from a vague prompt; ask enough closed questions to make the intended users, included screens, primary flows, edge cases, and review evidence explicit.
-- In `2-screen-flows`, ask flow-by-flow questions before writing `screen-flows.md`. Every primary flow needs a decided entry point, screen sequence, presentation style, completion state, cancellation or back behavior, failure/recovery path, accessibility implications, and screenshot needs.
+- Treat the brief and core-flow stages as discovery-heavy. Do not draft `ios-ux-brief.md` or `screen-flows.html` from a vague prompt; ask enough closed questions to make the intended users, included screens, primary flows, edge cases, and review evidence explicit.
+- In `2-screen-flows`, ask flow-by-flow questions before writing `screen-flows.html`. Every primary flow needs a decided entry point, screen sequence, presentation style, completion state, cancellation or back behavior, failure/recovery path, accessibility implications, and screenshot needs. The flows artifact is a self-contained HTML file with inline CSS that approximates each screen visually (non-interactive) and includes an inline SwiftUI mapping block per preview so implementers know how to translate the HTML into SwiftUI.
 - Never ask open-ended questions. Use concrete options with a recommended default when one is defensible.
 - Ground UX and technical recommendations in the current codebase before planning or reviewing implementation.
 - Keep artifacts in `.evenbetter/<epic-name>/`, reusing an existing EvenBetter epic folder when the target is clear.
-- Treat `ios-ux-brief.md`, `screen-flows.md`, and `ios-hig-tech-plan.md` as source specs. Tickets derive from those specs.
+- Treat `ios-ux-brief.md`, `screen-flows.html`, and `ios-hig-tech-plan.md` as source specs. Tickets derive from those specs.
 - Load only the reference for the current stage plus `official-sources.md`, `question-patterns.md`, or `review-checklist.md` when needed.
 
 Former slash-command names may be aliases. Interpret `/ios-epic:2-screen-flows` as "use `evenbetter-ios-epic` with stage `2-screen-flows`."
@@ -54,7 +54,7 @@ Infer the stage from the user request. If the user gives no stage and there is n
 | --- | --- | --- |
 | `0-trigger-workflow` | `references/0-trigger-workflow.md` | Turn an initial app or epic request into clarified iOS UX/accessibility requirements and create or select the epic folder. |
 | `1-ios-ux-brief` | `references/1-ios-ux-brief.md` | Create `.evenbetter/<epic-name>/ios-ux-brief.md`. |
-| `2-screen-flows` | `references/2-screen-flows.md` | Design multi-screen user journeys and interaction flows. |
+| `2-screen-flows` | `references/2-screen-flows.html` | Design multi-screen user journeys and interaction flows. |
 | `3-ux-prd-validation` | `references/3-ux-prd-validation.md` | Validate requirements clarity and HIG/accessibility completeness before technical planning. |
 | `4-ios-hig-tech-plan` | `references/4-ios-hig-tech-plan.md` | Create `.evenbetter/<epic-name>/ios-hig-tech-plan.md` grounded in product specs and codebase reality. |
 | `5-architecture-validation` | `references/5-architecture-validation.md` | Stress-test navigation, state, accessibility, and architecture decisions before ticketing. |
@@ -70,7 +70,7 @@ Infer the stage from the user request. If the user gives no stage and there is n
 - Derive `<epic-name>` as short, descriptive kebab-case.
 - Prefer reusing an existing `.evenbetter/<epic-name>/` folder when the epic clearly matches.
 - Store the UX brief at `.evenbetter/<epic-name>/ios-ux-brief.md`.
-- Store screen flows at `.evenbetter/<epic-name>/screen-flows.md`.
+- Store screen flows at `.evenbetter/<epic-name>/screen-flows.html`. The file is self-contained HTML with inline CSS; each step has a non-interactive iOS-approximating visual preview followed by an inline SwiftUI mapping block.
 - Store the HIG technical plan at `.evenbetter/<epic-name>/ios-hig-tech-plan.md`.
 - Store UX review output at `.evenbetter/<epic-name>/ios-ux-review.md`.
 - Store tickets at `.evenbetter/<epic-name>/tickets/UX-TICKET-NNN.md`.
