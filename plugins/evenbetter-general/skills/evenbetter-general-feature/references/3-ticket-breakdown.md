@@ -35,10 +35,24 @@ Consider:
 
 For each ticket:
 
+    - **Status**: Always start the ticket file with a `## Status` section containing an unchecked `- [ ] Completed` checkbox. The `4-execute` stage flips it to `- [x] Completed` only after the ticket is implemented and validated.
     - **Title**: Action-oriented
     - **Scope**: What's included, what's explicitly out
     - **Spec references**: Link to relevant Plan sections
     - **Dependencies**: What must be completed first (if any)
+
+Ticket file skeleton:
+
+```markdown
+# TICKET-NNN: <Title>
+
+## Status
+- [ ] Completed
+
+## Scope
+...
+```
+
 1. Present the proposed ticket breakdown to the user.
 
 Use a mermaid diagram to visualize ticket dependencies for quick reference.

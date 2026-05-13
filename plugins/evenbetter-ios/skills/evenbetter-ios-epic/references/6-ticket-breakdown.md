@@ -28,6 +28,9 @@ Return to the relevant question stage before ticketing if any ticket would need 
 ```markdown
 # UX-TICKET-NNN: <Title>
 
+## Status
+- [ ] Completed
+
 ## Goal
 <One concise outcome.>
 
@@ -53,6 +56,8 @@ Return to the relevant question stage before ticketing if any ticket would need 
 ## Validation
 - Build/test/screenshot checks required:
 ```
+
+Every ticket file must start with the `## Status` section above and an unchecked `- [ ] Completed` checkbox. The `7-execute` stage flips it to `- [x] Completed` only after the ticket is implemented and its acceptance criteria pass, so anyone scanning `tickets/` can see at a glance which tickets are still open.
 
 ## Ticket Rules
 

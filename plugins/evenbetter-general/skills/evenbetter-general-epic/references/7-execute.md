@@ -126,7 +126,7 @@ Based on validation findings:
 
 **For Well Implemented Tickets:**
 
-- Mark ticket as Done
+- Mark ticket as Done by editing the ticket file (`.evenbetter/<epic-folder>/tickets/TICKET-NNN.md`) and flipping the `## Status` checkbox from `- [ ] Completed` to `- [x] Completed`. Do this only for tickets that fully pass acceptance criteria; leave tickets with open issues, drift, or pending fixup work unchecked so the open/closed state of the ticket folder stays trustworthy.
 - Update acceptance criteria with implementation notes if needed
 - Proceed to next batch
 

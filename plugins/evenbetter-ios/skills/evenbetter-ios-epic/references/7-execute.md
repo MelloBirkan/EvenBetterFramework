@@ -11,7 +11,7 @@ Implement or guide UX tickets while preserving the epic's iOS UX/accessibility a
 3. Use the local iOS skills listed in the parent `SKILL.md` when the ticket touches their domain.
 4. Implement foundation tickets before screen-level tickets.
 5. After each batch, verify buildability where feasible and check ticket acceptance criteria.
-6. Update ticket status only when implementation and validation evidence support it.
+6. Update ticket status only when implementation and validation evidence support it. When a ticket fully passes acceptance criteria, edit its `UX-TICKET-NNN.md` file and flip the `## Status` checkbox from `- [ ] Completed` to `- [x] Completed`. Do not check the box for tickets that still have open issues, drift, or pending fixup work — leave them unchecked so the open/closed state of the ticket folder stays trustworthy.
 
 ## Execution Guardrails
 

@@ -17,6 +17,9 @@ Convert `ios-ux-plan.md` into story-sized UX implementation tickets.
 ```markdown
 # UX-TICKET-NNN: <Title>
 
+## Status
+- [ ] Completed
+
 ## Goal
 <One concise outcome.>
 
@@ -42,6 +45,8 @@ Convert `ios-ux-plan.md` into story-sized UX implementation tickets.
 ## Validation
 - Build/test/screenshot checks required:
 ```
+
+Every ticket file must start with the `## Status` section above and an unchecked `- [ ] Completed` checkbox. The `4-execute` stage flips it to `- [x] Completed` only after the ticket is implemented and its acceptance criteria pass, so anyone scanning `tickets/` can see at a glance which tickets are still open.
 
 ## Ticket Rules
 
