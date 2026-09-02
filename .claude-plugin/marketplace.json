@@ -9,7 +9,7 @@
     {
       "name": "evenbetter-ios",
       "source": "./plugins/evenbetter-ios",
-      "description": "EvenBetter iOS, SwiftUI, Apple HIG, accessibility, analysis, validation, and remediation skills."
+      "description": "EvenBetter iOS, SwiftUI, Apple HIG, and accessibility skills, with the four-state analyze / validate / repair audit workflow."
     },
     {
       "name": "evenbetter-general",

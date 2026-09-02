@@ -1,6 +1,6 @@
 {
   "name": "evenbetter-ios",
-  "description": "EvenBetter skills for iOS product workflows, SwiftUI implementation, Apple HIG, accessibility, analysis, validation, and remediation.",
+  "description": "EvenBetter skills for iOS product workflows, SwiftUI implementation, Apple HIG, accessibility, and the four-state analyze / validate / repair audit workflow.",
   "author": {
     "name": "EvenBetter",
     "url": "https://github.com/MelloBirkan/EvenBetterFramework"
@@ -12,6 +12,7 @@
     "ios",
     "swiftui",
     "accessibility",
-    "hig"
+    "hig",
+    "repair"
   ]
 }

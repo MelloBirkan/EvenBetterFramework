@@ -17,6 +17,15 @@ Use this skill as a three-stage automated audit for a Swift/SwiftUI repository. 
 
 Former slash-command names may be aliases. Interpret `/evenbetter-analyze:1-scan` as "use `evenbetter-analyze` with stage `1-scan`."
 
+## Workflow position
+
+Analysis is the second of four EvenBetter interaction states: planning, analysis, validation, repair. This skill owns analysis only. It discovers findings and writes them into the report; it never edits application source code.
+
+- `evenbetter-validate` runs next. It re-checks every finding and stamps `workflow.state = "validated"` into the same report.
+- `evenbetter-repair` runs last. It applies remediations, and it refuses any report this skill produced until validation has stamped it.
+
+Because a fresh scan invalidates prior review, this skill always writes `workflow.state = "analyzed"` and clears the validation and repair stamps, even when overwriting a report that was previously validated or repaired. See `references/3-report.md` for the block's shape.
+
 ## Question tooling
 
 Most analyses need no questions. Ask only when the audit scope is genuinely ambiguous. When asking is necessary (multiple Swift targets, monorepo layout, conflicting feature folders), use the best available structured-question tool with mutually exclusive options:
@@ -71,6 +80,7 @@ When a `warning` clause is firmly grounded in the source (e.g., explicit accessi
 - Create `.evenbetter/` if it does not exist.
 - Derive `<project-name>` from the repository folder name in kebab-case. If the workspace already contains `.evenbetter/<existing-name>/`, reuse that folder.
 - Write the report to `.evenbetter/<project-name>/evenbetter-analyze-report.html`. Overwrite existing reports — the file is the latest snapshot, not history.
+- Reset the workflow state on every write: `workflow.state` is `analyzed`, the validation and repair stamps are cleared, and every finding's `repair.status` is `pending`. A re-scan never inherits a previous run's validation.
 - Do not create supporting Markdown summaries unless the user asks. The HTML is the source of truth.
 - After writing the report, surface the absolute file path to the user as a clickable `file://` link or a copyable path; keep the rest of the response short.
 
@@ -85,3 +95,4 @@ Read `references/official-sources.md` before making any HIG, WCAG, or SwiftUI cl
 - Use `evenbetter-swiftui-view-refactor` heuristics when remediation needs structural decomposition rather than a single modifier change.
 - Use `evenbetter-swiftui-liquid-glass` only when iOS 26+ Liquid Glass APIs are involved in the finding.
 - Use `evenbetter-ios-debugger-agent` to capture simulator screenshots when a visual rule (contrast, layout, large Dynamic Type) needs runtime evidence.
+- Hand off to `evenbetter-validate`, then `evenbetter-repair`, rather than editing source code from this skill. The `ai_fix_prompt` field stays in the report as a manual escape hatch; `evenbetter-repair` is the guided path.
