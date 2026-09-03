@@ -1,0 +1,4 @@
+interface:
+  display_name: "EB iOS Repair"
+  short_description: "Applies remediations from a validated evenbetter-analyze report"
+  default_prompt: "Use $evenbetter-repair to work through the validated findings in .evenbetter/<project>/evenbetter-analyze-report.html in severity order — apply the technical fixes to the Swift sources, hand product, copy, navigation, and design choices back to me, and record every outcome in the report."

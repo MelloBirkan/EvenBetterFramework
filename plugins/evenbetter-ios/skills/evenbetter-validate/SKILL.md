@@ -15,9 +15,20 @@ This skill is the second pass after `evenbetter-analyze`. It treats the existing
 - Fixes are reviewed for correctness, not just style. A `minimal_fix` that does not actually close the violation is rewritten. A `recommended_fix` that is not structurally aligned with the clause's **Correct code** block — the system-native Apple-blessed approach — is upgraded.
 - Severity is realigned by mapping the corpus `severity` field through the four-tier model documented below. Warnings with strong evidence and direct user impact are promoted; over-flagged findings are demoted.
 - The report is rewritten in place. The `summary` counts and the JS literal are regenerated. No other files are produced.
-- If no finding changes, the skill reports a single "OK — N findings validated, no changes needed" line and exits without rewriting the file.
+- Every pass stamps the report's `workflow` block with `state: "validated"` and the current `validated_at` time. That stamp is the precondition `evenbetter-repair` checks before it is allowed to touch source code, so it is written even on a clean pass — it is the one thing a clean pass changes.
+- If no finding changes, the skill reports a single "OK — N findings validated, no changes needed" line and rewrites nothing but the workflow stamp.
 
 Former slash-command names may be aliases. Interpret `/evenbetter-validate:2-validate` as "use `evenbetter-validate` with stage `2-validate`."
+
+## Workflow position
+
+Validation is the third of four EvenBetter interaction states: planning, analysis, validation, repair. It sits between the audit and the code changes, and it is the only thing that authorizes them.
+
+- `evenbetter-analyze` runs before, writing `workflow.state = "analyzed"`.
+- This skill promotes the report to `workflow.state = "validated"` and stamps `workflow.validated_at`.
+- `evenbetter-repair` runs after. It refuses any report whose state is still `analyzed`, or whose `validated_at` predates `scan_date`, so an unvalidated finding can never reach the codebase.
+
+Validation is also the loop's closing move. Running it again after a repair pass removes findings whose violation is genuinely gone, and flips any finding that a repair claimed to fix but did not into `failed` so the next repair run picks it up. See the repair re-check rule in `references/2-validate.md`.
 
 ## Question tooling
 
@@ -47,13 +58,13 @@ If current system or developer instructions conflict with a converted reference,
 
 ## Stage selection
 
-Run the stages in order. Stage 3 is conditional — it runs only when stage 2 produced at least one change.
+Run the stages in order. Stage 3 always runs — even a clean pass has to write the workflow stamp — but it only rewrites findings when stage 2 produced a change.
 
 | Stage | Reference | Use when |
 | --- | --- | --- |
 | `1-load` | `references/1-load.md` | Locate and parse the `reportData` object from `.evenbetter/<project>/evenbetter-analyze-report.html`. |
 | `2-validate` | `references/2-validate.md` | Re-check every finding for genuineness, severity, and fix correctness, and decide `keep`, `adjust`, or `remove`. |
-| `3-update` | `references/3-update.md` | When any decision was `adjust` or `remove`, rewrite the JS literal in the HTML and recompute summary counts. Otherwise emit the "OK" status. |
+| `3-update` | `references/3-update.md` | Always. Stamp `workflow` in the HTML, and when any decision was `adjust` or `remove`, also rewrite the findings and recompute summary counts. |
 
 ## Decision model
 
@@ -64,6 +75,8 @@ Every finding ends in exactly one of three states. The state determines what the
 | `keep` | Source still violates the clause, severity matches the mapping, both fixes resolve the violation, AI prompt is paste-ready, Apple URL still supports the rule. | No change. Finding stays as-is. |
 | `adjust` | The finding is real but at least one of severity, `minimal_fix`, `recommended_fix`, `ai_fix_prompt`, `wcag_criteria`, `wcag_level`, or `hig_reference_url` is wrong or stale. | Update only the wrong fields. Keep `id`, `clause_id`, `file_path`, `line_number`, and `code_snippet` unless the underlying line moved. |
 | `remove` | Source no longer matches (false positive, fixed since scan, parent already satisfies clause, decorative-only context), or the Apple URL no longer states the rule and no replacement exists. | Drop the finding from `issues`. Recompute `summary`. |
+
+A finding carrying `repair.status` of `applied` is the one case where validation writes into the repair ledger: if the finding survives the source check, the repair did not close the violation, so set `repair.status` to `failed` with a one-sentence `note` and count the finding as `adjust`. Every other `repair` field is carried through untouched.
 
 Promotion (`warning` → `critical`) and demotion (`high` → `medium`, `medium` → `low`) both count as `adjust`. Use the severity mapping documented in `evenbetter-analyze/SKILL.md`:
 
@@ -79,6 +92,8 @@ Promotion (`warning` → `critical`) and demotion (`high` → `medium`, `medium`
 - Do not touch the rest of the HTML template — markup, styles, Alpine bindings, and CDN references must stay byte-identical.
 - Recompute `summary.total`, `summary.critical`, `summary.high`, `summary.medium`, and `summary.low` from the surviving `issues` array before writing.
 - Bump `scan_date` to the current local time in `YYYY-MM-DD HH:MM:SS` format only when at least one finding was adjusted or removed. Leave it untouched on a clean pass.
+- Always write the workflow stamp: `workflow.state` becomes `validated`, `workflow.validated_at` becomes the current local time, and `workflow.validation` carries the `kept`/`adjusted`/`removed` tally. This is the sole exception to the clean-pass no-write rule, and `validated_at` must be stamped at or after `scan_date` so `evenbetter-repair`'s freshness check passes.
+- Never write `workflow.state = "repaired"` and never touch `workflow.repaired_at` or `workflow.repair`. Those belong to `evenbetter-repair`; carry them through unchanged.
 - After writing, surface the absolute file path to the user as a `file://` link or a copyable path, plus a short tally such as `OK — 12 kept, 3 adjusted, 2 removed`. On a clean pass, the response is a single `OK — N findings validated, no changes needed` line.
 
 ## Corpus rules
@@ -107,3 +122,4 @@ Read `../evenbetter-analyze/references/official-sources.md` before re-checking a
 - Use `evenbetter-swiftui-view-refactor` heuristics when a `recommended_fix` should be a structural decomposition rather than a single modifier change.
 - Use `evenbetter-swiftui-liquid-glass` only when iOS 26+ Liquid Glass APIs are involved in the finding under review.
 - Use `evenbetter-ios-debugger-agent` to capture simulator screenshots when a visual rule (contrast, layout, large Dynamic Type) needs runtime evidence to confirm or reject a finding.
+- Hand off to `evenbetter-repair` once the pass is clean or the corrections are written. Do not edit application source code from this skill — validation corrects the report, repair corrects the project.

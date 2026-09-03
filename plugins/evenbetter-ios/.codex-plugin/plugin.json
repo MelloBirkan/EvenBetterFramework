@@ -1,6 +1,6 @@
 {
   "name": "evenbetter-ios",
-  "description": "EvenBetter skills for iOS product workflows, SwiftUI implementation, Apple HIG, accessibility, analysis, validation, and remediation.",
+  "description": "EvenBetter skills for iOS product workflows, SwiftUI implementation, Apple HIG, accessibility, and the four-state analyze / validate / repair audit workflow.",
   "author": {
     "name": "EvenBetter",
     "url": "https://github.com/MelloBirkan/EvenBetterFramework"
@@ -12,14 +12,15 @@
     "ios",
     "swiftui",
     "accessibility",
-    "hig"
+    "hig",
+    "repair"
   ],
   "skills": "./skills/",
   "mcpServers": "./.mcp.codex.json",
   "interface": {
     "displayName": "EvenBetter iOS",
-    "shortDescription": "iOS product, UX, SwiftUI, analysis, validation, and remediation skills.",
-    "longDescription": "Curated EvenBetter skills for iOS product planning, SwiftUI implementation, Apple HIG review, accessibility, analysis, validation, and remediation.",
+    "shortDescription": "iOS product, UX, SwiftUI, analysis, validation, and repair skills.",
+    "longDescription": "Curated EvenBetter skills for iOS product planning, SwiftUI implementation, Apple HIG review, and accessibility, including the four-state audit workflow: analyze a project into an HTML report, validate the findings, then repair them in source.",
     "developerName": "EvenBetter",
     "category": "Developer Tools",
     "capabilities": [
@@ -29,7 +30,8 @@
     "websiteURL": "https://github.com/MelloBirkan/EvenBetterFramework",
     "defaultPrompt": [
       "Use EvenBetter iOS to plan an iOS feature.",
-      "Use EvenBetter iOS to analyze this SwiftUI app."
+      "Use EvenBetter iOS to analyze this SwiftUI app.",
+      "Use EvenBetter iOS to repair the validated findings in my audit report."
     ],
     "brandColor": "#10A37F"
   }

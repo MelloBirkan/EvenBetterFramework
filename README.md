@@ -1,6 +1,6 @@
 # EvenBetter Plugin Marketplace
 
-EvenBetter Plugin Marketplace is a GitHub-hosted marketplace for distributing curated EvenBetter skills as installable plugins. The MVP ships `evenbetter-ios` for iOS product workflows, SwiftUI implementation, Apple HIG review, accessibility, analysis, validation, and remediation, plus `evenbetter-general` for platform-agnostic feature and epic workflows.
+EvenBetter Plugin Marketplace is a GitHub-hosted marketplace for distributing curated EvenBetter skills as installable plugins. The MVP ships `evenbetter-ios` for iOS product workflows, SwiftUI implementation, Apple HIG review, accessibility, and the analyze / validate / repair audit workflow, plus `evenbetter-general` for platform-agnostic feature and epic workflows.
 
 The marketplace currently targets both Claude Code and Codex. Both platforms install the same plugin payloads from `plugins/evenbetter-ios/skills/` and `plugins/evenbetter-general/skills/`; only the platform metadata files differ.
 
@@ -110,23 +110,51 @@ Do not maintain parallel copies of installable plugin skills under the repositor
 
 ## Plugin Contents
 
-`evenbetter-ios` contains:
+`evenbetter-ios` contains 16 skills:
 
-- `evenbetter-ios-feature`
-- `evenbetter-ios-epic`
-- `evenbetter-ios-app-intents`
-- `evenbetter-ios-debugger-agent`
-- `evenbetter-swiftui-accessibility`
-- `evenbetter-swiftui-liquid-glass`
-- `evenbetter-swiftui-performance-audit`
-- `evenbetter-swiftui-ui-patterns`
-- `evenbetter-swiftui-view-refactor`
-- `evenbetter-analyze`
+| Skill | Purpose |
+| --- | --- |
+| `evenbetter-ios-feature` | Feature-scale planning and ticketing for iOS work. |
+| `evenbetter-ios-epic` | Epic-scale planning across multiple iOS features. |
+| `evenbetter-ios-app-intents` | App Intents, Shortcuts, and system integration. |
+| `evenbetter-ios-debugger-agent` | Simulator-driven debugging and screenshot capture. |
+| `evenbetter-ios-haptics` | Core Haptics and feedback design. |
+| `evenbetter-swiftui-accessibility` | VoiceOver, Dynamic Type, and WCAG clause guidance. |
+| `evenbetter-swiftui-liquid-glass` | iOS 26+ Liquid Glass APIs. |
+| `evenbetter-swiftui-performance-audit` | SwiftUI render and update performance. |
+| `evenbetter-swiftui-ui-patterns` | Canonical SwiftUI navigation, sheets, forms, and controls. |
+| `evenbetter-swiftui-view-refactor` | Structural decomposition of oversized views. |
+| `evenbetter-design` | Visual and interaction design decisions. |
+| `evenbetter-app-launcher` | App Store submission and launch mechanics. |
+| `evenbetter-app-opportunity-research` | Market and competitor research for app ideas. |
+| `evenbetter-analyze` | **Audit state 1** — scans the repo and writes the HTML report. |
+| `evenbetter-validate` | **Audit state 2** — re-checks the report and stamps it as validated. |
+| `evenbetter-repair` | **Audit state 3** — applies the validated findings to the source. |
 
-`evenbetter-general` contains:
+`evenbetter-general` contains 2 skills:
 
-- `evenbetter-general-feature`
-- `evenbetter-general-epic`
+| Skill | Purpose |
+| --- | --- |
+| `evenbetter-general-feature` | Platform-agnostic feature planning and ticketing. |
+| `evenbetter-general-epic` | Platform-agnostic epic planning. |
+
+## Audit Workflow
+
+The iOS audit is three separate invocations against one artifact, `.evenbetter/<project>/evenbetter-analyze-report.html`. Each state has its own skill, and each hands the next one a report in a known state:
+
+```text
+evenbetter-analyze  →  evenbetter-validate  →  evenbetter-repair
+   state: analyzed        state: validated        state: repaired
+   writes the report      re-checks findings      edits Swift sources
+```
+
+- **`evenbetter-analyze`** walks the Swift sources against the EvenBetter iOS corpus and writes the report. Every finding carries file/line evidence, a minimal fix, a recommended fix, and an AI fix prompt. The report is stamped `workflow.state = "analyzed"`.
+- **`evenbetter-validate`** re-reads every finding against the live source, the corpus, and Apple's documentation. It removes false positives, realigns severities, corrects fixes, and stamps `workflow.state = "validated"` with a timestamp.
+- **`evenbetter-repair`** walks the validated findings in severity order and applies them. Technical conformance changes are made in source; product, copy, navigation, and visual-design choices are handed back to you as closed questions rather than guessed at. Every finding's outcome — `applied`, `deferred`, `skipped`, or `failed` — is written back into the report.
+
+`evenbetter-repair` **refuses to run against an unvalidated report.** A report straight out of `evenbetter-analyze`, or one whose validation predates the last scan, is rejected with a one-line message naming the skill to run first. Unreviewed findings never reach the codebase.
+
+Re-running `evenbetter-validate` after a repair closes the loop: findings whose violation is genuinely gone are dropped from the report, and any finding a repair claimed to fix but did not is flipped to `failed` so the next repair run picks it up.
 
 ## MVP Limitations
 

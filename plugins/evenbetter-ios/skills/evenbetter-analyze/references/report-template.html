@@ -432,6 +432,45 @@
                 </div>
             </div>
 
+            <!-- Workflow State Strip -->
+            <div class="glass-card rounded-xl p-4 mb-4" x-show="data.workflow" x-cloak>
+                <div class="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
+                    <p class="text-[10px] font-mono uppercase tracking-widest flex-shrink-0" style="color: var(--text-muted);">Workflow</p>
+
+                    <!-- Steps -->
+                    <div class="flex items-center gap-2 flex-wrap flex-1">
+                        <template x-for="(step, stepIndex) in workflowSteps" :key="step.key">
+                            <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg"
+                                     :style="step.done ? 'background: var(--accent-muted); color: var(--accent);' : 'background: var(--bg-tertiary); color: var(--text-muted);'"
+                                     :title="step.detail">
+                                    <i :data-lucide="step.done ? 'check-circle-2' : 'circle-dashed'" class="w-3.5 h-3.5"></i>
+                                    <span class="text-[11px] font-mono uppercase tracking-wider font-bold" x-text="step.label"></span>
+                                    <span x-show="step.detail" class="text-[10px] font-mono opacity-70" x-text="step.detail"></span>
+                                </div>
+                                <i x-show="stepIndex < workflowSteps.length - 1" data-lucide="chevron-right"
+                                   class="w-3.5 h-3.5" style="color: var(--text-muted);"></i>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Repair Ledger -->
+                    <div class="flex items-center gap-3 flex-wrap" x-show="repairTally.total > 0">
+                        <template x-for="entry in repairLedger" :key="entry.status">
+                            <span x-show="entry.count > 0"
+                                  class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider"
+                                  :style="getRepairStyle(entry.status)">
+                                <span x-text="entry.count"></span> <span x-text="entry.status"></span>
+                            </span>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Next Step Hint -->
+                <p class="text-xs font-mono mt-3 pt-3 border-t" style="color: var(--text-muted); border-color: var(--border);"
+                   x-show="workflowHint" x-text="workflowHint"></p>
+            </div>
+
             <!-- Severity Breakdown -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <!-- Critical -->
@@ -760,6 +799,14 @@
                                         WCAG <span x-text="issue.wcag_criteria"></span>
                                         <span x-show="issue.wcag_level" class="opacity-60">(<span x-text="issue.wcag_level"></span>)</span>
                                     </span>
+                                    <span x-show="issue.repair && issue.repair.status && issue.repair.status !== 'pending'"
+                                          class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider"
+                                          :style="getRepairStyle(issue.repair?.status)"
+                                          :title="issue.repair?.note || ''">
+                                        <i :data-lucide="getRepairIcon(issue.repair?.status)" class="w-3 h-3"></i>
+                                        <span x-text="issue.repair?.status"></span>
+                                        <span x-show="issue.repair?.path" class="opacity-70">(<span x-text="issue.repair?.path"></span>)</span>
+                                    </span>
                                 </div>
 
                                 <!-- Title -->
@@ -801,6 +848,26 @@
                             <!-- Description -->
                             <div class="mt-4 text-sm leading-relaxed" style="color: var(--text-secondary);">
                                 <p x-text="issue.description"></p>
+                            </div>
+
+                            <!-- Repair Status -->
+                            <div class="mt-4 rounded-lg p-3 flex items-start gap-3"
+                                 x-show="issue.repair && issue.repair.status && issue.repair.status !== 'pending'"
+                                 style="background: var(--bg-tertiary); border: 1px solid var(--border);">
+                                <i :data-lucide="getRepairIcon(issue.repair?.status)" class="w-4 h-4 mt-0.5 flex-shrink-0"
+                                   :style="'color: ' + getRepairColor(issue.repair?.status)"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-mono uppercase tracking-wider" :style="'color: ' + getRepairColor(issue.repair?.status)">
+                                        <span x-text="getRepairLabel(issue.repair?.status)"></span>
+                                        <span x-show="issue.repair?.applied_at" class="opacity-70">
+                                            &middot; <span x-text="issue.repair?.applied_at"></span>
+                                        </span>
+                                    </p>
+                                    <p x-show="issue.repair?.note" class="text-sm mt-1" style="color: var(--text-secondary);"
+                                       x-text="issue.repair?.note"></p>
+                                    <p x-show="issue.repair?.changed_files?.length" class="text-xs font-mono mt-1" style="color: var(--text-muted);"
+                                       x-text="'Changed: ' + (issue.repair?.changed_files || []).join(', ')"></p>
+                                </div>
                             </div>
 
                             <!-- Current Code (Problematic) -->
@@ -947,11 +1014,30 @@
                         this.darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
                     }
 
-                    // Initialize issues with expanded state
+                    // Initialize issues with expanded state and a repair ledger.
+                    // Reports written before the four-state workflow have neither.
                     this.data.issues = this.data.issues.map(issue => ({
                         ...issue,
-                        expanded: false
+                        expanded: false,
+                        repair: {
+                            status: 'pending',
+                            path: '',
+                            owner: '',
+                            applied_at: '',
+                            changed_files: [],
+                            note: '',
+                            ...(issue.repair || {})
+                        }
                     }));
+
+                    this.data.workflow = {
+                        state: 'analyzed',
+                        validated_at: '',
+                        validation: { kept: 0, adjusted: 0, removed: 0 },
+                        repaired_at: '',
+                        repair: { applied: 0, deferred: 0, skipped: 0, failed: 0 },
+                        ...(this.data.workflow || {})
+                    };
 
                     // Initialize UI components after Alpine renders
                     this.$nextTick(() => {
@@ -1042,6 +1128,89 @@
                 resetFilters() {
                     this.filters.severity = [];
                     this.searchQuery = '';
+                },
+
+                get workflowSteps() {
+                    const workflow = this.data.workflow || {};
+                    const validated = Boolean(workflow.validated_at);
+                    const repaired = workflow.state === 'repaired' && Boolean(workflow.repaired_at);
+                    return [
+                        { key: 'analyzed', label: 'Analyzed', done: true, detail: this.data.scan_date || '' },
+                        { key: 'validated', label: 'Validated', done: validated, detail: workflow.validated_at || '' },
+                        { key: 'repaired', label: 'Repaired', done: repaired, detail: workflow.repaired_at || '' }
+                    ];
+                },
+
+                get repairTally() {
+                    const tally = { applied: 0, deferred: 0, skipped: 0, failed: 0, pending: 0, total: 0 };
+                    this.data.issues.forEach(issue => {
+                        const status = issue.repair?.status || 'pending';
+                        if (tally[status] === undefined) return;
+                        tally[status] += 1;
+                        if (status !== 'pending') tally.total += 1;
+                    });
+                    return tally;
+                },
+
+                get repairLedger() {
+                    const tally = this.repairTally;
+                    return ['applied', 'deferred', 'failed', 'skipped']
+                        .map(status => ({ status, count: tally[status] }));
+                },
+
+                get workflowHint() {
+                    const workflow = this.data.workflow || {};
+                    if (!workflow.validated_at) {
+                        return 'Run evenbetter-validate to re-check these findings. Repair is blocked until the report is validated.';
+                    }
+                    if (this.repairTally.deferred > 0) {
+                        return 'Some repairs are waiting on a product, copy, navigation, or design decision — see the deferred findings below.';
+                    }
+                    if (this.repairTally.applied > 0) {
+                        return 'Repairs were applied. Re-run evenbetter-validate to confirm each one closed its finding.';
+                    }
+                    return 'Validated. Run evenbetter-repair to work through these findings.';
+                },
+
+                getRepairColor(status) {
+                    const colors = {
+                        applied: 'var(--low)',
+                        deferred: 'var(--medium)',
+                        failed: 'var(--critical)',
+                        skipped: 'var(--text-muted)',
+                        pending: 'var(--text-muted)'
+                    };
+                    return colors[status] || 'var(--text-muted)';
+                },
+
+                getRepairIcon(status) {
+                    const icons = {
+                        applied: 'check-check',
+                        deferred: 'user-round',
+                        failed: 'circle-x',
+                        skipped: 'skip-forward',
+                        pending: 'circle-dashed'
+                    };
+                    return icons[status] || 'circle-dashed';
+                },
+
+                getRepairLabel(status) {
+                    const labels = {
+                        applied: 'Repair applied',
+                        deferred: 'Waiting on you',
+                        failed: 'Repair failed',
+                        skipped: 'Repair skipped',
+                        pending: 'Not repaired yet'
+                    };
+                    return labels[status] || 'Not repaired yet';
+                },
+
+                getRepairStyle(status) {
+                    const color = this.getRepairColor(status);
+                    if (status === 'skipped' || status === 'pending' || !status) {
+                        return 'background: var(--bg-tertiary); color: var(--text-muted); border: 1px solid var(--border);';
+                    }
+                    return `background: var(--bg-tertiary); color: ${color}; border: 1px solid ${color};`;
                 },
 
                 getSeverityIcon(severity) {

@@ -30,14 +30,18 @@ Audits drift. Source files get refactored between scan and review. The original 
      - `recommended_fix` — system-native, Apple-blessed approach. The structure should align with the clause's **Correct code.** Swift block (`Button` instead of `onTapGesture`, `NavigationStack` instead of `NavigationView`, `confirmationDialog` instead of `actionSheet`, semantic system colors, lifted accessibility on the parent group, etc.). If the existing one is style-equivalent to the minimal fix or diverges from the **Correct code.** pattern, rewrite it.
      If either fix changed, also rewrite `ai_fix_prompt` so it stays consistent with the new recommended fix.
 
-3. WCAG cross-reference. When the clause maps to a WCAG 2.2 Success Criterion (commonly 1.1.1 Non-text Content, 1.3.1 Info and Relationships, 1.4.3 Contrast, 1.4.10 Reflow, 1.4.11 Non-text Contrast, 2.1.1 Keyboard, 2.4.3 Focus Order, 2.5.3 Label in Name, 2.5.5 Target Size, 4.1.2 Name/Role/Value), confirm `wcag_criteria` and `wcag_level` against `https://www.w3.org/WAI/WCAG22/quickref/`. WCAG is a cross-reference, never the primary citation. If the criterion no longer applies, clear the field; if it does and the recorded value is wrong, update it. Either change is an `adjust`.
-4. Re-write `ai_fix_prompt` whenever `recommended_fix`, `file_path`, `line_number`, or `code_snippet` changed. The prompt must:
+3. Repair re-check. A finding whose `repair.status` is `applied` was edited by `evenbetter-repair` since the last pass, and the source check above is the verdict on that edit:
+   - The finding failed the source check and is being removed — the repair worked. Nothing extra to record; the finding leaves the report.
+   - The finding survived the source check — the repair did not close the violation. Set `repair.status` to `failed`, leave `repair.path`, `repair.owner`, and `repair.changed_files` as they are so the next run can see what was tried, replace `repair.note` with one sentence naming what still matches the clause's **Check**, and mark the finding `adjust`.
+   Never set `repair.status` to `applied`, `deferred`, or `skipped` from this skill, and never clear a `repair` block. Validation reads the ledger and may only flip an unsuccessful `applied` to `failed`; everything else in it belongs to `evenbetter-repair`.
+4. WCAG cross-reference. When the clause maps to a WCAG 2.2 Success Criterion (commonly 1.1.1 Non-text Content, 1.3.1 Info and Relationships, 1.4.3 Contrast, 1.4.10 Reflow, 1.4.11 Non-text Contrast, 2.1.1 Keyboard, 2.4.3 Focus Order, 2.5.3 Label in Name, 2.5.5 Target Size, 4.1.2 Name/Role/Value), confirm `wcag_criteria` and `wcag_level` against `https://www.w3.org/WAI/WCAG22/quickref/`. WCAG is a cross-reference, never the primary citation. If the criterion no longer applies, clear the field; if it does and the recorded value is wrong, update it. Either change is an `adjust`.
+5. Re-write `ai_fix_prompt` whenever `recommended_fix`, `file_path`, `line_number`, or `code_snippet` changed. The prompt must:
    - Lead with the absolute file path and the line range to edit.
    - State the corpus clause ID and the user-impact reason (lifted from the clause's **Why.** block) in one sentence.
    - Include the original snippet and the recommended replacement, both fenced with `swift`.
    - End with a one-line acceptance check the agent can run mentally.
    - Stay under ~200 words.
-5. Stop validating once you have re-checked every finding. Do not invent new findings — discovery is `evenbetter-analyze`'s job.
+6. Stop validating once you have re-checked every finding. Do not invent new findings — discovery is `evenbetter-analyze`'s job.
 
 ## Decision recording
 
@@ -51,7 +55,7 @@ For every finding, record the decision and the post-validation finding object in
 }
 ```
 
-Keep `id`, `clause_id`, `file_path`, `code_snippet`, and `line_number` stable on `keep`. On `adjust`, change only the fields that failed a check. On `remove`, drop the finding from the surviving list entirely.
+Keep `id`, `clause_id`, `file_path`, `code_snippet`, and `line_number` stable on `keep`. On `adjust`, change only the fields that failed a check. On `remove`, drop the finding from the surviving list entirely. Carry each surviving finding's `repair` block through unchanged, except for the one `applied` → `failed` flip described above.
 
 ## Hard rules for editing fixes
 
@@ -71,4 +75,5 @@ Move to stage `3-update` only when:
 - Every surviving finding's `severity` is one of `critical`, `high`, `medium`, `low` and is consistent with the corpus-grounded mapping for its clause.
 - Every surviving finding's `recommended_fix` is structurally aligned with the clause's **Correct code.** block.
 - IDs remain stable. Do not renumber survivors. The report's UI keys off `id` for deep links and severity filters.
-- If every decision is `keep`, mark the validation pass clean. Stage `3-update` will skip rewriting the file and emit the "OK" status.
+- Every surviving finding still carries a `repair` block, backfilled by stage `1-load` when the report predates it.
+- If every decision is `keep`, mark the validation pass clean. Stage `3-update` will write only the workflow stamp and emit the "OK" status.
