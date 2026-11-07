@@ -1,6 +1,18 @@
 # 3 prd-validation
 
-> Converted from a former Claude Code command. Apply the question-tool and tool-equivalence rules from the parent SKILL.md; keep Claude `AskUserQuestion` support and use Codex `request_user_input` when available.
+> This stage follows the question tooling, tool equivalents and artifact rules in SKILL.md. It reviews specs before code exists; it is not the evenbetter-validate skill, which checks an evenbetter-analyze audit report.
+
+## Contents
+
+- Role
+- Core Philosophy
+- Validation Focus Areas
+- Tools
+- Artifacts
+- Processing User Request
+- Output
+- Next Step
+- Acceptance Criteria
 
 ## Role
 
@@ -47,14 +59,14 @@ Evaluate the specs against these three dimensions:
 ### 3. Functional Requirements Quality
 
 - Are requirements specific and unambiguous?
-- Do requirements focus on WHAT (behavior) not HOW (implementation)?
+- Do requirements describe behavior (what) rather than implementation (how)?
 - Is terminology consistent throughout?
 - Are complex requirements broken into understandable parts?
 - Can each requirement be tested/verified?
 
 ## Tools
 
-- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available for all interview and clarification questions. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the parent SKILL.md limits.
+- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available for all interview and clarification questions. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the SKILL.md limits.
 
 ## Artifacts
 
@@ -64,55 +76,57 @@ All artifacts live in `.evenbetter/<epic-folder>/`. Scan `.evenbetter/` to find 
 
 1. **Gather Context**
 
-Read and internalize the artifacts:
+   Read and internalize the artifacts:
 
-    - Epic Brief (the vision and scope)
-    - Core Flows (the user journeys)
-    - `question-patterns.md`, especially `3 PRD Validation`, for disposition option banks
-1. **Evaluate Requirements**
+   - Epic Brief (the vision and scope)
+   - Core Flows (the user journeys)
+   - `references/question-patterns.md`, especially `3 PRD Validation`, for disposition option banks
 
-For each focus area, assess qualitatively — not "is this documented?" but "is this clear and actionable?"
+2. **Evaluate Requirements**
 
-Identify gaps, ambiguities, and areas needing clarification. Prioritize by importance — address things that block understanding or implementation first, then work toward smaller refinements.
+   For each focus area, assess qualitatively. The question is not "is this documented?" but "is this clear and actionable?"
 
-1. **Interview for Resolution**
+   Identify gaps, ambiguities, and areas needing clarification. Prioritize by importance: address things that block understanding or implementation first, then work toward smaller refinements.
 
-Present findings to the user as interview questions. For each gap or ambiguity:
+3. **Interview for Resolution**
 
-    - Explain the area that needs clarification and why it matters
-    - Ask focused multiple-choice questions to fill the gap
-    - Use the disposition option banks (`Gap disposition`, `Severity weighting`, `Source spec routing`) from `question-patterns.md`
-    - Clarify and resolve before moving to the next issue
+   Present findings to the user as interview questions. For each gap or ambiguity:
 
-    Ask additional multiple-choice questions when validation exposes hidden assumptions, edge cases, or missing acceptance evidence. This phase can reasonably add 3-10 questions when the epic is complex.
+   - Explain the area that needs clarification and why it matters
+   - Ask focused multiple-choice questions to fill the gap
+   - Use the disposition option banks (`Gap disposition`, `Severity weighting`, `Source spec routing`) from `references/question-patterns.md`
+   - Clarify and resolve before moving to the next issue
 
-    Start with the most important issues first. Group related questions together to make the conversation efficient.
+   Ask additional multiple-choice questions when validation exposes hidden assumptions, edge cases, or missing acceptance evidence. This phase can reasonably add 3-10 questions when the epic is complex.
 
-    Multiple rounds of clarification are normal and encouraged. The goal is shared understanding, not speed.
+   Start with the most important issues first. Group related questions together to make the conversation efficient.
 
-1. **Update Specs Based on Clarification**
+   Multiple rounds of clarification are normal and encouraged. The goal is shared understanding, not speed.
 
-Route changes to the right source spec:
+4. **Update Specs Based on Clarification**
 
-    - Audience, scope, success, dependency, constraint, or non-functional gaps → return to `1-epic-brief`
-    - Entry, step sequence, presentation, completion, cancellation, recovery, edge-state, or evidence gaps → return to `2-core-flows`
-    - Keep changes targeted — don't rewrite unnecessarily
-1. **Confirm Readiness**
+   Route changes to the right source spec:
 
-Once issues are addressed:
+   - Audience, scope, success, dependency, constraint, or non-functional gaps → return to `1-epic-brief`
+   - Entry, step sequence, presentation, completion, cancellation, recovery, edge-state, or evidence gaps → return to `2-core-flows`
+   - Keep changes targeted, and don't rewrite what works
 
-    - Review the updated documents with the user
-    - Confirm the changes capture their intent
-    - Iterate if any new gaps emerge
-    - Only proceed when specs are ready for technical architecture
+5. **Confirm Readiness**
+
+   Once issues are addressed:
+
+   - Review the updated documents with the user
+   - Confirm the changes capture their intent
+   - Iterate if any new gaps emerge
+   - Only proceed when specs are ready for technical architecture
 
 ## Output
 
-Either confirm the specs are ready for `4-tech-plan` or revise source specs with a short "Validation Updates" section. Do not create tickets in this stage. The workflow must still pass through `5-architecture-validation` before `6-ticket-breakdown`. Do not mark the PRD ready while any primary flow is missing entry, steps, completion, failure/cancellation, edge states, or acceptance evidence.
+Either confirm the specs are ready for `4-tech-plan` or revise source specs with a short "Validation Updates" section. Do not create tickets in this stage. The workflow still passes through `5-architecture-validation` before `6-ticket-breakdown`, because ticketing depends on a stress-tested tech plan. Do not mark the PRD ready while any primary flow is missing entry, steps, completion, failure/cancellation, edge states, or acceptance evidence.
 
 ## Next Step
 
-Suggest the user proceed with `$evenbetter-general-epic 4-tech-plan` to design the technical architecture.
+Suggest running the `4-tech-plan` stage of this skill next to design the technical architecture.
 
 ## Acceptance Criteria
 

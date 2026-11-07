@@ -3,3 +3,6 @@
 
 .codex/
 .claude/
+__pycache__/
+*.pyc
+**/evals/results/

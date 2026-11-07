@@ -1,66 +1,67 @@
-# Phase 3 — Development & Xcode Setup
+# Phase 3: Development and Xcode setup
 
-## Table of Contents
-1. Creating a New Xcode Project
-2. Key Configuration Settings
-3. Signing and Capabilities
-4. Project Structure and Organization
-5. Version Control
-6. Development Workflow
-7. Refactoring and Iteration
+## Table of contents
+1. Creating a new Xcode project
+2. Key configuration settings
+3. Signing and capabilities
+4. Project structure and organization
+5. Version control
+6. Development workflow
+7. Refactoring and iteration
 
 ---
 
-## 1. Creating a New Xcode Project
+## 1. Creating a new Xcode project
 
 1. Open Xcode → "Create a new Xcode project"
 2. Choose appropriate template and platform (iOS App with SwiftUI)
 3. Name your project and set the bundle identifier
 4. Select SwiftData or Core Data for persistence (if needed)
 
-## 2. Key Configuration Settings
+## 2. Key configuration settings
 
-### Bundle Identifier
+### Bundle identifier
 - Use reverse DNS format: `com.yourname.appname`
 - Must be unique across the entire App Store
 - Example: `com.yourcompany.WeatherWiz`
 
-### Deployment Targets
-- **iOS Version:** Choose minimum iOS version your app supports
+### Deployment targets
+- **iOS Version:** Choose the minimum iOS version your app supports. Since 2026-04-28, App Store uploads must be built with Xcode 26 or later on the iOS 26 SDK, and since 2026-09-09 they must target iOS 13 or later ([upcoming requirements](https://developer.apple.com/news/upcoming-requirements/)). Xcode 26 and 27 only support deployment targets from iOS 15 ([Xcode system requirements](https://developer.apple.com/xcode/system-requirements)), so iOS 15 is the practical floor.
 - **Devices:** Specify iPhone, iPad, or both
 - Newer devices = latest features but may exclude older device users
 
-### App Name and Display Name
+### App name and display name
 - Names that appear on the device and in the App Store
 - Keep it concise and memorable
 
-### Version and Build Numbers
+### Version and build numbers
 - **Version Number:** Public release version (e.g., 1.0, 1.1, 2.0)
 - **Build Number:** Increments with every build, tracks development stages
 - Use semantic versioning: Major.Minor.Patch
 
-### Device Orientations
+### Device orientations
 - Set supported orientations (portrait, landscape, or both)
 - Most apps default to portrait only
 
-### Info.plist Configuration
+### Info.plist configuration
 - Contains app metadata like CFBundleName, CFBundleShortVersionString
-- **CRITICAL:** Permission descriptions must clearly explain WHY each permission is needed
-- Vague descriptions = App Store rejection
+- Permission purpose strings must say specifically why the app needs each permission
+- Vague purpose strings get the app rejected
+- If your code or an SDK uses a required-reason API, add a privacy manifest (`PrivacyInfo.xcprivacy`); see `references/05-appstore-prep.md`
 
-Example of GOOD permission description:
+A specific purpose string:
 ```
 "This app needs access to your camera to scan food items and calculate calories"
 ```
 
-Example of BAD permission description (will be rejected):
+A vague one that gets rejected:
 ```
 "Camera access needed"
 ```
 
-## 3. Signing and Capabilities
+## 3. Signing and capabilities
 
-### Certificates and Profiles
+### Certificates and profiles
 - Link to your Apple Developer Account
 - Configure development and distribution signing
 - Automatic signing is recommended for most projects
@@ -69,9 +70,9 @@ Example of BAD permission description (will be rejected):
 - Enable features like push notifications, background modes, iCloud
 - Each capability must be justified if used
 
-## 4. Project Structure and Organization
+## 4. Project structure and organization
 
-### Recommended Folder Structure
+### Recommended folder structure
 ```
 MyApp/
 ├── App/
@@ -90,53 +91,53 @@ MyApp/
 │   └── Extensions.swift        # Helper extensions
 ├── Resources/
 │   ├── Assets.xcassets         # Images, colors, app icon
-│   └── Localizable.strings     # Localization
+│   └── Localizable.xcstrings   # String Catalog (localization)
 └── Info.plist
 ```
 
-### Networking and Data Abstractions
+### Networking and data abstractions
 - Separate networking logic from views
 - Use protocols for testability
 - Create clean data service layers
 - Handle errors gracefully
 
-## 5. Version Control
+## 5. Version control
 
-### Git/GitHub Setup
+### Git/GitHub setup
 - Initialize Git from project creation
 - Create meaningful commit messages
 - Use branches for feature development
 - Push regularly to remote repository
 
-### Branching Strategy
+### Branching strategy
 - `main` branch: production-ready code
 - `develop` branch: integration branch
 - Feature branches: `feature/feature-name`
 
-## 6. Development Workflow
+## 6. Development workflow
 
-### Feature Planning and Building
+### Feature planning and building
 1. Start with core features that define your app's value
 2. Build one feature at a time, test it, then move on
-3. Use iterative development — ship minimal, improve based on feedback
+3. Use iterative development: ship something minimal, then improve it based on feedback
 4. Don't over-build before validating
 
-### Laying Out the App Foundation
+### Laying out the app foundation
 1. Set up navigation structure (TabView, NavigationStack)
 2. Create placeholder views for each screen
 3. Implement data models
 4. Connect views to data
 5. Add interactions and polish
 
-## 7. Refactoring and Iteration
+## 7. Refactoring and iteration
 
-### When to Refactor
+### When to refactor
 - When code becomes hard to understand or modify
 - When adding new features requires touching many files
 - When you notice repeated patterns
 - Before major feature additions
 
-### Iterative Development Principles
+### Iterative development principles
 - Ship early, get feedback, improve
 - Don't pursue perfection before validation
 - Each iteration should have a clear goal

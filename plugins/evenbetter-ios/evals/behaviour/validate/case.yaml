@@ -1,0 +1,56 @@
+schema_version: "1.1"
+name: behaviour-validate
+description: evenbetter-validate re-checks a seeded analyzed report, drops the two planted false positives and stamps it validated.
+expected_outcome: The report at .evenbetter/plant-care/ ends in state validated with a validated_at stamp. EB-031 (checkmark Button that already has a label) and EB-032 (divider image that is already hidden) are removed, and no other finding repeats their claims. Every planted problem's clause survives, as a finding's clause_id or in related_clause_ids after a merge. No Swift file changes.
+tags: [behaviour]
+runs: 3
+execution:
+  max_turns: 100
+  timeout_seconds: 1800
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: loads-evenbetter-validate
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-validate"'
+  - name: state-validated
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"state"\s*:\s*"validated"'
+  - name: validated-at-stamped
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"validated_at"\s*:\s*"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}"'
+  - name: drops-labelled-checkmark-EB-031
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"id"\s*:\s*"EB-031"'
+    match: not_contains
+  - name: drops-hidden-divider-EB-032
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"id"\s*:\s*"EB-032"'
+    match: not_contains
+  - name: no-label-finding-on-addplantview
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"clause_id"\s*:\s*"A11Y-UI-00[12]"(?:(?!"id"\s*:\s*"EB-)[\s\S])*?"file_path"\s*:\s*"[^"]*AddPlantView\.swift"'
+    match: not_contains
+  - name: keeps-planted-problems
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '^(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:COMP-UI-002|NAV-UI-001)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:COMP-UI-002|NAV-UI-001)"))(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:A11Y-UI-001)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:A11Y-UI-001)"))(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:NAV-A11Y-002)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:NAV-A11Y-002)"))(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:A11Y-UI-002)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:A11Y-UI-002)"))(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:TYPO-A11Y-001)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:TYPO-A11Y-001)"))(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:TYPO-UI-001)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:TYPO-UI-001)"))(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:CLR-UI-002)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:CLR-UI-002)"))(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:A11Y-UX-001)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:A11Y-UX-001)"))(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:COMP-UI-001|A11Y-A11Y-001|COMP-A11Y-002)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:COMP-UI-001|A11Y-A11Y-001|COMP-A11Y-002)"))(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:HAPT-UX-001|LAY-UX-009)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:HAPT-UX-001|LAY-UX-009)"))(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:LAY-UI-001)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:LAY-UI-001)"))(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:LAY-UX-001|COMP-UX-002)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:LAY-UX-001|COMP-UX-002)"))(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:COMP-UX-001)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:COMP-UX-001)"))(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:COMP-UI-003)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:COMP-UI-003)"))'
+  - name: no-swift-edit
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"[^"]*\.swift"'
+    min: 0
+    max: 0
+  - name: no-swift-write
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*\.swift"'
+    min: 0
+    max: 0

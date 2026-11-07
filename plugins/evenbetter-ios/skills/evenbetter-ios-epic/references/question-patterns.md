@@ -1,5 +1,15 @@
 # Question Patterns
 
+## Contents
+
+- Format
+- 0 Trigger Workflow
+- 1 iOS UX Brief
+- 2 Screen Flows (flow inventory, per-flow decisions, cross-flow decisions)
+- Cross-Screen Tradeoffs
+- Screenshot Requests
+- Review Disposition
+
 Ask only questions that materially change the app/epic UX, accessibility strategy, navigation architecture, review scope, or implementation path. Every question must be multiple-choice when the environment supports options.
 
 ## Format
@@ -147,7 +157,7 @@ Use these patterns before writing `screen-flows.html`. Ask at least one inventor
   - Recommended: Read existing content and queue safe actions where feasible
   - Show explicit unavailable states with retry
   - Require online access for this release
-- iPad/adaptive behavior:
+- iPad and adaptive behavior (iPhone Duo uses compact width on its outer display and regular width on its inner one, so even an iPhone-only app needs a plan for resizing):
   - Recommended: Document iPad layout behavior even if implementation is later
   - Design universal split/sidebar behavior now
   - Defer iPad and record it as out of scope
@@ -159,6 +169,10 @@ Use these patterns before writing `screen-flows.html`. Ask at least one inventor
   - Recommended: Standard labels plus headings, grouping, and success announcements
   - Custom accessibility values and hints for complex controls
   - Custom actions for repeated row or card operations
+- Haptic feedback:
+  - Recommended: System `.sensoryFeedback` for completion, error, and selection events, used the same way on every screen
+  - No haptics in this release
+  - A custom Core Haptics pattern for one signature interaction, plus system feedback elsewhere
 - System surfaces:
   - Recommended: No external system actions until core app flow is stable
   - App Intents for key user-valued actions
@@ -211,4 +225,4 @@ When findings need a decision, ask closed choices:
 - Evidence:
   - Recommended: Wait for requested screenshots when visual behavior is central
   - Proceed with code-only review
-  - Run simulator review if available
+  - Capture the states on the simulator with evenbetter-ios-debugger-agent, and confirm accessibility findings at runtime with evenbetter-accessibility-tests

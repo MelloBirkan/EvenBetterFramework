@@ -2,12 +2,12 @@
 
 ## Role
 
-Validate the UX brief and screen flows before technical planning.
+Validate the UX brief and screen flows before technical planning. This stage checks the epic's specs; it is not the evenbetter-validate skill, which checks evenbetter-analyze audit reports.
 
 ## Process
 
 1. Read `ios-ux-brief.md` and `screen-flows.html`.
-2. Read `official-sources.md` and consult Apple sources for any non-obvious HIG/accessibility claim.
+2. Read `references/official-sources.md` and consult Apple sources for any non-obvious HIG/accessibility claim.
 3. Validate requirements against the checklist below.
 4. Present findings by severity and ask closed disposition questions for unresolved tradeoffs. Ask additional multiple-choice questions when validation exposes hidden assumptions, edge cases, or missing review evidence; this phase can reasonably add 3-10 questions when the epic is complex.
 5. If the gap belongs to audience, scope, platform, or accessibility baseline, return to `1-ios-ux-brief`. If the gap belongs to entry, screen sequence, presentation, completion, cancellation, recovery, or screenshots, return to `2-screen-flows`.

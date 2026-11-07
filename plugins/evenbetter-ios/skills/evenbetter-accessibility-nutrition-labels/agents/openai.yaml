@@ -1,0 +1,4 @@
+interface:
+  display_name: "EB iOS Accessibility Nutrition Labels"
+  short_description: "Decide which App Store accessibility labels to claim"
+  default_prompt: "Use $evenbetter-accessibility-nutrition-labels to work out which Accessibility Nutrition Labels this app can declare and draft the App Store Connect answers."

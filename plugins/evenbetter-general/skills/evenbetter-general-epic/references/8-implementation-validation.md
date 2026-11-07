@@ -1,6 +1,15 @@
 # 8 implementation-validation
 
-> Converted from a former Claude Code command. Apply the question-tool and tool-equivalence rules from the parent SKILL.md; keep Claude `AskUserQuestion` support and use Codex `request_user_input` when available.
+> This stage follows the question tooling, tool equivalents and artifact rules in SKILL.md.
+
+## Contents
+
+- Role
+- Core Philosophy
+- Tools
+- Artifacts
+- Processing User Request
+- What Good Validation Looks Like
 
 ## Role
 
@@ -20,16 +29,16 @@ Implementation validation answers two questions:
 1. **Alignment**: Does the code match what was planned in the specs?
 2. **Correctness**: Does the code actually work? Are there bugs or gaps?
 
-The specs (Epic Brief, Tech Plan, Tickets) represent deliberate planning decisions. Deviations aren't automatically wrong, but they should be conscious choices, not accidents.
+The specs (Epic Brief, Core Flows, Tech Plan, Tickets) represent deliberate planning decisions. Deviations aren't automatically wrong, but they should be conscious choices, not accidents.
 
 This is not a generic code review. It's a focused check against planned work.
 
 ## Tools
 
-- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available to ask the user for direction on how to handle findings. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the parent SKILL.md limits.
+- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available to ask the user for direction on how to handle findings. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the SKILL.md limits.
 - Use `Read`, `Grep`, and `Glob` to review the implementation code and compare against specs.
 - Use `Bash` to run `git diff` for identifying what changed.
-- When validating implementation correctness, use MCP tools to verify correct API usage, library behavior, or framework conventions: `ref_search_documentation` / `ref_read_url` for library and API docs, `web_search_exa` or `tavily_search` for general research.
+- When validating implementation correctness, verify API usage, library behavior or framework conventions with the tools the session has: the Ref `ref_search_documentation` and `ref_read_url` tools for library and API docs when the Ref server is connected, and a search tool such as Exa `web_search_exa`, Tavily `tavily_search` or the host's web search for general research.
 
 ## Artifacts
 
@@ -49,6 +58,7 @@ Determine what to validate from the provided arguments:
 Read the relevant specs that govern this implementation:
 
 - **Epic Brief**: Overall goals, requirements, success criteria
+- **Core Flows**: User journeys, states and edge cases the implementation must deliver
 - **Tech Plan**: Architectural decisions, patterns, technical approach
 - **Tickets**: Specific requirements, acceptance criteria, implementation details
 
@@ -63,6 +73,7 @@ Compare implementation against specs:
 
 - Are the requirements from tickets implemented?
 - Does the architecture follow the Tech Plan?
+- Do the implemented flows match Core Flows (entry, steps, completion, failure and edge states)?
 - Are acceptance criteria met?
 - Any deviations from what was planned? (Note: deviations may be justified)
 

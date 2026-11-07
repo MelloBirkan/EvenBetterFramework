@@ -1,6 +1,18 @@
 # 5 architecture-validation
 
-> Converted from a former Claude Code command. Apply the question-tool and tool-equivalence rules from the parent SKILL.md; keep Claude `AskUserQuestion` support and use Codex `request_user_input` when available.
+> This stage follows the question tooling, tool equivalents and artifact rules in SKILL.md. It reviews specs before code exists; it is not the evenbetter-validate skill, which checks an evenbetter-analyze audit report.
+
+## Contents
+
+- Role
+- Core Philosophy
+- Validation Focus Areas
+- Tools
+- Artifacts
+- Processing User Request
+- Output
+- Next Step
+- Acceptance Criteria
 
 ## Role
 
@@ -80,9 +92,9 @@ Evaluate the Tech Plan against these six dimensions:
 
 ## Tools
 
-- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available for all interview and clarification questions. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the parent SKILL.md limits.
+- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available for all interview and clarification questions. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the SKILL.md limits.
 - Use `Glob`, `Grep`, and `Read` tools to verify codebase patterns and ground validation in the actual code.
-- When stress-testing architectural decisions, use MCP tools to verify assumptions against official docs and known constraints: `ref_search_documentation` / `ref_read_url` for library and API docs, `web_search_exa` or `tavily_search` for researching known issues, scaling limits, or best practices.
+- When stress-testing architectural decisions, check assumptions against official docs and known constraints with the tools the session has: the Ref `ref_search_documentation` and `ref_read_url` tools for library and API docs when the Ref server is connected, and a search tool such as Exa `web_search_exa`, Tavily `tavily_search` or the host's web search for known issues, scaling limits or best practices.
 
 ## Artifacts
 
@@ -92,132 +104,136 @@ All artifacts live in `.evenbetter/<epic-folder>/`. Scan `.evenbetter/` to find 
 
 1. **Gather Context**
 
-Read and internalize the relevant artifacts:
+   Read and internalize the relevant artifacts:
 
-    - Epic Brief (the requirements authority)
-    - Core Flows (the user journeys)
-    - Tech Plan (the architecture being validated)
-    - Existing codebase patterns (the reality we're building in)
-1. **Baseline Coverage Check**
+   - Epic Brief (the requirements authority)
+   - Core Flows (the user journeys)
+   - Tech Plan (the architecture being validated)
+   - Existing codebase patterns (the reality we're building in)
 
-Before deep analysis, verify the Tech Plan addresses foundational areas.
+2. **Baseline Coverage Check**
 
-Evaluate each area qualitatively-not "is this documented?" but "is this adequately addressed?"
+   Before deep analysis, verify the Tech Plan addresses foundational areas.
 
-**Requirements Coverage**
+   Evaluate each area qualitatively-not "is this documented?" but "is this adequately addressed?"
 
-    - Do core functional requirements from the Epic Brief have technical approaches?
-    - Do the main user flows from Core Flows have architectural coverage?
-    - Have critical edge cases and failure scenarios been acknowledged?
-    - Have required external integrations been identified with clear approaches?
+   **Requirements Coverage**
 
-    **Architecture Completeness**
+   - Do core functional requirements from the Epic Brief have technical approaches?
+   - Do the main user flows from Core Flows have architectural coverage?
+   - Have critical edge cases and failure scenarios been acknowledged?
+   - Have required external integrations been identified with clear approaches?
 
-    - Are major components and their responsibilities clear?
-    - Are component interactions and dependencies understood?
-    - Is data flow between components defined?
-    - Are boundaries between layers established (where applicable)?
+   **Architecture Completeness**
 
-    **Technical Foundation**
+   - Are major components and their responsibilities clear?
+   - Are component interactions and dependencies understood?
+   - Is data flow between components defined?
+   - Are boundaries between layers established (where applicable)?
 
-    - Are key technology choices made and do they fit together?
-    - Is the authentication/authorization approach defined (if applicable)?
-    - Is error handling strategy defined for critical paths?
-    - Are data models sufficiently specified to begin implementation?
-1. **Identify Critical Decisions**
+   **Technical Foundation**
 
-Extract the defining architectural choices from the Tech Plan:
+   - Are key technology choices made and do they fit together?
+   - Is the authentication/authorization approach defined (if applicable)?
+   - Is error handling strategy defined for critical paths?
+   - Are data models sufficiently specified to begin implementation?
 
-    - What are the 3-7 decisions that will shape most of the implementation?
-    - These are the decisions worth stress-testing
-    - Skip trivial or obvious choices
+3. **Identify Critical Decisions**
 
-    Look for decisions that:
+   Extract the defining architectural choices from the Tech Plan:
 
-    - Cross component boundaries (integration points)
-    - Handle failure modes or error scenarios
-    - Define core data schemas or models
-    - Break from or extend existing codebase patterns
-    - Have significant performance or scaling implications
-    - Affect security boundaries
+   - What are the 3-7 decisions that will shape most of the implementation?
+   - These are the decisions worth stress-testing
+   - Skip trivial or obvious choices
 
-    Also include any items flagged as "Concern" from the baseline coverage check.
+   Look for decisions that:
 
-1. **Stress-Test Each Critical Decision**
+   - Cross component boundaries (integration points)
+   - Handle failure modes or error scenarios
+   - Define core data schemas or models
+   - Break from or extend existing codebase patterns
+   - Have significant performance or scaling implications
+   - Affect security boundaries
 
-For each critical decision, evaluate against the six focus areas:
+   Also include any items flagged as "Concern" from the baseline coverage check.
 
-    - Does this hold up under failure scenarios?
-    - Could this be simpler?
-    - What happens if requirements change?
-    - Does this fit the existing codebase?
+4. **Stress-Test Each Critical Decision**
 
-    Think through scenarios:
+   For each critical decision, evaluate against the six focus areas:
 
-    - Trace a request through the proposed architecture end-to-end
-    - Inject failures at key points-what breaks, what recovers?
-    - Change a requirement-what ripples through the design?
+   - Does this hold up under failure scenarios?
+   - Could this be simpler?
+   - What happens if requirements change?
+   - Does this fit the existing codebase?
 
-    **Issue Classification Guidance**
+   Think through scenarios:
 
-    When evaluating, categorize issues by importance to guide clarification priority:
+   - Trace a request through the proposed architecture end-to-end
+   - Inject failures at key points-what breaks, what recovers?
+   - Change a requirement-what ripples through the design?
 
-    *Most Important* - Address first:
+   **Issue Classification Guidance**
 
-    - Will cause major rework if not addressed
-    - Violates Epic Brief requirements
-    - Fundamental robustness gap (no recovery from failures)
-    - Security vulnerabilities
+   When evaluating, categorize issues by importance to guide clarification priority:
 
-    *Significant* - Address before proceeding:
+   *Most Important* - Address first:
 
-    - Significant complexity that could be simplified
-    - Fights existing codebase patterns
-    - Notable resilience gaps
-    - Missing error handling for critical paths
+   - Will cause major rework if not addressed
+   - Violates Epic Brief requirements
+   - Fundamental robustness gap (no recovery from failures)
+   - Security vulnerabilities
 
-    *Moderate* - Clarify and decide:
+   *Significant* - Address before proceeding:
 
-    - Minor consistency issues
-    - Opportunities for simplification
-    - Edge cases to consider
-    - Terminology or naming concerns
+   - Significant complexity that could be simplified
+   - Fights existing codebase patterns
+   - Notable resilience gaps
+   - Missing error handling for critical paths
 
-    *Minor* - Note for awareness:
+   *Moderate* - Clarify and decide:
 
-    - Observations and suggestions
-    - Implementation phase considerations
-    - Polish and refinements
-1. **Interview for Resolution**
+   - Minor consistency issues
+   - Opportunities for simplification
+   - Edge cases to consider
+   - Terminology or naming concerns
 
-Present findings to the user as multiple-choice interview questions. Include a detailed description of the issue in the question statement so the user has the context they need to choose. For each gap or concern:
+   *Minor* - Note for awareness:
 
-    - Explain the issue and why it matters
-    - Ask focused closed questions to understand the reasoning or fill the gap, using disposition option banks from `question-patterns.md` section `5 Architecture Validation` (Risk classification, Fix routing, Simplicity vs flexibility, Codebase fit)
-    - Clarify and resolve before moving to the next issue
+   - Observations and suggestions
+   - Implementation phase considerations
+   - Polish and refinements
 
-    Ask additional multiple-choice questions when validation exposes hidden assumptions, edge cases, or architectural gaps. This phase can reasonably add 3-10 questions before ticketing.
+5. **Interview for Resolution**
 
-    Start with the most important issues first — things that would cause major rework or block implementation. Then work toward smaller observations.
+   Present findings to the user as multiple-choice interview questions. Include a detailed description of the issue in the question statement so the user has the context they need to choose. For each gap or concern:
 
-    Route unresolved product/flow assumptions back to `1-epic-brief` or `2-core-flows`; route unresolved implementation architecture back to `4-tech-plan`.
+   - Explain the issue and why it matters
+   - Ask focused closed questions to understand the reasoning or fill the gap, using disposition option banks from `references/question-patterns.md` section `5 Architecture Validation` (Risk classification, Fix routing, Simplicity vs flexibility, Codebase fit)
+   - Clarify and resolve before moving to the next issue
 
-    Multiple rounds of clarification are normal and encouraged. The goal is shared understanding of the architecture's strengths and gaps.
+   Ask additional multiple-choice questions when validation exposes hidden assumptions, edge cases, or architectural gaps. This phase can reasonably add 3-10 questions before ticketing.
 
-1. **Update Tech Plan Based on Clarification**
+   Start with the most important issues, the ones that would cause major rework or block implementation. Then work toward smaller observations.
 
-As issues are resolved through clarification:
+   Route unresolved product/flow assumptions back to `1-epic-brief` or `2-core-flows`; route unresolved implementation architecture back to `4-tech-plan`.
 
-    - Update the Tech Plan with clarifications or changes
-    - Document any accepted trade-offs
-    - Keep changes targeted — don't rewrite unnecessarily
-1. **Confirm Readiness**
+   Multiple rounds of clarification are normal and encouraged. The goal is shared understanding of the architecture's strengths and gaps.
 
-Once issues are addressed:
+6. **Update Tech Plan Based on Clarification**
 
-    - Review the updated Tech Plan with the user
-    - Confirm the changes capture the agreed approach
-    - Iterate if any new gaps emerge
+   As issues are resolved through clarification:
+
+   - Update the Tech Plan with clarifications or changes
+   - Document any accepted trade-offs
+   - Keep changes targeted, and don't rewrite what works
+
+7. **Confirm Readiness**
+
+   Once issues are addressed:
+
+   - Review the updated Tech Plan with the user
+   - Confirm the changes capture the agreed approach
+   - Iterate if any new gaps emerge
 
 ## Output
 
@@ -225,7 +241,7 @@ Either confirm the plan is ready for `6-ticket-breakdown` or revise the plan wit
 
 ## Next Step
 
-Suggest the user proceed with `$evenbetter-general-epic 6-ticket-breakdown` to break the plan into implementation tickets.
+Suggest running the `6-ticket-breakdown` stage of this skill next to break the plan into implementation tickets.
 
 ## Acceptance Criteria
 

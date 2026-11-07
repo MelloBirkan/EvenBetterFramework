@@ -1,6 +1,15 @@
 # 7 cross-artifact-validation
 
-> Converted from a former Claude Code command. Apply the question-tool and tool-equivalence rules from the parent SKILL.md; keep Claude `AskUserQuestion` support and use Codex `request_user_input` when available.
+> This stage follows the question tooling, tool equivalents and artifact rules in SKILL.md.
+
+## Contents
+
+- Role
+- Core Philosophy
+- Tools
+- Artifacts
+- Processing User Request
+- Acceptance Criteria
 
 ## Role
 
@@ -15,13 +24,13 @@ Reviewer who validates consistency across boundaries — the seams where Plan se
 
 ## Core Philosophy
 
-This command answers one question: "Are the artifacts in a state we can confidently act on?"
+This stage answers one question: "Are the artifacts in a state we can confidently act on?"
 
 The Plan sections are the source of truth — ground those first. Tickets are derivatives — check them against the grounded Plan. The effort is front-loaded in analysis, not in conversation. Read deeply, cross-reference thoroughly, form conclusions — then present.
 
 ## Tools
 
-- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available to present findings that need user judgment. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the parent SKILL.md limits.
+- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available to present findings that need user judgment. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the SKILL.md limits.
 - Use `Read` to internalize the plan and ticket files.
 
 ## Artifacts
@@ -82,13 +91,13 @@ With the Plan now grounded, compare each ticket against the updated Plan. Look f
 
 Apply best judgment to update, create, or obsolete tickets as needed. Then present what was done — what changed and why. If any in-progress or completed tickets were modified, flag those explicitly since they represent work already underway. The user can refine from there.
 
-If the drift is so extensive that the ticket set needs to be reconceived from scratch rather than patched, suggest re-running ticket-breakdown instead of trying to reconcile incrementally.
+If the drift is so extensive that the ticket set needs to be reconceived from scratch rather than patched, suggest re-running the `3-ticket-breakdown` stage instead of trying to reconcile incrementally.
 
 ### 6. Suggest Next Steps
 
-- If tickets were reconciled: the artifacts are now holistically consistent — Plan and tickets are aligned. Suggest proceeding to execution.
-- If no tickets exist: suggest ticket-breakdown to create tickets from the now-consistent Plan.
-- If ticket-breakdown was recommended over incremental reconciliation: suggest that as the next step.
+- If tickets were reconciled: the artifacts are now consistent, and the Plan and tickets are aligned. Suggest proceeding to the `4-execute` stage.
+- If no tickets exist: suggest the `3-ticket-breakdown` stage to create tickets from the now-consistent Plan.
+- If re-running `3-ticket-breakdown` was recommended over incremental reconciliation: suggest that as the next step.
 
 ## Acceptance Criteria
 

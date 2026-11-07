@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: routing-trap-store-labels
+description: 'Trap: deciding which App Store accessibility boxes to tick goes to evenbetter-accessibility-nutrition-labels, not evenbetter-swiftui-accessibility.'
+tags: [routing]
+runs: 3
+execution:
+  max_turns: 4
+  timeout_seconds: 180
+  allowed_tools: [Skill]
+  append_system_prompt: 'This session is a routing check for the installed skills. Choose the one skill that best fits the user''s request and load it with the Skill tool. Once it has loaded, stop: do not follow its instructions, open files, run commands or ask questions. Reply with one line that names the skill you loaded.'
+  prompt: 'Before I submit, App Store Connect wants to know whether my app supports VoiceOver and Larger Text. Can I tick those boxes?'
+graders:
+  - name: loads-evenbetter-accessibility-nutrition-labels
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-accessibility-nutrition-labels"'
+  - name: skips-evenbetter-swiftui-accessibility
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-swiftui-accessibility"'
+    min: 0
+    max: 0

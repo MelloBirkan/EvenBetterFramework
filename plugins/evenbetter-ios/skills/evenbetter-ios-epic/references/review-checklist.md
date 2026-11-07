@@ -7,7 +7,7 @@ Use this checklist for `8-ux-implementation-review` and whenever a user asks for
 - Read `.evenbetter/<epic-name>/ios-ux-brief.md`, `screen-flows.html`, `ios-hig-tech-plan.md`, and relevant `UX-TICKET-NNN.md` files.
 - Inspect changed SwiftUI/iOS code with `git diff`, paths from tickets, or user-provided files.
 - Review screenshots when available. If missing, request only the states needed to resolve visual uncertainty.
-- Consult `official-sources.md` for current Apple links and relevant local iOS skills.
+- Consult `references/official-sources.md` for current Apple links and relevant local iOS skills.
 
 ## Severity
 
@@ -23,18 +23,19 @@ Use this checklist for `8-ux-implementation-review` and whenever a user asks for
 - Navigation: tabs, sidebars, stacks, sheets, and deep links match platform expectations and do not fight each other.
 - Information architecture: primary objects and actions stay consistent across screens.
 - State strategy: loading, empty, error, permission, offline, success, and destructive states are covered.
-- Adaptivity: iPhone, iPad, rotation, keyboard, safe areas, Dynamic Island, and large text sizes are handled.
+- Adaptivity: iPhone, iPad, rotation, keyboard, safe areas, Dynamic Island, and large text sizes are handled, including iPhone Duo's outer and inner displays and fold poses (size classes and safe areas, no fixed widths).
 - Consistency: titles, toolbar placement, primary/destructive actions, icons, and terminology are stable across screens.
 
 ## Accessibility Review
 
 - Dynamic Type strategy applies across all text-heavy screens and reflows at accessibility sizes.
 - VoiceOver labels, grouping, headings, rotor opportunities, values, hints, and custom actions are planned and implemented where needed.
-- Touch targets have at least a 44x44 pt hit region on iOS unless a standard component guarantees it.
+- Touch targets have at least a 44x44 pt hit region on iOS unless a standard component guarantees it (corpus clauses LAY-UI-001 and LAY-A11Y-001 in `../../corpus/ios/layout-interaction.md`). WCAG 2.2 sets a lower floor, 24x24 CSS px, in SC 2.5.8 Target Size (Minimum) at Level AA; 2.5.5 is the AAA criterion.
 - Important gestures have visible alternatives.
 - Color, contrast, and status indicators do not rely on color alone.
 - Keyboard, Switch Control, Voice Control, pointer, and focus behavior are not blocked by custom UI.
 - Motion-heavy transitions respect Reduce Motion or have a calmer fallback.
+- Haptics accompany a visible state change, are not the only signal, and use the same feedback type for the same event across screens; use `evenbetter-ios-haptics` to check them.
 
 ## Code and Architecture Review
 
@@ -42,6 +43,7 @@ Use this checklist for `8-ux-implementation-review` and whenever a user asks for
 - Preserve per-tab navigation history when the app uses tabs.
 - Centralize shared route and sheet mapping when the flow spans multiple screens.
 - Keep feature screens decomposed; use `evenbetter-swiftui-view-refactor` for large views or unstable state.
+- Use `evenbetter-swiftui-accessibility` when a finding needs a corpus accessibility clause and its correct-code example.
 - Use `evenbetter-swiftui-ui-patterns` for app wiring, navigation, sheets, forms, controls, theming, async state, and previews.
 - Gate iOS 26+ Liquid Glass with availability and use `evenbetter-swiftui-liquid-glass` for review.
 - Use `evenbetter-ios-app-intents` when system surfaces are in scope.

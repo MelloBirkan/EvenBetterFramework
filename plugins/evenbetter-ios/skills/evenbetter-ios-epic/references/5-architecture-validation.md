@@ -2,13 +2,13 @@
 
 ## Role
 
-Stress-test the HIG technical plan before ticketing or implementation.
+Stress-test the HIG technical plan before ticketing or implementation. This stage checks the epic's technical plan; it is not the evenbetter-validate skill, which checks evenbetter-analyze audit reports.
 
 ## Process
 
 1. Read `ios-ux-brief.md`, `screen-flows.html`, and `ios-hig-tech-plan.md`.
 2. Inspect codebase constraints that could invalidate the plan.
-3. Use relevant local iOS skills for navigation, view structure, Liquid Glass, App Intents, or performance concerns.
+3. Use the relevant iOS skills listed in `SKILL.md` for navigation, view structure, accessibility, haptics, Liquid Glass, App Intents, or performance concerns.
 4. Validate the plan against the checklist below.
 5. Present findings by severity and ask closed disposition questions for unresolved tradeoffs. Ask additional multiple-choice questions when validation exposes hidden assumptions, edge cases, or architectural gaps; this phase can reasonably add 3-10 questions before ticketing.
 6. Route unresolved product/flow assumptions back to `1-ios-ux-brief` or `2-screen-flows`; route unresolved implementation architecture back to `4-ios-hig-tech-plan`.

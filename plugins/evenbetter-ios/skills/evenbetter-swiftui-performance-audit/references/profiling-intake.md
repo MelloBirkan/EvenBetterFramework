@@ -22,6 +22,12 @@ Ask the user to:
 - Capture the SwiftUI timeline and Time Profiler together.
 - Export the trace or provide screenshots of the key SwiftUI lanes and the Time Profiler call tree.
 
+## When the agent records the trace
+
+- If the agent can run commands on the Mac, it can record with `xcrun xctrace record` and export with `xcrun xctrace export` instead of asking the user for screenshots. The same rules apply: a Release build, the SwiftUI template, and one interaction per capture.
+- If Apple's xctrace agent skill from Xcode 27 is installed, follow it for recording, symbolication and reading call trees.
+- Still ask the user which interaction to reproduce, on which device, and who performs it while the trace records: the user, or a UI test the agent runs. A simulator trace can miss device-only rendering and memory costs.
+
 ## Ask for these artifacts
 
 - Trace export or screenshots of the relevant SwiftUI lanes

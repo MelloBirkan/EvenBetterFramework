@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: routing-ios-feature
+description: 'Planning one new SwiftUI screen loads evenbetter-ios-feature.'
+tags: [routing]
+runs: 3
+execution:
+  max_turns: 4
+  timeout_seconds: 180
+  allowed_tools: [Skill]
+  append_system_prompt: 'This session is a routing check for the installed skills. Choose the one skill that best fits the user''s request and load it with the Skill tool. Once it has loaded, stop: do not follow its instructions, open files, run commands or ask questions. Reply with one line that names the skill you loaded.'
+  prompt: 'I want to add a screen to my iPhone app where people pick what time their daily reminder goes off. Can we work out how it should look and behave before I write it in SwiftUI?'
+graders:
+  - name: loads-evenbetter-ios-feature
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-ios-feature"'

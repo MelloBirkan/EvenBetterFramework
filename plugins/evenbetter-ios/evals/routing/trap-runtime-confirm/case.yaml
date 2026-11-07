@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: routing-trap-runtime-confirm
+description: 'Trap: confirming code-audit findings in the running app goes to evenbetter-accessibility-tests, not evenbetter-analyze.'
+tags: [routing]
+runs: 3
+execution:
+  max_turns: 4
+  timeout_seconds: 180
+  allowed_tools: [Skill]
+  append_system_prompt: 'This session is a routing check for the installed skills. Choose the one skill that best fits the user''s request and load it with the Skill tool. Once it has loaded, stop: do not follow its instructions, open files, run commands or ask questions. Reply with one line that names the skill you loaded.'
+  prompt: 'The audit found 25 accessibility issues just from reading the code. Which of them actually happen in the running app? Check them in the simulator.'
+graders:
+  - name: loads-evenbetter-accessibility-tests
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-accessibility-tests"'
+  - name: skips-evenbetter-analyze
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-analyze"'
+    min: 0
+    max: 0

@@ -9,14 +9,14 @@ Create the technical plan that turns the iOS UX brief and screen flows into a Sw
 1. Read `ios-ux-brief.md` and `screen-flows.html`.
 2. Inspect the codebase for app entry points, navigation, environment dependencies, theming, shared components, and minimum OS.
 3. Use `evenbetter-swiftui-ui-patterns` references for app wiring, TabView, NavigationStack, sheets, split views, forms, controls, theming, async state, and previews.
-4. Use `official-sources.md` for Apple documentation links.
+4. Use `references/official-sources.md` for Apple documentation links.
 5. Ask multiple-choice questions for unresolved architecture or UX implementation tradeoffs. Ask roughly 3-10 questions in this phase when needed to close state, navigation, accessibility, adaptivity, and review-evidence assumptions.
 6. If the technical plan cannot map a flow to concrete SwiftUI navigation, state, accessibility, or review checkpoints, return to `2-screen-flows` or `3-ux-prd-validation` before drafting instead of inventing implementation assumptions.
 7. Write `.evenbetter/<epic-name>/ios-hig-tech-plan.md`.
 
 ## Planning Gate
 
-Do not write `ios-hig-tech-plan.md` until the source specs answer:
+Write `ios-hig-tech-plan.md` only after the source specs answer:
 
 - Which screen or route owns each primary flow.
 - Whether each destination is a tab root, pushed screen, sheet, popover, alert, split-view column, full-screen cover, or external entry.
@@ -69,4 +69,4 @@ Do not write `ios-hig-tech-plan.md` until the source specs answer:
 
 ## Next Step
 
-Recommend `5-architecture-validation`. Do not route from the technical plan directly to `6-ticket-breakdown`; architecture validation is required before ticketing.
+Recommend `5-architecture-validation`, not `6-ticket-breakdown`; architecture validation comes before ticketing.

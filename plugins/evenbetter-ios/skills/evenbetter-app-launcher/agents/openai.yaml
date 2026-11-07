@@ -1,0 +1,4 @@
+interface:
+  display_name: "EB App Launcher"
+  short_description: "Plan, price, ship and grow a chosen iOS app"
+  default_prompt: "Use $evenbetter-app-launcher to work out the next step for my iOS app, from pricing and App Store screenshots to review, launch marketing and updates."

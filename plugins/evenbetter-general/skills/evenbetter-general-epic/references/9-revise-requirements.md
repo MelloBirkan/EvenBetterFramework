@@ -1,6 +1,15 @@
 # 9 revise-requirements
 
-> Converted from a former Claude Code command. Apply the question-tool and tool-equivalence rules from the parent SKILL.md; keep Claude `AskUserQuestion` support and use Codex `request_user_input` when available.
+> This stage follows the question tooling, tool equivalents and artifact rules in SKILL.md.
+
+## Contents
+
+- Role
+- Core Philosophy
+- Tools
+- Artifacts
+- Processing User Request
+- Acceptance Criteria
 
 ## Role
 
@@ -28,9 +37,9 @@ Value system:
 
 ## Tools
 
-- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available for all interview and clarification questions. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the parent SKILL.md limits.
+- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available for all interview and clarification questions. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the SKILL.md limits.
 - Use `Glob`, `Grep`, and `Read` tools to explore the codebase when assessing impact on technical specs.
-- When requirement changes involve new technologies or unfamiliar domains, use MCP tools to research: `ref_search_documentation` / `ref_read_url` for library and API docs, `web_search_exa` or `tavily_search` for general web research.
+- When requirement changes involve new technologies or unfamiliar domains, research them with the tools the session has: the Ref `ref_search_documentation` and `ref_read_url` tools for library and API docs when the Ref server is connected, and a search tool such as Exa `web_search_exa`, Tavily `tavily_search` or the host's web search for general research.
 
 ## Artifacts
 
@@ -72,7 +81,7 @@ For each spec, assess:
 - How severe is the impact? (minor tweak vs. significant rework)
 - What's your preliminary thinking on how it should change?
 
-Be thorough — non-obvious cascading effects are the whole reason this command exists. Think through second-order implications:
+Be thorough. Non-obvious cascading effects are the whole reason this stage exists, so think through second-order implications:
 
 - If a flow changes, does the tech plan's component architecture still support it?
 - If a data model changes, do the flows that display that data still make sense?
@@ -110,7 +119,7 @@ Multiple rounds of clarification per spec is normal — don't rush to update aft
 - Are there new constraints or context the brief needs to capture?
 - Does the summary still accurately represent what we're building?
 
-    **Core Flows lens** (PM thinking about user experience):
+**Core Flows lens** (PM thinking about user experience):
 
 - *Information Hierarchy*: Has what's most critical to the user shifted? Does the grouping and organization of information still make sense?
 - *User Journey*: Do journeys remain coherent end-to-end? Have entry/exit points or transitions changed? Are new flows needed, or existing flows now unnecessary? How do changed flows connect to adjacent unchanged flows?
@@ -118,7 +127,7 @@ Multiple rounds of clarification per spec is normal — don't rush to update aft
 - *Feedback & State*: Are there new states, transitions, or error scenarios to communicate? Has how success or failure should be communicated changed?
 - Keep flows at the product level — no technical details.
 
-    **Tech Plan lens** (Architect thinking about system design):
+**Tech Plan lens** (Architect thinking about system design):
 
 - *Architectural Decisions*: Do key choices still hold under new requirements? Are there decisions now wrong or unnecessary? Trace a request through the revised architecture end-to-end — does it hold?
 - *Data Model*: Schema additions, modifications, removals? Do changes fit existing patterns?
@@ -143,7 +152,7 @@ Once all affected specs are updated:
 
 - Confirm with the user that the updated specs reflect the intended changes
 - Summarize what was changed across all specs
-- Suggest running ticket-breakdown to re-plan work and appropriate validation commands if warranted
+- Suggest running the `6-ticket-breakdown` stage to re-plan work, and the `3-prd-validation`, `5-architecture-validation` or `10-cross-artifact-validation` stage if warranted
 
 ## Acceptance Criteria
 

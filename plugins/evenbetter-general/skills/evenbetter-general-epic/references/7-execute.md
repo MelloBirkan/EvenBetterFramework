@@ -1,6 +1,17 @@
 # 7 execute
 
-> Converted from a former Claude Code command. Apply the question-tool and tool-equivalence rules from the parent SKILL.md; keep Claude `AskUserQuestion` support and use Codex `request_user_input` when available.
+> This stage follows the question tooling, tool equivalents and artifact rules in SKILL.md. It is a delegation stage: once the user confirms the execution plan, that confirmation is the request to hand tickets to execution agents.
+
+## Contents
+
+- Role
+- Core Philosophy
+- Tools
+- Artifacts
+- Processing User Request
+- What Good Execution Looks Like
+- Next Step
+- What to Avoid
 
 ## Role
 
@@ -29,11 +40,11 @@ The goal is efficient, correct implementation that stays aligned with specs.
 
 ## Tools
 
-- Use `TaskCreate` and `TaskUpdate` to track ticket execution progress. Create a task for each ticket and update its status as execution proceeds.
-- Use the `Agent` tool to hand off ticket implementation to execution agents. For tickets in the same batch, launch multiple agents in parallel by including multiple Agent calls in a single response.
-- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available whenever user involvement is needed (e.g., major drift decisions, execution plan confirmation). In Claude, present 2-4 distinct options per question ("Other" is added automatically). In Codex, follow the parent SKILL.md limits.
+- Use `TaskCreate` and `TaskUpdate` to track ticket execution progress: one task per ticket, updated as execution proceeds. In Codex, use `update_plan`, which works only in Default mode.
+- Use the `Agent` tool to hand ticket implementation to execution agents; in Codex, start each agent with `spawn_agent` and collect its result with `wait_agent`. This stage is the delegation request, so do not ask again for permission to delegate once the execution plan is confirmed. If the session has no subagent tool, or current instructions do not allow delegation, implement the tickets yourself in the same batch order.
+- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available whenever user involvement is needed (e.g., major drift decisions, execution plan confirmation). In Claude, present 2-4 distinct options per question ("Other" is added automatically). In Codex, follow the SKILL.md limits.
 - Use `Read` and `Grep` to review plans and diffs during validation.
-- When constructing Agent prompts, instruct execution agents to use MCP tools for looking up relevant documentation during implementation: `ref_search_documentation` / `ref_read_url` for library and API docs, `web_search_exa` or `tavily_search` for general research.
+- When the session has documentation or search MCP servers, tell execution agents which ones to use for documentation during implementation, for example the Ref `ref_search_documentation` and `ref_read_url` tools for library and API docs, or Exa `web_search_exa` or Tavily `tavily_search` for general research. Name only servers that are actually connected; an agent told to call a missing tool wastes turns or invents results.
 
 ## Artifacts
 
@@ -56,7 +67,8 @@ Review all tickets in scope:
 - Identify dependency relationships between tickets
 - Group tickets into execution batches (parallel-executable vs. sequential)
 - Determine the first batch of tickets that can be executed in parallel
-- Present the execution plan to the user for confirmation
+- Check which files or areas each ticket touches; tickets that edit the same files go in different batches unless each agent gets its own worktree (see step 3)
+- Present the execution plan to the user for confirmation. When execution agents are available, say that the batches run in them, so confirming the plan also asks for that agent work
 
 Example execution plan format:
 
@@ -75,20 +87,27 @@ Batch 3 (Parallel - depends on Batch 2):
 
 ### 3. Execute Batch
 
-For each ticket in the batch, use the `Agent` tool to spawn an execution agent.
+For each ticket in the batch, start an execution agent (see Tools). For tickets in the same batch, include multiple `Agent` tool calls in a single response so they run in parallel; in Codex, spawn them all before waiting on any.
 
-**Constructing the Agent prompt:**
+**Isolating parallel agents:**
+
+- Where the host can give each agent its own git worktree (in Claude Code, `isolation: "worktree"` on the Agent call), use it for tickets in a parallel batch so their edits cannot collide. A worktree is a fresh checkout: by default it branches from the repository's default branch, or from the current local `HEAD` when the `worktree.baseRef` setting is `"head"`, and uncommitted changes do not carry over. Isolate a batch only when that base already contains the work the batch depends on; otherwise run it in the shared checkout. An uncommitted `.evenbetter/` folder is missing from the worktree too, which is why the prompt below carries the full ticket and spec text.
+- After an isolated batch, bring each worktree's changes into the working checkout (for example by applying its diff) before you validate, and stop to ask the user if two worktrees conflict.
+- Where agents share one working directory (Codex, or a host without worktrees), run tickets in parallel only when their files do not overlap, and run the rest one after another.
+
+**Constructing the agent prompt:**
 
 - Read the ticket file (`.evenbetter/<epic-folder>/tickets/TICKET-NNN.md`) and include its full content
 - Include relevant spec content as context (Epic Brief, Tech Plan, Core Flows)
 - Specify the requirements and acceptance criteria from the ticket
-- For parallel executions, establish clear scope boundaries so different agents don't overlap or interfere with each other's work
-
-For tickets in the same batch, include multiple `Agent` tool calls in a single response to execute them in parallel.
+- For parallel executions, name the files or areas each agent owns so agents don't overlap or interfere with each other's work
+- Tell the agent it cannot ask the user questions (Claude Code subagents have no `AskUserQuestion`). When it hits a blocker, such as a decision the specs leave open, a conflict with the specs, a broken dependency or an action that needs approval, it stops that part of the work and returns the blocker in its report instead of guessing
+- Tell the agent to leave the ticket's `## Status` checkbox unchecked; the orchestrator sets it after validation
+- Ask for a report with the files changed, how each acceptance criterion was checked (tests run and their results), any deviation from the specs, and open blockers
 
 ### 4. Review & Validate Completed Work
 
-Once execution results are returned, review and validate each completed ticket.
+When the agents report back, deal with returned blockers first: answer what the specs already decide, ask the user about the rest with closed questions, then re-run the blocked part. Then review and validate each completed ticket.
 
 **What to Review:**
 
@@ -165,7 +184,7 @@ Once all tickets are executed and validated:
 - Confirm all tickets are marked Done with acceptance criteria met
 - Note any spec updates made during execution
 - Note any deferred items or follow-up work identified
-- Suggest running implementation-validation for final end-to-end review
+- Suggest running the `8-implementation-validation` stage for a final end-to-end review
 
 ## What Good Execution Looks Like
 
@@ -180,7 +199,7 @@ Once all tickets are executed and validated:
 
 ## Next Step
 
-Once all tickets are executed and validated, suggest the user run `$evenbetter-general-epic 8-implementation-validation` for a final end-to-end review of the implementation against specs.
+Once all tickets are executed and validated, suggest running the `8-implementation-validation` stage of this skill for a final end-to-end review of the implementation against specs.
 
 ## What to Avoid
 
@@ -191,3 +210,4 @@ Once all tickets are executed and validated, suggest the user run `$evenbetter-g
 - Skipping verification of complex tickets
 - Proceeding to dependent tickets when dependencies have issues
 - Letting implementation diverge from the specs
+- Letting execution agents guess past a blocker instead of returning it

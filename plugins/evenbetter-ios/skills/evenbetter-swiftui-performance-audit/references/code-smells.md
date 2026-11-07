@@ -1,5 +1,13 @@
 # Common code smells and remediation patterns
 
+## Contents
+
+- Intent
+- High-priority smells
+- Observation fan-out
+- Remediation notes
+- Triage order
+
 ## Intent
 
 Use this reference during code-first review to map visible SwiftUI patterns to likely runtime costs and safer remediation guidance.

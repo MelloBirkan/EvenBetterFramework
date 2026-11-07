@@ -1,0 +1,63 @@
+schema_version: "1.1"
+name: behaviour-accessibility-nutrition-labels
+description: evenbetter-accessibility-nutrition-labels starts from intake questions or its task-by-feature matrix on a validated report, claims no label and never calls the App Store Connect API.
+expected_outcome: The skill reads the validated report, lists PlantCare's common tasks and starts the evidence matrix or asks its intake questions. Cells without a person's manual check stay untested, the critical findings block VoiceOver and Larger Text, nothing is published and no app code or analyze report changes.
+tags: [behaviour]
+runs: 3
+execution:
+  max_turns: 60
+  timeout_seconds: 1500
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: loads-evenbetter-accessibility-nutrition-labels
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-accessibility-nutrition-labels"'
+  - name: no-app-store-connect-api
+    type: tool_used
+    tool: Bash
+    input_match: 'appstoreconnect|api\.appstoreconnect'
+    min: 0
+    max: 0
+  - name: analyze-report-not-edited
+    type: tool_used
+    tool: Edit
+    input_match: 'evenbetter-analyze-report\.html'
+    min: 0
+    max: 0
+  - name: analyze-report-not-rewritten
+    type: tool_used
+    tool: Write
+    input_match: 'evenbetter-analyze-report\.html'
+    min: 0
+    max: 0
+  - name: report-still-validated
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"state"\s*:\s*"validated"'
+  - name: no-edit-to-app-source
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"[^"]*/PlantCare/'
+    min: 0
+    max: 0
+  - name: no-write-to-app-source
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/PlantCare/'
+    min: 0
+    max: 0
+  - name: app-entry-unchanged
+    type: regex
+    target: {source: file, path: PlantCare/PlantCareApp.swift}
+    pattern: 'WindowGroup \{\n\s*PlantListView\(\)\n\s*\.environment\(store\)'
+  - name: detail-view-unchanged
+    type: regex
+    target: {source: file, path: PlantCare/Views/PlantDetailView.swift}
+    pattern: 'Image\(systemName: "trash"\)\n\s*\.frame\(width: 28, height: 28\)\n\s*\.onTapGesture'
+  - name: list-view-unchanged
+    type: regex
+    target: {source: file, path: PlantCare/Views/PlantListView.swift}
+    pattern: 'label: \{\n\s*Image\(systemName: "plus"\)\n\s*\}[\s\S]*\.font\(\.system\(size: 9\)\)\n\s*\.foregroundColor\(\.black\)'

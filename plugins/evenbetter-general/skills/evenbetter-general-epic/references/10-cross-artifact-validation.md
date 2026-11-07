@@ -1,6 +1,15 @@
 # 10 cross-artifact-validation
 
-> Converted from a former Claude Code command. Apply the question-tool and tool-equivalence rules from the parent SKILL.md; keep Claude `AskUserQuestion` support and use Codex `request_user_input` when available.
+> This stage follows the question tooling, tool equivalents and artifact rules in SKILL.md.
+
+## Contents
+
+- Role
+- Core Philosophy
+- Tools
+- Artifacts
+- Processing User Request
+- Acceptance Criteria
 
 ## Role
 
@@ -9,19 +18,19 @@ Reviewer who validates consistency across artifact boundaries — the seams wher
 **Focus on:**
 
 - Cross-cutting analysis — how specs relate to each other, not internal quality of individual specs
-- The joints between specs, not re-reviewing their internals (that's what the existing prd-validation and architecture-validation commands already do)
+- The joints between specs, not re-reviewing their internals (the `3-prd-validation` and `5-architecture-validation` stages already do that)
 - Grounding findings in specific references — cite which spec says what, not vague assessments
 - Calibrating the depth of interaction to the significance of the finding
 
 ## Core Philosophy
 
-This command answers one question: "Are the artifacts in a state we can confidently act on?"
+This stage answers one question: "Are the artifacts in a state we can confidently act on?"
 
 Specs are the source of truth — ground those first. Tickets are derivatives — check them against the grounded specs. The effort is front-loaded in analysis, not in conversation. Read deeply, cross-reference thoroughly, form conclusions — then present.
 
 ## Tools
 
-- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available to present findings that need user judgment. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the parent SKILL.md limits.
+- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available to present findings that need user judgment. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the SKILL.md limits.
 - Use `Read` to internalize all spec and ticket files.
 
 ## Artifacts
@@ -82,13 +91,13 @@ With specs now grounded, compare each ticket against the updated specs. Look for
 
 Apply best judgment to update, create, or obsolete tickets as needed. Then present what was done — what changed and why. If any in-progress or completed tickets were modified, flag those explicitly since they represent work already underway. The user can refine from there.
 
-If the drift is so extensive that the ticket set needs to be reconceived from scratch rather than patched, suggest re-running ticket-breakdown instead of trying to reconcile incrementally.
+If the drift is so extensive that the ticket set needs to be reconceived from scratch rather than patched, suggest re-running the `6-ticket-breakdown` stage instead of trying to reconcile incrementally.
 
 ### 6. Suggest Next Steps
 
-- If tickets were reconciled: the artifacts are now holistically consistent — specs and tickets are aligned. Suggest proceeding to execution.
-- If no tickets exist: suggest ticket-breakdown to create tickets from the now-consistent specs.
-- If ticket-breakdown was recommended over incremental reconciliation: suggest that as the next step.
+- If tickets were reconciled: the artifacts are now consistent, and specs and tickets are aligned. Suggest proceeding to the `7-execute` stage.
+- If no tickets exist: suggest the `6-ticket-breakdown` stage to create tickets from the now-consistent specs.
+- If re-running `6-ticket-breakdown` was recommended over incremental reconciliation: suggest that as the next step.
 
 ## Acceptance Criteria
 

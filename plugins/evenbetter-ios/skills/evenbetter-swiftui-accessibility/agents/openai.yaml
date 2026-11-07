@@ -1,0 +1,4 @@
+interface:
+  display_name: "EB SwiftUI Accessibility"
+  short_description: "Check SwiftUI views against cited accessibility clauses"
+  default_prompt: "Use $evenbetter-swiftui-accessibility to check this SwiftUI view for VoiceOver, Dynamic Type, contrast and hit-target issues and cite the corpus clauses."

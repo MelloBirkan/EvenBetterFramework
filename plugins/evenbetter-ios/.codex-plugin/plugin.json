@@ -1,38 +1,45 @@
 {
   "name": "evenbetter-ios",
-  "description": "EvenBetter skills for iOS product workflows, SwiftUI implementation, Apple HIG, accessibility, and the four-state analyze / validate / repair audit workflow.",
+  "description": "EvenBetter skills for iOS: feature and epic planning, SwiftUI build guides, an analyze, validate and repair audit against Apple's HIG and WCAG 2.2, runtime accessibility tests, Accessibility Nutrition Labels and App Store launch.",
   "author": {
     "name": "EvenBetter",
-    "url": "https://github.com/MelloBirkan/EvenBetterFramework"
+    "url": "https://evenbetter.mellofattura.com"
   },
-  "homepage": "https://github.com/MelloBirkan/EvenBetterFramework",
+  "homepage": "https://evenbetter.mellofattura.com",
   "repository": "https://github.com/MelloBirkan/EvenBetterFramework",
+  "license": "MIT",
   "keywords": [
     "evenbetter",
     "ios",
     "swiftui",
     "accessibility",
     "hig",
-    "repair"
+    "wcag",
+    "xcuitest",
+    "app-store"
   ],
   "skills": "./skills/",
-  "mcpServers": "./.mcp.codex.json",
+  "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "EvenBetter iOS",
-    "shortDescription": "iOS product, UX, SwiftUI, analysis, validation, and repair skills.",
-    "longDescription": "Curated EvenBetter skills for iOS product planning, SwiftUI implementation, Apple HIG review, and accessibility, including the four-state audit workflow: analyze a project into an HTML report, validate the findings, then repair them in source.",
+    "shortDescription": "Plan and audit SwiftUI apps",
+    "longDescription": "Curated EvenBetter skills for iOS. Plan a screen or a whole app with closed questions, build with SwiftUI guides, and audit the project against Apple's HIG and WCAG 2.2: analyze writes an HTML report, validate checks it, repair applies the fixes, and runtime XCUITest audits confirm findings. Release skills cover Accessibility Nutrition Labels and App Store submission.",
     "developerName": "EvenBetter",
     "category": "Developer Tools",
     "capabilities": [
       "Read",
       "Write"
     ],
-    "websiteURL": "https://github.com/MelloBirkan/EvenBetterFramework",
+    "websiteURL": "https://evenbetter.mellofattura.com",
     "defaultPrompt": [
       "Use EvenBetter iOS to plan an iOS feature.",
       "Use EvenBetter iOS to analyze this SwiftUI app.",
       "Use EvenBetter iOS to repair the validated findings in my audit report."
     ],
-    "brandColor": "#10A37F"
+    "brandColor": "#1B6B60",
+    "supportURL": "https://github.com/MelloBirkan/EvenBetterFramework/issues",
+    "brandColorDark": "#7FD6BF",
+    "composerIcon": "./assets/icon.svg",
+    "logo": "./assets/icon.png"
   }
 }
