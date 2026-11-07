@@ -1,0 +1,39 @@
+schema_version: "1.1"
+name: behaviour-repair-gate
+description: evenbetter-repair refuses a report that is still analyzed, touches no Swift file and sends the user to evenbetter-validate.
+expected_outcome: 'The gate in stage 1-load stops the run with "Refused: this report has not been validated. Run evenbetter-validate first." The Swift sources and the report stay as seeded.'
+tags: [behaviour]
+runs: 3
+execution:
+  max_turns: 25
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: loads-evenbetter-repair
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-repair"'
+  - name: no-edit-at-all
+    type: tool_used
+    tool: Edit
+    min: 0
+    max: 0
+  - name: no-swift-write
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*\.swift"'
+    min: 0
+    max: 0
+  - name: points-to-evenbetter-validate
+    type: regex
+    pattern: 'evenbetter-validate'
+  - name: trash-code-unchanged
+    type: regex
+    target: {source: file, path: PlantCare/Views/PlantDetailView.swift}
+    pattern: 'Image\(systemName: "trash"\)\n\s*\.frame\(width: 28, height: 28\)\n\s*\.onTapGesture'
+  - name: report-still-analyzed
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"state"\s*:\s*"analyzed"'

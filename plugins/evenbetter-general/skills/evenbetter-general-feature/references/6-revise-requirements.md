@@ -1,6 +1,15 @@
 # 6 revise-requirements
 
-> Converted from a former Claude Code command. Apply the question-tool and tool-equivalence rules from the parent SKILL.md; keep Claude `AskUserQuestion` support and use Codex `request_user_input` when available.
+> This stage follows the question tooling, tool equivalents and artifact rules in SKILL.md.
+
+## Contents
+
+- Role
+- Core Philosophy
+- Tools
+- Artifacts
+- Processing User Request
+- Acceptance Criteria
 
 ## Role
 
@@ -28,9 +37,9 @@ Value system:
 
 ## Tools
 
-- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available for all interview and clarification questions. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the parent SKILL.md limits.
+- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available for all interview and clarification questions. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the SKILL.md limits.
 - Use `Glob`, `Grep`, and `Read` tools to explore the codebase when assessing impact on technical sections.
-- When requirement changes involve new technologies or unfamiliar domains, use MCP tools to research: `ref_search_documentation` / `ref_read_url` for library and API docs, `web_search_exa` or `tavily_search` for general web research.
+- When requirement changes involve new technologies or unfamiliar domains, research them with the tools the session has: the Ref `ref_search_documentation` and `ref_read_url` tools for library and API docs when the Ref server is connected, and a search tool such as Exa `web_search_exa`, Tavily `tavily_search` or the host's web search for general research.
 
 ## Artifacts
 
@@ -72,7 +81,7 @@ For each section, assess:
 - How severe is the impact? (minor tweak vs. significant rework)
 - What's your preliminary thinking on how it should change?
 
-Be thorough — non-obvious cascading effects are the whole reason this command exists. Think through second-order implications:
+Be thorough. Non-obvious cascading effects are the whole reason this stage exists, so think through second-order implications:
 
 - If a data model changes, do the user flows that reference that data still make sense?
 - If scope shifts, are there technical decisions that are now unnecessary?
@@ -108,13 +117,13 @@ Multiple rounds of clarification per section is normal — don't rush to update 
 - Has scope expanded or contracted? Are the boundaries still right?
 - Are there new constraints or context that need to be captured?
 
-    **User Experience lens** (thinking about user-facing behavior):
+**User Experience lens** (thinking about user-facing behavior):
 
 - Have user flows changed? Are entry/exit points still right?
 - Has information hierarchy shifted?
 - Are there new edge cases or error scenarios to consider?
 
-    **Technical Approach lens** (thinking about system design):
+**Technical Approach lens** (thinking about system design):
 
 - *Architectural Decisions*: Do key choices still hold under new requirements? Are there decisions now wrong or unnecessary? Trace a request through the revised architecture end-to-end — does it hold?
 - *Data Model*: Schema additions, modifications, removals? Do changes fit existing patterns?
@@ -139,7 +148,7 @@ Once all affected sections are updated:
 
 - Confirm with the user that the updated Plan reflects the intended changes
 - Summarize what was changed across all sections
-- Suggest running ticket-breakdown to re-plan work and appropriate validation commands if warranted
+- Suggest running the `3-ticket-breakdown` stage to re-plan work, and the `2-plan-validation` or `7-cross-artifact-validation` stage if warranted
 
 ## Acceptance Criteria
 

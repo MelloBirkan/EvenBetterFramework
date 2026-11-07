@@ -2,6 +2,14 @@
 
 Ask only questions that materially change the feature's scope, user goal, behavior, data shape, integration boundaries, failure handling, or validation decisions. Prefer multiple-choice questions whenever the answer space can be enumerated. Fall back to open-text only when the answer is a name, a citation, an existing schema, or another value that cannot reasonably be listed.
 
+## Contents
+
+- Format
+- 0 Trigger Workflow
+- 1 Plan
+- 2 Plan Validation
+- Review Disposition
+
 ## Format
 
 - Ask 1-4 questions per round (Claude `AskUserQuestion`) or 1-3 per round (Codex `request_user_input`).

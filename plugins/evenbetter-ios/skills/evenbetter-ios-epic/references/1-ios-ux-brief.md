@@ -7,20 +7,20 @@ Create the product-level UX brief for a multi-screen iOS epic or app.
 ## Process
 
 1. Read gathered requirements and inspect the current codebase or project structure.
-2. Read `official-sources.md` and `question-patterns.md`.
+2. Read `references/official-sources.md` and `references/question-patterns.md`.
 3. Ask roughly 3-10 multiple-choice questions in this phase, across one or more rounds before drafting when complexity warrants it. Use early questions to close gaps and assumptions; use later questions to cover edge cases, cross-screen consistency, failure states, accessibility risks, and screenshot/simulator evidence.
 4. Map every material answer to the brief sections below. If any section still depends on an unstated assumption, ask another closed question before drafting.
 5. Write `.evenbetter/<epic-name>/ios-ux-brief.md`.
 
 ## Brief Interview
 
-Use `question-patterns.md` section `1 iOS UX Brief`. Ask at least one round for product-level decisions and at least one risk round for complex or app-from-scratch epics.
+Use `references/question-patterns.md` section `1 iOS UX Brief`. Ask at least one round for product-level decisions and at least one risk round for complex or app-from-scratch epics.
 
 1. Product and audience:
    - Audience priority, context of use, primary job, and secondary users.
    - Whether the app supports short interrupted sessions, long-form work, or occasional utility entry.
 2. Scope and platform:
-   - Included screens, excluded screens, release boundary, dependencies, and first iPhone/iPad posture.
+   - Included screens, excluded screens, release boundary, dependencies, and first iPhone/iPad posture, including how layouts resize between iPhone Duo's outer and inner displays.
    - Whether external system surfaces are in scope now, deferred, or explicitly out of scope.
 3. UX and accessibility baseline:
    - Information hierarchy, feedback and recovery style, Dynamic Type, VoiceOver, gesture/input alternatives, contrast, and motion.
@@ -31,7 +31,7 @@ Use `question-patterns.md` section `1 iOS UX Brief`. Ask at least one round for 
 
 ## Drafting Gate
 
-Do not write `ios-ux-brief.md` until these decisions are explicit:
+Write `ios-ux-brief.md` only after these decisions are explicit:
 
 - Primary audience and the usage context that shapes mobile UX.
 - Included and excluded screens or product areas.

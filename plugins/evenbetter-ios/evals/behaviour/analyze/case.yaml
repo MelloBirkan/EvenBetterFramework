@@ -1,0 +1,94 @@
+schema_version: "1.1"
+name: behaviour-analyze
+description: A full evenbetter-analyze audit of PlantCare writes the HTML report and finds the planted violations. The v graders are one per planted violation, so their pass rate is the audit's recall. v08 (row not combined) was retired because the row sits inside a NavigationLink, which already reads it as one element.
+expected_outcome: The report at .evenbetter/plant-care/evenbetter-analyze-report.html is in state analyzed, names a clause for each of the 12 planted violations, files the 28x28 pt trash target under LAY-UI-001 (not LAY-A11Y-001), and flags neither false-positive trap in AddPlantView.swift. No Swift file changes.
+tags: [behaviour]
+runs: 3
+execution:
+  max_turns: 150
+  timeout_seconds: 2400
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: loads-evenbetter-analyze
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-analyze"'
+  - name: report-written
+    type: file_exists
+    path: .evenbetter/plant-care/evenbetter-analyze-report.html
+  - name: state-analyzed
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"state"\s*:\s*"analyzed"'
+  - name: v01-navigationview
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"clause_id"\s*:\s*"(?:COMP-UI-002|NAV-UI-001)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:COMP-UI-002|NAV-UI-001)"'
+  - name: v02-unlabelled-plus-button
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"clause_id"\s*:\s*"(?:A11Y-UI-001)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:A11Y-UI-001)"'
+  - name: v03-sheet-without-dismiss
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"clause_id"\s*:\s*"(?:NAV-A11Y-002)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:NAV-A11Y-002)"'
+  - name: v04-decorative-leaf-not-hidden
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"clause_id"\s*:\s*"(?:A11Y-UI-002)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:A11Y-UI-002)"'
+  - name: v05-9pt-text
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"clause_id"\s*:\s*"(?:TYPO-A11Y-001)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:TYPO-A11Y-001)"'
+  - name: v06-fixed-system-font
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"clause_id"\s*:\s*"(?:TYPO-UI-001)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:TYPO-UI-001)"'
+  - name: v07-black-foreground
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"clause_id"\s*:\s*"(?:CLR-UI-002)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:CLR-UI-002)"'
+  - name: v09-repeatforever-without-reduce-motion
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"clause_id"\s*:\s*"(?:A11Y-UX-001)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:A11Y-UX-001)"'
+  - name: v10-tap-gesture-text-button
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"clause_id"\s*:\s*"(?:COMP-UI-001|A11Y-A11Y-001|COMP-A11Y-002)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:COMP-UI-001|A11Y-A11Y-001|COMP-A11Y-002)"'
+  - name: v11-error-haptic-on-success
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"clause_id"\s*:\s*"(?:HAPT-UX-001|LAY-UX-009)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:HAPT-UX-001|LAY-UX-009)"'
+  - name: v12-trash-target-confirmation-role
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '^(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:LAY-UI-001)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:LAY-UI-001)"))(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:LAY-UX-001|COMP-UX-002)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:LAY-UX-001|COMP-UX-002)"))(?=[\s\S]*(?:"clause_id"\s*:\s*"(?:COMP-UX-001)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:COMP-UX-001)"))'
+  - name: v13-actionsheet
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"clause_id"\s*:\s*"(?:COMP-UI-003)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:COMP-UI-003)"'
+  - name: no-label-finding-on-addplantview
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"clause_id"\s*:\s*"A11Y-UI-00[12]"(?:(?!"id"\s*:\s*"EB-)[\s\S])*?"file_path"\s*:\s*"[^"]*AddPlantView\.swift"'
+    match: not_contains
+  - name: trash-28pt-not-LAY-A11Y-001
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"clause_id"\s*:\s*"(?:LAY-A11Y-001)"|"related_clause_ids"\s*:\s*\[[^\]]*"(?:LAY-A11Y-001)"'
+    match: not_contains
+  - name: no-swift-edit
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"[^"]*\.swift"'
+    min: 0
+    max: 0
+  - name: no-swift-write
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*\.swift"'
+    min: 0
+    max: 0

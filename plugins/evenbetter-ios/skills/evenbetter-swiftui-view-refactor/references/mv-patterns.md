@@ -2,7 +2,19 @@
 
 Distilled guidance for deciding whether a SwiftUI feature should stay as plain MV or introduce a view model.
 
-Inspired by the user's provided source, "SwiftUI in 2025: Forget MVVM" (Thomas Ricouard), but rewritten here as a practical refactoring reference.
+Based on Thomas Ricouard's article "SwiftUI in 2025: Forget MVVM", rewritten here as a practical refactoring reference.
+
+## Contents
+
+- Default stance
+- When to avoid a view model
+- When a view model may be justified
+- Preferred pattern: local state plus environment
+- Preferred pattern: use modifiers as lightweight orchestration
+- SwiftData note
+- Testing guidance
+- Refactor checklist
+- Bottom line
 
 ## Default stance
 

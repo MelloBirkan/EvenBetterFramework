@@ -2,13 +2,13 @@
 
 ## Role
 
-Stress-test `ios-ux-plan.md` before ticketing or implementation.
+Stress-test `ios-ux-plan.md` before ticketing or implementation. This stage checks the feature plan; it is not the evenbetter-validate skill, which checks evenbetter-analyze audit reports.
 
 ## Process
 
 1. Read `.evenbetter/<feature-name>/ios-ux-plan.md`.
 2. Inspect the current codebase for feasibility: existing navigation, shared components, themes, forms, custom controls, and minimum iOS version.
-3. Read `official-sources.md` and consult Apple sources for any non-obvious HIG or accessibility claim.
+3. Read `references/official-sources.md` and consult Apple sources for any non-obvious HIG or accessibility claim.
 4. Validate the plan against the checklist below.
 5. Present findings by severity and ask closed disposition questions for unresolved tradeoffs. Ask additional multiple-choice questions when validation exposes hidden assumptions, edge cases, or missing review evidence; this phase can reasonably add 3-10 questions when the plan is complex.
 6. Update `ios-ux-plan.md` only after alignment.
@@ -19,8 +19,9 @@ Stress-test `ios-ux-plan.md` before ticketing or implementation.
 - Screen structure preserves information hierarchy and native iOS conventions.
 - Dynamic Type behavior is explicit for large accessibility sizes.
 - VoiceOver labels, grouping, reading order, and custom actions are addressed where needed.
-- Touch targets, gesture alternatives, keyboard, Voice Control, and Switch Control are not ignored.
+- Touch targets, gesture alternatives, keyboard, Voice Control, and Switch Control are addressed.
 - Color and typography choices use semantic/system behavior or explain the exception.
+- Motion respects Reduce Motion, and any haptic feedback accompanies a visible change instead of carrying meaning alone.
 - SwiftUI implementation direction matches local app patterns.
 - Screenshot or simulator validation needs are recorded.
 

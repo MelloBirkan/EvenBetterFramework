@@ -3,10 +3,11 @@
   "description": "EvenBetter platform-agnostic feature and epic planning, ticketing, execution, and validation workflow skills.",
   "author": {
     "name": "EvenBetter",
-    "url": "https://github.com/MelloBirkan/EvenBetterFramework"
+    "url": "https://evenbetter.mellofattura.com"
   },
-  "homepage": "https://github.com/MelloBirkan/EvenBetterFramework",
+  "homepage": "https://evenbetter.mellofattura.com",
   "repository": "https://github.com/MelloBirkan/EvenBetterFramework",
+  "license": "MIT",
   "keywords": [
     "evenbetter",
     "general",
@@ -17,7 +18,7 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "EvenBetter General",
-    "shortDescription": "Platform-agnostic feature and epic workflow skills.",
+    "shortDescription": "Feature and epic workflows",
     "longDescription": "Curated EvenBetter skills for platform-agnostic feature planning, epic planning, ticket breakdown, implementation execution, and validation.",
     "developerName": "EvenBetter",
     "category": "Developer Tools",
@@ -25,11 +26,15 @@
       "Read",
       "Write"
     ],
-    "websiteURL": "https://github.com/MelloBirkan/EvenBetterFramework",
+    "websiteURL": "https://evenbetter.mellofattura.com",
     "defaultPrompt": [
       "Use EvenBetter General to plan a feature.",
       "Use EvenBetter General to break an epic into tickets."
     ],
-    "brandColor": "#10A37F"
+    "brandColor": "#1B6B60",
+    "supportURL": "https://github.com/MelloBirkan/EvenBetterFramework/issues",
+    "brandColorDark": "#7FD6BF",
+    "composerIcon": "./assets/icon.svg",
+    "logo": "./assets/icon.png"
   }
 }

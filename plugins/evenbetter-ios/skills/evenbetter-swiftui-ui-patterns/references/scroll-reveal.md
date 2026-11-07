@@ -1,5 +1,16 @@
 # Scroll-reveal detail surfaces
 
+## Contents
+
+- Intent
+- Core pattern
+- Minimal structure
+- Design choices to keep
+- Morphing a shared control
+- Haptics and affordances
+- Interaction guards
+- Pitfalls
+
 ## Intent
 
 Use this pattern when a detail screen has a primary surface first and secondary content behind it, and you want the user to reveal that secondary layer by scrolling or swiping instead of tapping a separate button.
@@ -126,8 +137,3 @@ This keeps the motion coherent and avoids duplicate-hit-target bugs.
 - Do not mix multiple animation sources for the same property. If `progress` drives it, keep other animations off that property.
 - Do not store derived state like `isSecondaryVisible` unless another API requires it. Prefer deriving it from `progress` or visible scroll targets.
 - Beware of layout feedback loops when measuring heights. Clamp zero values and update only when the measured height actually changes.
-
-## Concrete example
-
-- Pool iOS tile detail reveal: `/Users/dimillian/Documents/Dev/Pool/pool-ios/Pool/Sources/Features/Tile/Detail/TileDetailView.swift`
-- Secondary content anchor example: `/Users/dimillian/Documents/Dev/Pool/pool-ios/Pool/Sources/Features/Tile/Detail/TileDetailIntentListView.swift`

@@ -1,0 +1,4 @@
+interface:
+  display_name: "EB App Opportunity Research"
+  short_description: "Cited App Store niche, competitor and gap research"
+  default_prompt: "Use $evenbetter-app-opportunity-research to find, cite and rank iOS app opportunities in a niche I choose, then write an MVP brief for the one I pick."

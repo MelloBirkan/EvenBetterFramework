@@ -1,11 +1,17 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "evenbetter-general",
+  "displayName": "EvenBetter General",
   "description": "EvenBetter platform-agnostic feature and epic planning, ticketing, execution, and validation workflow skills.",
   "author": {
     "name": "EvenBetter",
-    "url": "https://github.com/MelloBirkan/EvenBetterFramework"
+    "url": "https://evenbetter.mellofattura.com"
   },
+  "homepage": "https://evenbetter.mellofattura.com",
   "repository": "https://github.com/MelloBirkan/EvenBetterFramework",
+  "license": "MIT",
+  "supportUrl": "https://github.com/MelloBirkan/EvenBetterFramework/issues",
+  "icon": "./assets/icon.png",
   "keywords": [
     "evenbetter",
     "general",

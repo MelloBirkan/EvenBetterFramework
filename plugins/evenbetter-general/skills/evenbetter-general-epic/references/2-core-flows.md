@@ -1,6 +1,20 @@
 # 2 core-flows
 
-> Converted from a former Claude Code command. Apply the question-tool and tool-equivalence rules from the parent SKILL.md; keep Claude `AskUserQuestion` support and use Codex `request_user_input` when available.
+> This stage follows the question tooling, tool equivalents and artifact rules in SKILL.md.
+
+## Contents
+
+- Role
+- Core Philosophy
+- Tools
+- Artifacts
+- Processing User Request
+- Core-Flow Interview
+- Drafting Gate
+- Flow Documentation Structure
+- HTML Output Structure
+- Next Step
+- Acceptance Criteria
 
 ## Role
 
@@ -36,9 +50,9 @@ Before drafting any artifact:
 
 ## Tools
 
-- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available for all interview and clarification questions. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the parent SKILL.md limits.
+- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available for all interview and clarification questions. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the SKILL.md limits.
 - Use `Glob`, `Grep`, and `Read` tools to explore the codebase when mapping out current flows and interaction surfaces.
-- When researching UX patterns, interaction design references, or framework capabilities, use MCP tools: `ref_search_documentation` / `ref_read_url` for library and API docs, `web_search_exa` or `tavily_search` for general web research.
+- When researching UX patterns, interaction design references or framework capabilities, use the tools the session has: the Ref `ref_search_documentation` and `ref_read_url` tools for library and API docs when the Ref server is connected, and a search tool such as Exa `web_search_exa`, Tavily `tavily_search` or the host's web search for general research.
 
 ## Artifacts
 
@@ -50,7 +64,7 @@ Core flows are written as a single self-contained HTML file with inline CSS so t
 
 1. Read `.evenbetter/<epic-folder>/epic-brief.md` to internalize the problem, audience, scope, and success criteria.
 2. Explore the codebase to concretely understand the current interaction surface area, user journeys, and user actions where relevant.
-3. Read `question-patterns.md`, especially `2 Core Flows`. Use multiple-choice questions for flow decisions.
+3. Read `references/question-patterns.md`, especially `2 Core Flows`. Use multiple-choice questions for flow decisions.
 4. Run the core-flow interview below before drafting. Ask flow-by-flow questions for every primary flow; do not rely on a single generic question about navigation or interaction.
 5. For each flow, mentally trace entry, each action, each response, completion, cancellation, and recovery. Surface ambiguities as closed questions before documenting.
 6. Once all flows are aligned, write them to `.evenbetter/<epic-folder>/core-flows.html` using the structure in `HTML Output Structure` below.
@@ -64,7 +78,7 @@ Think about each flow across these dimensions before asking questions:
 
 ## Core-Flow Interview
 
-Use `question-patterns.md` section `2 Core Flows`. Ask roughly 3-10 questions in this phase when needed to close cross-flow assumptions, edge cases, and unspoken flow expectations. For multi-area epics, expect multiple rounds and exceed 10 total questions when the flow map is still ambiguous. Keep each round to 1-4 questions (Claude) or 1-3 (Codex).
+Use `references/question-patterns.md` section `2 Core Flows`. Ask roughly 3-10 questions in this phase when needed to close cross-flow assumptions, edge cases, and unspoken flow expectations. For multi-area epics, expect multiple rounds and exceed 10 total questions when the flow map is still ambiguous. Keep each round to 1-4 questions (Claude) or 1-3 (Codex).
 
 ### Round 1: Flow Inventory
 
@@ -209,8 +223,8 @@ The preview is a communication tool for the user, not an implementation target. 
 
 Present the following options to the user:
 
-1. `$evenbetter-general-epic 3-prd-validation` — validate that requirements are clear and complete before moving to technical work (recommended when the epic is complex, multi-area, or high-risk)
-2. `$evenbetter-general-epic 4-tech-plan` — proceed directly to technical architecture (acceptable when flows are simple, fully aligned, and low-risk)
+1. The `3-prd-validation` stage: validate that requirements are clear and complete before moving to technical work (recommended when the epic is complex, multi-area, or high-risk)
+2. The `4-tech-plan` stage: proceed directly to technical architecture (acceptable when flows are simple, fully aligned, and low-risk)
 
 Do not recommend ticket breakdown directly from core flows.
 

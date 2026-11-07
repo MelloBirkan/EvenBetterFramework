@@ -27,12 +27,15 @@ Form {
 ## Example: slider with value text
 
 ```swift
-Section("Font Size") {
-  Slider(value: $fontSizeScale, in: 0.5...1.5, step: 0.1)
-  Text("Scale: \(String(format: \"%.1f\", fontSizeScale))")
-    .font(.scaledBody)
+Section("Playback") {
+  Slider(value: $playbackRate, in: 0.5...2.0, step: 0.25) {
+    Text("Playback speed")
+  }
+  Text("Speed: \(playbackRate.formatted(.number.precision(.fractionLength(2))))x")
 }
 ```
+
+For text size, rely on Dynamic Type and the system text styles rather than an in-app font-scale slider (corpus clause TYPO-UI-001; see `references/theming.md`).
 
 ## Example: picker for enums
 

@@ -1,0 +1,41 @@
+schema_version: "1.1"
+name: behaviour-feature
+description: Planning due dates for a small Express todo API starts with closed questions and writes no code.
+expected_outcome: evenbetter-general-feature loads, reads the API, and ends its turn on closed questions with concrete options and a recommended choice, or takes the recommended options, lists them as assumptions and ends with what waits on the user. No source file is written or edited.
+tags: [behaviour]
+runs: 3
+execution:
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Write, Edit]
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: loads-evenbetter-general-feature
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-general:)?evenbetter-general-feature"'
+  - name: marks-a-recommended-option
+    type: regex
+    pattern: 'recommend'
+    flags: i
+  - name: no-edit-outside-evenbetter
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.evenbetter/)'
+    min: 0
+    max: 0
+  - name: no-write-outside-evenbetter
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.evenbetter/)'
+    min: 0
+    max: 0
+  - name: server-unchanged
+    type: regex
+    target: {source: file, path: src/server.js}
+    pattern: 'const \{ title, done \} = req\.body \?\? \{\};\n\s*const todo = updateTodo\(Number\(req\.params\.id\), \{'
+  - name: store-unchanged
+    type: regex
+    target: {source: file, path: src/store.js}
+    pattern: 'const todo = \{ id: nextId\+\+, title, done: false, createdAt: new Date\(\)\.toISOString\(\) \};'

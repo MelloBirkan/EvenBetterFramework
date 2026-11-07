@@ -1,6 +1,33 @@
 # Code templates
 
-These templates are intentionally generic. Rename types and services to fit the app.
+These templates are generic on purpose. Rename types and services to fit the app.
+
+Contents:
+
+- Choosing the run mode by deployment target
+- Open-app handoff intent
+- Inline action intent
+- Fixed selection with `AppEnum`
+- Entity and query
+- Dependent query
+- Widget configuration intent
+- App shortcuts provider
+- Inline file input
+
+## Choosing the run mode by deployment target
+
+`openAppWhenRun` is deprecated from iOS 26 in favor of `supportedModes`, but `supportedModes` and `IntentModes` exist only on iOS 26 and later. Pick one per intent based on the app's deployment target:
+
+| Deployment target | Opens the app | Runs without opening the app |
+| --- | --- | --- |
+| iOS 26 or later | `static let supportedModes: IntentModes = .foreground` | `static let supportedModes: IntentModes = .background` |
+| Below iOS 26 | `static let openAppWhenRun = true` | Leave `openAppWhenRun` out (it defaults to `false`) |
+
+When the target moves to iOS 26, replace `openAppWhenRun` with `supportedModes`. Mixed modes are iOS 26 only: `[.background, .foreground(.deferred)]` starts in the background and brings the app forward before the action finishes, and `[.background, .foreground(.dynamic)]` prefers the background but can move to the foreground. Inside `perform()`, `systemContext.currentMode` says where the intent is running.
+
+Keep an intent that opens the app in the app target. Apple documents that `openAppWhenRun = true` raises an error when the intent runs in an app extension.
+
+The templates below show the iOS 26 form, with the lower-target line in a comment.
 
 ## Open-app handoff intent
 
@@ -10,7 +37,9 @@ import AppIntents
 struct OpenComposerIntent: AppIntent {
   static let title: LocalizedStringResource = "Open composer"
   static let description = IntentDescription("Open the app to compose content")
-  static let openAppWhenRun = true
+  static let supportedModes: IntentModes = .foreground
+  // Deployment target below iOS 26: use this line instead of supportedModes.
+  // static let openAppWhenRun = true
 
   @Parameter(
     title: "Prefilled text",
@@ -18,10 +47,9 @@ struct OpenComposerIntent: AppIntent {
   )
   var text: String?
 
+  @MainActor
   func perform() async throws -> some IntentResult {
-    await MainActor.run {
-      AppIntentRouter.shared.handledIntent = .init(intent: self)
-    }
+    AppIntentRouter.shared.handledIntent = .init(intent: self)
     return .result()
   }
 }
@@ -33,6 +61,7 @@ Scene-side handoff:
 import AppIntents
 import Observation
 
+@MainActor
 @Observable
 final class AppIntentRouter {
   struct HandledIntent: Equatable {
@@ -69,7 +98,8 @@ import AppIntents
 struct CreateItemIntent: AppIntent {
   static let title: LocalizedStringResource = "Create item"
   static let description = IntentDescription("Create a new item without opening the app")
-  static let openAppWhenRun = false
+  static let supportedModes: IntentModes = .background
+  // Deployment target below iOS 26: delete the supportedModes line; the intent runs without opening the app.
 
   @Parameter(title: "Title")
   var title: String
@@ -98,7 +128,6 @@ enum SectionIntentValue: String, AppEnum {
   case projects
   case settings
 
-  static var typeDisplayName: LocalizedStringResource { "Section" }
   static let typeDisplayRepresentation: TypeDisplayRepresentation = "Section"
 
   static var caseDisplayRepresentations: [Self: DisplayRepresentation] {
@@ -120,15 +149,15 @@ enum SectionIntentValue: String, AppEnum {
 
 struct OpenSectionIntent: AppIntent {
   static let title: LocalizedStringResource = "Open section"
-  static let openAppWhenRun = true
+  static let supportedModes: IntentModes = .foreground
+  // Deployment target below iOS 26: static let openAppWhenRun = true
 
   @Parameter(title: "Section")
   var section: SectionIntentValue
 
+  @MainActor
   func perform() async throws -> some IntentResult {
-    await MainActor.run {
-      AppIntentRouter.shared.handledIntent = .init(intent: self)
-    }
+    AppIntentRouter.shared.handledIntent = .init(intent: self)
     return .result()
   }
 }
@@ -198,8 +227,10 @@ struct ProjectSelectionIntent: WidgetConfigurationIntent {
 }
 
 struct ProjectQuery: EntityQuery {
+  // The wrapped value is an IntentProjection of the configuring intent, nil until it has a workspace.
+  // The projection returns listed parameters unwrapped, so `workspace` reads as a non-optional value.
   @IntentParameterDependency<ProjectSelectionIntent>(\.$workspace)
-  var workspace
+  var selection
 
   func entities(for identifiers: [ProjectEntity.ID]) async throws -> [ProjectEntity] {
     try await fetchProjects().filter { identifiers.contains($0.id) }.map(ProjectEntity.init)
@@ -214,7 +245,7 @@ struct ProjectQuery: EntityQuery {
   }
 
   private func fetchProjects() async throws -> [Project] {
-    guard let workspaceID = workspace?.id else { return [] }
+    guard let workspaceID = selection?.workspace.id else { return [] }
     return try await ProjectStore.shared.projects(in: workspaceID)
   }
 }
@@ -276,7 +307,8 @@ import UniformTypeIdentifiers
 
 struct ImportAttachmentIntent: AppIntent {
   static let title: LocalizedStringResource = "Import attachment"
-  static let openAppWhenRun = false
+  static let supportedModes: IntentModes = .background
+  // Deployment target below iOS 26: delete the supportedModes line.
 
   @Parameter(
     title: "Files",

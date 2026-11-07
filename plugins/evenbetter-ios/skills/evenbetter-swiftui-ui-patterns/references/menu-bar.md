@@ -1,5 +1,15 @@
 # Menu Bar
 
+## Contents
+
+- Intent
+- Core patterns
+- Example: basic command menu
+- Example: insert and replace groups
+- Example: focused menu state
+- Menu bar and Settings
+- Pitfalls
+
 ## Intent
 
 Use this when adding or customizing the macOS/iPadOS menu bar with SwiftUI commands.

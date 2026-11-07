@@ -1,20 +1,34 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "evenbetter",
   "description": "EvenBetter plugin marketplace for curated product, UX, planning, implementation, and validation workflows.",
   "owner": {
     "name": "EvenBetter",
-    "url": "https://github.com/MelloBirkan/EvenBetterFramework"
+    "url": "https://evenbetter.mellofattura.com"
   },
   "plugins": [
     {
       "name": "evenbetter-ios",
       "source": "./plugins/evenbetter-ios",
-      "description": "EvenBetter iOS, SwiftUI, Apple HIG, and accessibility skills, with the four-state analyze / validate / repair audit workflow."
+      "description": "EvenBetter skills for iOS: feature and epic planning, SwiftUI build guides, an analyze, validate and repair audit against Apple's HIG and WCAG 2.2, runtime accessibility tests, Accessibility Nutrition Labels and App Store launch.",
+      "category": "development",
+      "tags": [
+        "ios",
+        "swiftui",
+        "accessibility",
+        "hig"
+      ]
     },
     {
       "name": "evenbetter-general",
       "source": "./plugins/evenbetter-general",
-      "description": "EvenBetter platform-agnostic feature and epic planning, ticketing, execution, and validation workflow skills."
+      "description": "EvenBetter platform-agnostic feature and epic planning, ticketing, execution, and validation workflow skills.",
+      "category": "productivity",
+      "tags": [
+        "planning",
+        "workflow",
+        "tickets"
+      ]
     }
   ]
 }

@@ -5,13 +5,16 @@ Use this file when planning or reviewing iOS UX, accessibility, Apple HIG confor
 ## Core Apple HIG
 
 - Human Interface Guidelines: https://developer.apple.com/design/human-interface-guidelines/
+- What's new in design (dated HIG change log): https://developer.apple.com/design/whats-new/
 - Accessibility: https://developer.apple.com/design/human-interface-guidelines/accessibility
 - Typography and Dynamic Type: https://developer.apple.com/design/human-interface-guidelines/typography
 - Layout: https://developer.apple.com/design/human-interface-guidelines/layout
+- Designing for iPhone Duo: https://developer.apple.com/design/human-interface-guidelines/designing-for-iphone-duo
 - Gestures: https://developer.apple.com/design/human-interface-guidelines/gestures
 - Buttons: https://developer.apple.com/design/human-interface-guidelines/buttons
 - Color: https://developer.apple.com/design/human-interface-guidelines/color
 - VoiceOver: https://developer.apple.com/design/human-interface-guidelines/voiceover
+- Playing haptics: https://developer.apple.com/design/human-interface-guidelines/playing-haptics
 - Icons and SF Symbols: https://developer.apple.com/design/human-interface-guidelines/icons
 - Tab bars: https://developer.apple.com/design/human-interface-guidelines/tab-bars
 - Toolbars: https://developer.apple.com/design/human-interface-guidelines/toolbars
@@ -30,14 +33,25 @@ Use this file when planning or reviewing iOS UX, accessibility, Apple HIG confor
 - Dynamic Type size: https://developer.apple.com/documentation/swiftui/dynamictypesize
 - SwiftUI gestures: https://developer.apple.com/documentation/swiftui/gestures
 - Safe areas: https://developer.apple.com/documentation/swiftui/safearearegions
+- Adopting Liquid Glass: https://developer.apple.com/documentation/technologyoverviews/adopting-liquid-glass
 - App Intents overview: https://developer.apple.com/documentation/appintents
+
+## App Store and WCAG
+
+- Accessibility Nutrition Labels overview: https://developer.apple.com/help/app-store-connect/manage-app-accessibility/overview-of-accessibility-nutrition-labels/. The labels declare support for VoiceOver, Voice Control, Larger Text, Dark Interface, Differentiate Without Color Alone, Sufficient Contrast, Reduced Motion, Captions, and Audio Descriptions. They are voluntary for now, and Apple says they will become required for new apps and updates. An app can declare a feature only when people can complete all of its common tasks with it, so a screen on one of those tasks that breaks VoiceOver or Larger Text can cost the whole app that label.
+- Before release, use `evenbetter-accessibility-nutrition-labels` to work out which of these labels the app can declare in App Store Connect.
+- WCAG 2.2, the current W3C Recommendation: https://www.w3.org/TR/WCAG22/
+- WCAG 2.2 SC 2.5.8 Target Size (Minimum), Level AA, 24x24 CSS px: https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html. SC 2.5.5 Target Size (Enhanced) is Level AAA. Apple's 44x44 pt iOS target is the stricter rule for native controls.
 
 ## Local iOS Skills
 
 - `evenbetter-swiftui-ui-patterns`: layout, navigation, sheets, forms, controls, theming, Dynamic Type, and component patterns.
 - `evenbetter-swiftui-view-refactor`: SwiftUI view decomposition, MV-first structure, state ownership, and accessibility modifier review.
+- `evenbetter-swiftui-accessibility`: the corpus accessibility clauses (`../../corpus/ios/accessibility.md`) for VoiceOver, Dynamic Type, contrast, and hit targets, with correct-code examples.
+- `evenbetter-ios-haptics`: `.sensoryFeedback` choices per event, Core Haptics for custom patterns, and haptics that stay accessible.
 - `evenbetter-swiftui-liquid-glass`: iOS 26+ Liquid Glass design and API usage.
-- `evenbetter-ios-debugger-agent`: simulator, screenshots, UI hierarchy, logs, and runtime behavior.
+- `evenbetter-ios-debugger-agent`: simulator runs, screenshots, UI hierarchy, logs, and runtime behavior, through the Xcode MCP server first when it is connected.
+- `evenbetter-accessibility-tests`: runtime accessibility evidence from Apple's accessibility audit in UI tests and, on Xcode 27, a VoiceOver walk, recorded against an evenbetter-analyze report's findings.
 - `evenbetter-ios-app-intents`: Siri, Shortcuts, Spotlight, widgets, controls, and system action surfaces.
 - `evenbetter-swiftui-performance-audit`: SwiftUI performance when UX is affected by lag, hangs, or heavy rendering.
 
@@ -45,5 +59,6 @@ Use this file when planning or reviewing iOS UX, accessibility, Apple HIG confor
 
 - Do not paste large HIG content into plans or reviews. Summarize the relevant rule and cite the official source URL.
 - Treat Apple HIG as design guidance and Apple Developer Documentation as API guidance.
+- When a HIG page may have changed recently, check its entry on the what's new page before relying on older wording.
 - For screenshots, review visible hierarchy, reading order, target size, Dynamic Type resilience, color contrast, system component use, and state feedback.
 - For code, review whether SwiftUI standard controls already provide accessibility before adding custom modifiers.

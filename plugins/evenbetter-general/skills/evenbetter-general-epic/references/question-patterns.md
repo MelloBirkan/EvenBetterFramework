@@ -2,6 +2,17 @@
 
 Ask only questions that materially change the epic's scope, audience, user journeys, technical approach, data model, integration boundaries, failure handling, or validation decisions. Prefer multiple-choice questions whenever the answer space can be enumerated. Fall back to open-text only when the answer is a name, a citation, an existing schema, or another value that cannot reasonably be listed.
 
+## Contents
+
+- Format
+- 0 Trigger Workflow
+- 1 Epic Brief
+- 2 Core Flows
+- 3 PRD Validation
+- 4 Tech Plan
+- 5 Architecture Validation
+- Review Disposition
+
 ## Format
 
 - Ask 1-4 questions per round (Claude `AskUserQuestion`) or 1-3 per round (Codex `request_user_input`).

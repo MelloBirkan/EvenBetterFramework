@@ -25,7 +25,7 @@ LazyVGrid(columns: columns, spacing: 6) {
         Image(icon.previewName)
           .resizable()
           .aspectRatio(contentMode: .fit)
-          .cornerRadius(6)
+          .clipShape(RoundedRectangle(cornerRadius: 6))
         if icon.isSelected {
           Image(systemName: "checkmark.seal.fill")
             .padding(4)

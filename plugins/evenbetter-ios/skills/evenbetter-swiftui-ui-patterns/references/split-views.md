@@ -18,7 +18,7 @@ struct AppView: View {
     HStack(spacing: 0) {
       primaryColumn
       if shouldShowSecondaryColumn {
-        Divider().edgesIgnoringSafeArea(.all)
+        Divider().ignoresSafeArea()
         secondaryColumn
       }
     }

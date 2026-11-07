@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: routing-feature
+description: 'Planning, ticketing and building one web feature loads evenbetter-general-feature.'
+tags: [routing]
+runs: 3
+execution:
+  max_turns: 4
+  timeout_seconds: 180
+  allowed_tools: [Skill]
+  append_system_prompt: 'This session is a routing check for the installed skills. Choose the one skill that best fits the user''s request and load it with the Skill tool. Once it has loaded, stop: do not follow its instructions, open files, run commands or ask questions. Reply with one line that names the skill you loaded.'
+  prompt: 'Our Django app needs a CSV export on the orders page. Help me plan it, break it into tickets and build it.'
+graders:
+  - name: loads-evenbetter-general-feature
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-general:)?evenbetter-general-feature"'

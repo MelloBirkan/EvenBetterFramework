@@ -1,38 +1,48 @@
 # Accessibility and haptics
 
-Reference for `evenbetter-ios-haptics`. Haptics are an accessibility risk when treated as the only feedback channel. This file defines the rules every haptic call site must satisfy before shipping.
+Reference for `evenbetter-ios-haptics`. Haptics become an accessibility risk when they are the only feedback channel. This file sets the rules every haptic call site should meet before it ships.
 
 Cites: `HAPT-UX-003`, `HAPT-UX-004`.
 
+Contents:
+
+- Why this matters
+- Rule 1: haptics are never the only feedback channel (HAPT-UX-003)
+- Rule 2: provide a user toggle
+- Rule 3: gate Core Haptics on capability (HAPT-UX-004)
+- Rule 4: don't overuse
+- Rule 5: respect device features
+- Rule 6: match haptic intensity to visual intensity
+- Quick review checklist
+
 ## Why this matters
 
-A haptic vibration may be:
+A haptic may never reach the person because it is:
 
-- Muted by the user in Settings → Sounds & Haptics, or via Silent Mode.
-- Disabled per-app for accessibility or comfort.
-- Imperceptible to a user with motor or sensory disabilities.
-- Unsupported by the device — iPad, iPod touch, and Apple Vision Pro do not have a Taptic Engine.
-- Suppressed by the system (Low Power Mode, audio interruption, app suspension).
+- Turned off in Settings, under Sounds & Haptics or under Accessibility > Touch > Vibration.
+- Hard to feel for some people, such as those with reduced tactile sensitivity.
+- Unsupported by the device. iPad, iPod touch and Apple Vision Pro have no Taptic Engine for app haptics.
+- Stopped by the system, for example when the audio session is interrupted or the app is suspended. Core Haptics reports both as engine stop reasons.
 
-Per [HIG: Feedback](https://developer.apple.com/design/human-interface-guidelines/feedback): "When you use multiple ways to provide feedback, you reach more people and give them the opportunity to receive the feedback in ways that work for them."
+[HIG: Feedback](https://developer.apple.com/design/human-interface-guidelines/feedback) puts it this way: "When you use multiple ways to provide feedback, you reach more people and give them the opportunity to receive the feedback in ways that work for them."
 
-## Rule 1 — Haptics must never be the only feedback channel (HAPT-UX-003)
+## Rule 1: haptics are never the only feedback channel (HAPT-UX-003)
 
-Every haptic must be paired with at least one of:
+Pair every haptic with at least one of:
 
-- Visible UI change (label text, icon, color, animation, banner, sheet, or alert).
-- Audio cue (system sound, custom audio, or AHAP-synced audio).
+- A visible UI change: label text, an icon, color, an animation, a banner, a sheet or an alert.
+- An audio cue: a system sound, custom audio, or audio synchronized through an AHAP file.
 
-### Bad — silent success
+### Bad: silent success
 
 ```swift
 Button("Save") { performSave() }
     .sensoryFeedback(.success, trigger: didSave)
 ```
 
-A muted user sees no change and feels nothing.
+Someone with haptics off sees no change and feels nothing.
 
-### Good — paired confirmation
+### Good: paired confirmation
 
 ```swift
 HStack {
@@ -43,13 +53,13 @@ HStack {
 .sensoryFeedback(.success, trigger: didSave)
 ```
 
-Now every user — haptic-on, haptic-off, VoiceOver, low vision — can perceive the outcome.
+The outcome is now perceptible whether haptics are on or off, and to VoiceOver and low-vision users.
 
-## Rule 2 — Provide a user toggle
+## Rule 2: provide a user toggle
 
-Apple guidance: "Make haptics optional. Let people turn off or mute haptics, and make sure people can still enjoy your app or game without them."
+Apple's [Playing haptics](https://developer.apple.com/design/human-interface-guidelines/playing-haptics) guidance: "Make haptics optional. Let people turn off or mute haptics, and make sure people can still enjoy your app or game without them."
 
-Expose a Settings toggle:
+Expose a toggle in the app's settings:
 
 ```swift
 @AppStorage("hapticsEnabled") private var hapticsEnabled = true
@@ -62,11 +72,11 @@ var body: some View {
 }
 ```
 
-The closure-returning `.sensoryFeedback` overload returns `nil` when the user has opted out, so no haptic plays even though the trigger changed.
+The closure overload of `.sensoryFeedback` returns `nil` when the person has opted out, so no haptic plays even though the trigger changed.
 
-## Rule 3 — Gate Core Haptics on capability (HAPT-UX-004)
+## Rule 3: gate Core Haptics on capability (HAPT-UX-004)
 
-Detailed in [`core-haptics-fallback.md`](core-haptics-fallback.md). Summary:
+Details are in `references/core-haptics-fallback.md`. In short:
 
 ```swift
 guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else {
@@ -75,38 +85,38 @@ guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else {
 }
 ```
 
-Unsupported devices must still receive feedback through another channel.
+People on unsupported devices still get the feedback through another channel.
 
-## Rule 4 — Don't overuse
+## Rule 4: don't overuse
 
-Apple guidance: "Sometimes a haptic can feel just right when it happens occasionally, but become tiresome when it plays frequently."
+Apple's guidance: "Sometimes a haptic can feel just right when it happens occasionally, but become tiresome when it plays frequently."
 
-- Don't fire haptics on every list-row tap, scroll event, or character input.
-- Don't repeat the same haptic in a tight loop (e.g., during continuous drag).
-- Long-running continuous haptics belong in gameplay, not productivity flows.
+- Don't play haptics on every list-row tap, scroll event or character typed.
+- Don't repeat the same haptic in a tight loop, for example during a continuous drag.
+- Keep long-running continuous haptics for gameplay, not productivity flows.
 
-If you find yourself debouncing haptics, the underlying interaction probably doesn't warrant one.
+If you find yourself debouncing haptics, the interaction probably doesn't warrant one.
 
-## Rule 5 — Respect device features
+## Rule 5: respect device features
 
-Apple guidance: "Be aware that playing haptics might impact other user experiences. By design, haptics produce enough physical force for people to feel the vibration. Ensure that haptic vibrations don't disrupt experiences involving device features like the camera, gyroscope, or microphone."
+Apple's guidance: "Be aware that playing haptics might impact other user experiences. By design, haptics produce enough physical force for people to feel the vibration. Ensure that haptic vibrations don't disrupt experiences involving device features like the camera, gyroscope, or microphone."
 
 Suppress haptics during:
 
 - Active camera capture.
-- Audio recording (microphone in use).
-- Gyroscope/accelerometer-driven gameplay where vibration could foul motion input.
+- Audio recording, while the microphone is in use.
+- Gameplay driven by the gyroscope or accelerometer, where vibration could disturb motion input.
 
-## Rule 6 — Match haptic intensity to visual intensity
+## Rule 6: match haptic intensity to visual intensity
 
-A small label nudge should pair with a light impact, not a heavy one. A confetti burst can pair with a heavier impact. Keep the haptic and the animation in the same energy range so the experience feels coherent rather than glitchy.
+A small label nudge pairs with a light impact, not a heavy one. A confetti burst can pair with a heavier impact. Keep the haptic and the animation in the same energy range so they feel like one event.
 
 ## Quick review checklist
 
-- [ ] Every haptic is paired with a visible UI change or audio cue (HAPT-UX-003).
-- [ ] User can disable haptics in app settings.
-- [ ] Core Haptics gated on `supportsHaptics` (HAPT-UX-004).
-- [ ] No haptic fires on routine, frequent interactions.
-- [ ] Haptics don't fire while the camera, microphone, or motion sensors are active.
+- [ ] Every haptic is paired with a visible UI change or an audio cue (HAPT-UX-003).
+- [ ] People can turn off haptics in the app's settings.
+- [ ] Core Haptics is gated on `supportsHaptics` (HAPT-UX-004).
+- [ ] No haptic plays on routine, frequent interactions.
+- [ ] Haptics don't play while the camera, microphone or motion sensors are in use.
 - [ ] Haptic intensity matches the visual energy of the accompanying animation.
-- [ ] Same outcome plays the same haptic everywhere (HAPT-UX-002).
+- [ ] The same outcome plays the same haptic everywhere (HAPT-UX-002).

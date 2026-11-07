@@ -11,7 +11,7 @@ Every domain file starts with:
 corpus_version: development
 domain: typography
 platform: ios
-last_reviewed: 2026-05-02
+last_reviewed: 2026-11-07
 ---
 ```
 
@@ -28,7 +28,7 @@ Each clause is one H2 section:
 **Dimension:** ui
 **Platform:** ios
 **Source:** [Apple HIG: Typography](https://developer.apple.com/design/human-interface-guidelines/typography)
-**Retrieved:** 2026-05-02
+**Retrieved:** 2026-11-07
 
 **Check.** Flag the static condition to detect.
 
@@ -41,11 +41,23 @@ Text("Account").font(.title2)
 ```
 ````
 
-Optional note for clauses that intentionally cite supporting standards in addition to the Apple source:
+Optional note for clauses that intentionally cite supporting standards in addition to the Apple source. It goes on the line after **Retrieved** and names the criterion and its conformance level:
 
 ```markdown
-**Standards note:** Supporting mobile accessibility source
+**Standards note:** WCAG 2.2 SC 2.5.8 Target Size (Minimum), Level AA.
 ```
+
+A **Source** URL may end in a section anchor, such as `#Best-practices`, when the rule sits in one section of a long page.
+
+## Index
+
+`index.json` holds one entry per clause, sorted by `clause_id`, with keys in alphabetical order:
+
+- `clause_id`, and `title`: the heading text that follows the ID and its ` - ` separator.
+- `anchor`: the heading as a slug, lowercased with punctuation dropped and spaces and repeated hyphens turned into one hyphen, for example `#lay-ui-001-provide-44x44-point-tap-targets`.
+- `domain` and `corpus_version` from the file frontmatter.
+- `dimension`, `severity`, `platform`, `source_label`, `source_url` and `retrieved` from the clause.
+- `file_path`, relative to the plugin root, for example `corpus/ios/layout-interaction.md`.
 
 ## Taxonomy
 
@@ -83,7 +95,7 @@ Keep IDs stable. If a rule is renamed but its detection meaning remains the same
 
 - Add clauses to exactly one domain file.
 - Use one source URL per clause and record the retrieval date.
-- Prefer Apple HIG or Apple Developer sources. Use non-Apple supporting standards only when there is no precise Apple source for the iOS rule, and keep the clause framed for SwiftUI/iOS behavior.
+- Prefer Apple HIG or Apple Developer sources. The Accessibility Nutrition Labels evaluation criteria in App Store Connect Help count as Apple sources; label them `Apple App Store Connect Help: <page title>`. Use non-Apple supporting standards only when there is no precise Apple source for the iOS rule, and keep the clause framed for SwiftUI/iOS behavior.
 - Keep examples short and SwiftUI-specific.
 - Update `index.json` whenever clause metadata changes.
 - Run the corpus consistency checks documented in the repository `AGENTS.md` before committing.

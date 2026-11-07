@@ -1,0 +1,4 @@
+interface:
+  display_name: "EB SwiftUI Design"
+  short_description: "Plan and build a distinctive SwiftUI visual identity"
+  default_prompt: "Use $evenbetter-design to plan a palette, type and layout for this SwiftUI screen and build it once I approve the plan."

@@ -1,147 +1,150 @@
-# Phase 6 — App Review & Submission
+# Phase 6: App Review and submission
 
-## Table of Contents
-1. Apple's Review Process
-2. Review Timelines
-3. Review Statuses
-4. Common Rejection Reasons
-5. How to Fix Rejections
-6. Best Practices for Faster Approval
-7. Expedited Reviews
-8. After Approval
+## Table of contents
+1. Apple's review process
+2. Review timelines
+3. Review statuses
+4. Common rejection reasons
+5. How to fix rejections
+6. Best practices for faster approval
+7. Expedited reviews
+8. After approval
+
+The Apple facts in this file were checked on 2026-11-07 against the pages linked next to them.
 
 ---
 
-## 1. Apple's Review Process
+## 1. Apple's review process
 
-Every app and every update goes through Apple's review. Apple checks that your app:
-- Functions correctly
+Every app and every update goes through App Review. Apple checks that the app:
+- Works correctly
 - Matches its App Store listing
-- Follows App Store Review Guidelines
+- Follows the [App Store Review Guidelines](https://developer.apple.com/app-store/review/guidelines/)
 - Handles permissions and user data properly
 - Does not crash or block core flows
 
-This applies to: first-time submissions, version updates, and subscription/pricing changes requiring a new build.
+This applies to first submissions, version updates, and pricing or subscription changes that need a new build.
 
-### Apple's Key Review Areas
+### Apple's key review areas
 
-**Safety:** Apps must protect user data, handle it securely, encrypt data, obtain consent. Apps with user-generated content must have reporting and blocking mechanisms.
+**Safety:** protect user data, handle it securely and get consent. Apps with user-generated content need reporting and blocking.
 
-**Performance:** Apps must be complete and fully functional — no beta, demo, trial, or test versions. Must use Apple's public APIs only.
+**Performance:** the app is complete and fully functional. Demos, betas and trial versions belong in TestFlight, not on the App Store. Use public APIs only.
 
-**Business:** Apps using in-app purchases, subscriptions, or monetization must comply with Apple's payment rules. Must comply with local laws.
+**Business:** in-app purchases, subscriptions and other monetization follow Apple's payment rules and local law.
 
-**Design:** Intuitive, user-friendly interface following Apple's design standards. No spam or copycat apps.
+**Design:** an intuitive interface that follows Apple's design standards. No spam or copycat apps.
 
-**Legal:** Respect third-party IP rights. Provide clear information about data collection and usage.
+**Legal:** respect third-party IP and say clearly what data the app collects and how it is used.
 
-**Privacy:** Provide a privacy policy. Obtain explicit consent before collecting personal data. Handle data securely.
+**Privacy:** provide a privacy policy and get explicit consent before collecting personal data.
 
-## 2. Review Timelines
+## 2. Review timelines
 
-| Submission Type | Expected Timeline |
-|---|---|
-| First-time app | 24–72 hours |
-| App updates | 12–48 hours |
-| Metadata-only changes | Few hours, sometimes same-day |
+Apple's own figure ([App Review](https://developer.apple.com/distribute/app-review/)): "App Review works around the clock, typically reviewing at least 50% of submissions in less than 24 hours and 90% in less than 48 hours."
 
-Most apps are reviewed within **1–2 days**.
+Apple publishes no separate figures for first submissions, updates or metadata-only changes. Plan release dates with at least two days of review time, plus a resubmission cycle for a first launch.
 
-## 3. Review Statuses in App Store Connect
+## 3. Review statuses in App Store Connect
 
-- **Prepare for Submission** — Build and metadata setup
-- **Waiting for Review** — App is in Apple's queue
-- **In Review** — App is actively being reviewed
-- **Pending Developer Release** — Approved, waiting for manual release
-- **Ready for Sale** — App is live
-- **Rejected** — Changes are required
+From Apple's [app and submission statuses](https://developer.apple.com/help/app-store-connect/reference/app-information/app-and-submission-statuses) reference, the ones you will see most:
 
-## 4. Common Rejection Reasons
+- **Prepare for Submission:** the version exists but its information is still being prepared
+- **Waiting for Review:** Apple has the submission and has not started reviewing it
+- **In Review:** App Review is reviewing the app
+- **Pending Developer Release:** approved, waiting for you to release it
+- **Processing for Distribution:** being processed, ready within 24 hours
+- **Ready for Distribution:** approved and available (formerly "Ready for Sale")
+- **Rejected:** the app was not accepted
+- **Metadata Rejected:** App Review did not accept the metadata
+- **Developer Rejected:** you removed the version from review
 
-### Top 3 Rejection Reasons
+## 4. Common rejection reasons
 
-#### 1. Permission Problems (Info.plist / app.json)
-When your app asks for device permissions (camera, photos, location) but doesn't clearly explain WHY. The description must be specific and thorough.
+Apple says that on average more than 40% of unresolved issues relate to guideline 2.1, App Completeness, which covers crashes, placeholder content, incomplete information and more ([App Review](https://developer.apple.com/distribute/app-review/)). Check those first.
 
-**Fix:** Navigate to Info.plist, find each permission key (NSCameraUsageDescription, etc.), and write a clear, specific explanation.
+These three come up often for first-time indie submissions:
 
-#### 2. Subscription / Paywall Issues
-- Missing privacy policy, terms & conditions, or EULA links on the paywall
-- Missing policy links in App Store description
-- Not disclosing paywall existence in App Store description
-- Hard paywall without disclosure
+#### 1. Permission problems (Info.plist, or app.json in Expo projects)
+The app asks for camera, photos, location or another permission without saying specifically why.
 
-**Fix:** Add all policy links to both the paywall screen AND the App Store description. If using a hard paywall, explicitly mention it in the description.
+**Fix:** open Info.plist, find each purpose string (`NSCameraUsageDescription` and so on) and write a clear, specific explanation of what the access is for.
 
-#### 3. iPad Screenshot Issues
-- Submitting stretched iPhone screenshots as iPad screenshots
-- Apple will reject stretched/resized iPhone screenshots immediately
+#### 2. Subscription and paywall issues
+- Privacy policy, terms of use or EULA links missing from the paywall
+- Policy links missing from the App Store description
+- In-app purchases or a hard paywall not disclosed in the description and screenshots (guideline 2.3.2)
 
-**Fix:** Use Xcode's iPad Simulator (12.9-inch) to capture real iPad screenshots at 2048 × 2732 px.
+**Fix:** add the policy links to the paywall and to the App Store description, and say plainly in the description which features need a purchase.
 
-### Other Common Reasons Reviews Take Longer
-- Missing or unclear permission descriptions
+#### 3. iPad screenshot issues
+iPhone screenshots stretched or resized to pass as iPad screenshots get rejected (guideline 2.3.3).
+
+**Fix:** capture real iPad screenshots in a 13-inch iPad simulator, at 2064 x 2752 or 2048 x 2732 px.
+
+### Other causes of rejections and delays
 - App crashes or blank screens
-- Login required without test credentials
-- iPad support enabled but not properly handled
-- Features shown in screenshots but not working
-- App hangs on loading or requires unavailable backend
+- Login required without a demo account or demo mode
+- iPad support enabled but the iPad layout not handled
+- Features shown in screenshots that do not work
+- The app hangs on loading or needs a backend App Review cannot reach
+- A custom "rate us" prompt instead of the system review prompt (guideline 5.6.1)
 
-## 5. How to Fix Rejections
+## 5. How to fix rejections
 
-Rejections are **common and expected**, especially on first submissions.
+Rejections are common, especially on a first submission.
 
-### Process:
-1. Read the rejection message carefully
-2. Fix **only** what Apple mentions
-3. Upload a new build or update metadata
-4. Resubmit
+### Process
+1. Read the rejection message and the guideline it cites.
+2. Fix what Apple mentions, and nothing unrelated in the same build.
+3. Upload a new build or update the metadata.
+4. Reply in App Store Connect if something needs explaining, then resubmit.
 
-Most apps are approved after **one follow-up submission**.
+Most apps get approved after one follow-up submission.
 
-## 6. Best Practices for Faster Approval
+## 6. Best practices for faster approval
 
-- Test on a real device
-- Make sure all buttons and flows work
-- Avoid placeholder text or broken screens
-- Add clear permission explanations
-- If login required: provide demo credentials in App Review notes
-- Ensure app works on both iPhone and iPad if both are enabled
-- Don't include beta features or test data
-- Make sure screenshots accurately represent the app
+- Test on a real device.
+- Make sure every button and flow works.
+- Remove placeholder text and broken screens.
+- Write clear permission purpose strings.
+- If the app needs a login, put a demo account or demo mode in the App Review notes.
+- If iPad is enabled, make the app work properly on iPad.
+- Leave out beta features and test data.
+- Make the screenshots match the app.
 
-## 7. Expedited Reviews
+## 7. Expedited reviews
 
-Apple allows developers to request an expedited review in limited situations.
+Apple reviews some submissions faster when there are extenuating circumstances ([Request an expedited review](https://developer.apple.com/help/app-review/after-submitting-for-review/request-expedited-review)).
 
-### When It's Appropriate
-- Critical bug fixes affecting users
-- Security or data issues
-- Time-sensitive launches or events
-- App blocked due to a major issue
+### When it is appropriate
+- A critical bug fix
+- A release timed to an event the app is directly associated with
 
-### How to Request
-1. Go to App Store Connect
-2. Select your app
-3. Open the submitted version
-4. Click "Request Expedited Review"
-5. Provide a clear, specific explanation
+Apple asks that expedite requests be kept for matters of genuine urgency.
 
-### What to Say
-✅ "This build fixes a critical crash affecting all users."
-✅ "This update resolves a blocking login issue."
-✅ "This app supports a time-sensitive event."
-❌ "We want it faster." (too vague)
+### How to request
+1. Submit the app for review in App Store Connect first. Only submissions already sent to App Review can be expedited.
+2. Put the reason in the Notes field: the bug you are fixing, or the event, its date and how the app relates to it.
+3. Open Apple's [Request an Expedited App Review](https://developer.apple.com/contact/app-store/?topic=expedite) form, select the app and platform, and submit.
+4. App Review evaluates the request and expedites it as availability and demand allow.
 
-### Timing
-- If approved: review often happens within **24 hours**, sometimes same-day
-- If denied: app remains in normal review queue
+For an event, schedule the release in App Store Connect ahead of time when you can.
 
-## 8. After Approval
+### What to say
+- Good: "This build fixes a crash on launch affecting all users of version 2.3."
+- Good: "This update resolves a login failure that blocks every account."
+- Good: "This app is the official companion for [event] on [date]."
+- Too vague: "We want it faster."
 
-Once approved, you can:
-- **Release immediately** — goes live within a few hours
-- **Schedule a release** — choose a specific date and time
-- **Phased rollout** — gradually release to increasing percentage of users
+If the request is not granted, the submission stays in the normal queue.
 
-Most apps appear on the App Store within a few hours after release.
+## 8. After approval
+
+Choose the release option on the version page ([release options](https://developer.apple.com/help/app-store-connect/manage-your-apps-availability/select-an-app-store-version-release-option)):
+- **Manually release this version:** you press release when ready.
+- **Automatically release this version:** it goes out as soon as it is approved.
+- **Automatically release after App Review, no earlier than a date and time:** a scheduled launch.
+- **Phased release (updates only):** rolls an update out to automatic-update users over 7 days. See `references/08-post-launch.md`.
+
+After a manual release, Apple says it may take up to 24 hours for the version to appear on the App Store.

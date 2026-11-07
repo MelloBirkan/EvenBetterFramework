@@ -1,5 +1,15 @@
 # TabView
 
+## Contents
+
+- Intent
+- Core architecture
+- Example: custom binding with side effects
+- Example: direct binding without side effects
+- Design choices to keep
+- Dynamic tabs pattern
+- Pitfalls
+
 ## Intent
 
 Use this pattern for a scalable, multi-platform tab architecture with:

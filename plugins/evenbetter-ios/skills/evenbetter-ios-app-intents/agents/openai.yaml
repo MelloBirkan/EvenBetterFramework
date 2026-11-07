@@ -1,3 +1,4 @@
 interface:
-  display_name: "iOS App Intents"
-  short_description: "Build and debug iOS App Intents integrations"
+  display_name: "EB iOS App Intents"
+  short_description: "Design App Intents, entities and App Shortcuts"
+  default_prompt: "Use $evenbetter-ios-app-intents to expose this app's most useful actions as App Intents and App Shortcuts."

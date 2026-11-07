@@ -2,24 +2,25 @@
 corpus_version: development
 domain: layout-interaction
 platform: ios
-last_reviewed: 2026-05-05
+last_reviewed: 2026-11-07
 ---
 
 # iOS SwiftUI Layout And Interaction Corpus
 
-Canonical EvenBetter iOS corpus clauses for this conformance domain. Each H2 heading is a stable clause ID used by analyzer, validator, fixer, and benchmark outputs.
+Canonical EvenBetter iOS corpus clauses for this conformance domain. Each H2 heading is a stable clause ID used by the analyze, validate and repair skills and by benchmark outputs.
 
 ## LAY-UI-001 - Provide 44x44 point tap targets
 
-**Severity:** error
+**Severity:** warning
 **Dimension:** ui
 **Platform:** ios
-**Source:** [Apple HIG: Accessibility](https://developer.apple.com/design/human-interface-guidelines/accessibility)
-**Retrieved:** 2026-05-02
+**Source:** [Apple HIG: Accessibility](https://developer.apple.com/design/human-interface-guidelines/accessibility#Mobility)
+**Retrieved:** 2026-11-07
+**Standards note:** The WCAG cross-reference for target size is SC 2.5.8 Target Size (Minimum), Level AA (see LAY-A11Y-001). The 44 by 44 size matches SC 2.5.5 Target Size (Enhanced), which is Level AAA only.
 
-**Check.** Flag interactive views with `.frame(width:)`, `.frame(height:)`, icon-only buttons, or gesture targets whose visible or content shape area is under 44x44 points.
+**Check.** Flag interactive views with `.frame(width:)`, `.frame(height:)`, icon-only buttons, or gesture targets whose visible or content shape area is under 44x44 points but at least 28x28 points. Below 28x28 points, report LAY-A11Y-001 instead. Leave standard controls alone unless the code shrinks them, for example with a fixed frame or `.controlSize(.mini)`.
 
-**Why.** Apple recommends comfortable hit targets so touch interactions are reliable.
+**Why.** Apple's accessibility guidance lists 44x44 pt as the default control size on iOS and iPadOS, and HIG Buttons says that as a general rule a button needs a hit region of at least 44x44 pt. A smaller target can still meet Apple's 28x28 pt minimum, but it is harder to hit reliably, so this is a conformance warning rather than a blocker.
 
 **Correct code.**
 
@@ -27,7 +28,9 @@ Canonical EvenBetter iOS corpus clauses for this conformance domain. Each H2 hea
 Button(action: refresh) {
     Image(systemName: "arrow.clockwise")
         .frame(width: 44, height: 44)
+        .contentShape(Rectangle())
 }
+.accessibilityLabel("Refresh")
 ```
 
 ## LAY-UI-002 - Respect safe areas
@@ -36,9 +39,9 @@ Button(action: refresh) {
 **Dimension:** ui
 **Platform:** ios
 **Source:** [Apple HIG: Layout](https://developer.apple.com/design/human-interface-guidelines/layout)
-**Retrieved:** 2026-05-02
+**Retrieved:** 2026-11-07
 
-**Check.** Flag broad `.ignoresSafeArea()` usage on interactive content, text, toolbars, forms, or scrollable primary content without compensating safe-area insets.
+**Check.** Flag broad `.ignoresSafeArea()` usage on interactive content, text, toolbars, forms, or scrollable primary content without compensating safe-area insets. Do not flag background images, colors, or materials: Apple's layout guidance asks for full-screen background content to extend under sidebars, toolbars, and tab bars.
 
 **Why.** Content that ignores safe areas can collide with device edges, sensors, system gestures, and bars.
 
@@ -59,7 +62,7 @@ ScrollView {
 **Dimension:** ui
 **Platform:** ios
 **Source:** [Apple Developer: ProgressView](https://developer.apple.com/documentation/swiftui/progressview)
-**Retrieved:** 2026-05-02
+**Retrieved:** 2026-11-07
 
 **Check.** Flag loading booleans that show only blank space, disabled content, text like "Loading...", or custom spinners when `ProgressView` would communicate activity.
 
@@ -78,18 +81,24 @@ if isLoading {
 **Severity:** info
 **Dimension:** ui
 **Platform:** ios
-**Source:** [Apple HIG: Layout](https://developer.apple.com/design/human-interface-guidelines/layout)
-**Retrieved:** 2026-05-02
+**Source:** [Apple HIG: Writing](https://developer.apple.com/design/human-interface-guidelines/writing#Best-practices)
+**Retrieved:** 2026-11-07
 
-**Check.** Flag list, grid, or search result views that render nothing when their data collection is empty and no placeholder, guidance, or recovery action is present.
+**Check.** Flag list, grid, or search result views that render nothing, or only a bare string, when their data collection is empty: no explanation of why the area is empty and no next step such as an add, retry, or clear-search action where one exists.
 
-**Why.** Empty states should orient users and explain what can happen next.
+**Why.** Apple's writing guidance says an empty screen can be daunting when the next step isn't obvious, so tell people what they can do and give them a button or link when possible. Empty states are usually temporary, so keep crucial information out of them. The Tab bars guidance adds that an empty section should explain why its content is unavailable.
 
 **Correct code.**
 
 ```swift
 if items.isEmpty {
-    ContentUnavailableView("No Items", systemImage: "tray")
+    ContentUnavailableView {
+        Label("No Items", systemImage: "tray")
+    } description: {
+        Text("Items you add appear here.")
+    } actions: {
+        Button("Add Item") { addItem() }
+    }
 } else {
     List(items) { item in
         ItemRow(item: item)
@@ -103,7 +112,7 @@ if items.isEmpty {
 **Dimension:** ux
 **Platform:** ios
 **Source:** [Apple HIG: Action Sheets](https://developer.apple.com/design/human-interface-guidelines/action-sheets)
-**Retrieved:** 2026-05-02
+**Retrieved:** 2026-11-07
 
 **Check.** Flag destructive actions that are triggered from regular buttons, swipe actions, menus, or gesture handlers without `.confirmationDialog`, `.alert`, undo, or an equivalent confirmation mechanism.
 
@@ -124,7 +133,7 @@ if items.isEmpty {
 **Dimension:** ux
 **Platform:** ios
 **Source:** [Apple Developer: sensoryFeedback](https://developer.apple.com/documentation/swiftui/view/sensoryfeedback(_:trigger:))
-**Retrieved:** 2026-05-02
+**Retrieved:** 2026-11-07
 
 **Check.** Flag important success, selection, completion, or error transitions in highly interactive flows where no haptic or sensory feedback is provided and the project targets platforms supporting `.sensoryFeedback`.
 
@@ -142,16 +151,16 @@ if items.isEmpty {
 **Dimension:** ux
 **Platform:** ios
 **Source:** [Apple HIG: Playing haptics](https://developer.apple.com/design/human-interface-guidelines/playing-haptics)
-**Retrieved:** 2026-05-06
+**Retrieved:** 2026-11-07
 
-**Check.** Flag `.sensoryFeedback` calls whose variant is not aligned with the HIG-defined tier for the event being signalled:
+**Check.** Flag `.sensoryFeedback` calls whose variant is not aligned with the tier for the event being signalled:
 
-- Notification tier (`.success`, `.warning`, `.error`) for outcomes of significant tasks or actions.
-- Impact tier (`.impact`, `.impact(weight:intensity:)`, `.impact(flexibility:intensity:)`) for collisions, snap-into-place metaphors, and physical impacts complementing visual motion.
-- Selection tier (`.selection`) for changes to a UI element's value, not for notification outcomes.
-- Change tier (`.increase`, `.decrease`, `.levelChange`, `.alignment`, `.pathComplete`, `.start`, `.stop`) for activity transitions and value-threshold crossings.
+- Notification tier (`.success`, `.warning`, `.error`) for the outcome of a task or action.
+- Impact tier (`.impact`, `.impact(weight:intensity:)`, `.impact(flexibility:intensity:)`) for a physical metaphor that complements a visual experience, such as a view snapping into place or two objects colliding.
+- Selection tier (`.selection`) while the value of a UI element changes, not for outcomes.
+- Change tier (`.increase`, `.decrease`, `.levelChange`, `.alignment`, `.pathComplete`, `.start`, `.stop`) for activity transitions and value-threshold crossings. This tier is an EvenBetter grouping, not an iOS HIG category. Use each variant for the meaning its `SensoryFeedback` documentation gives, for example `.increase` when an important value rises above a significant threshold.
 
-**Why.** Apple groups haptics into Notification, Impact, and Selection categories with documented meanings. Mixing tiers (using `.impact` for a save success, or `.success` for a slider tick) breaks the learned association between pattern and outcome and degrades recognizability.
+**Why.** The iOS HIG defines three haptic categories with documented meanings: notification for the outcome of a task or action, impact as a physical metaphor that complements a visual experience, and selection while a value is changing. Mixing tiers (using `.impact` for a save success, or `.success` for a slider tick) breaks the learned association between pattern and outcome.
 
 **Correct code.**
 
@@ -162,25 +171,28 @@ view
     .sensoryFeedback(.selection, trigger: selectedTab)   // selection tier
 ```
 
-## LAY-A11Y-001 - Enforce 44x44 accessibility hit areas
+## LAY-A11Y-001 - Meet the 28x28 point minimum hit area
 
 **Severity:** error
 **Dimension:** accessibility
 **Platform:** ios
-**Source:** [Apple HIG: Accessibility](https://developer.apple.com/design/human-interface-guidelines/accessibility)
-**Retrieved:** 2026-05-05
+**Source:** [Apple HIG: Accessibility](https://developer.apple.com/design/human-interface-guidelines/accessibility#Mobility)
+**Retrieved:** 2026-11-07
+**Standards note:** WCAG 2.2 SC 2.5.8 Target Size (Minimum), Level AA: targets of at least 24 by 24 CSS pixels, or enough spacing around smaller ones. SC 2.5.5 Target Size (Enhanced), 44 by 44 CSS pixels, is Level AAA.
 
-**Check.** Flag accessibility elements with gesture or button behavior whose tappable area is less than 44x44 points, even if the visible icon appears adequate.
+**Check.** Flag accessibility elements with gesture or button behavior whose tappable area is under 28x28 points, the minimum control size Apple lists for iOS and iPadOS, even if the visible icon appears adequate. Targets from 28x28 points up to the 44x44 point default belong to LAY-UI-001.
 
-**Why.** Small targets are difficult for users with motor disabilities and conflict with iOS accessibility guidance for comfortable touch interaction.
+**Why.** Controls that are too small are hard for many people to select, especially people with limited dexterity or mobility. Apple's accessibility guidance sets 28x28 pt as the minimum control size on iOS and iPadOS, and says spacing between controls matters as much as size: about 12 pt of padding around elements with a bezel and about 24 pt around elements without one.
 
 **Correct code.**
 
 ```swift
-Image(systemName: "xmark")
-    .frame(width: 44, height: 44)
-    .contentShape(Rectangle())
-    .accessibilityLabel("Close")
+Button(action: close) {
+    Image(systemName: "xmark")
+        .frame(width: 44, height: 44)
+        .contentShape(Rectangle())
+}
+.accessibilityLabel("Close")
 ```
 
 ## LAY-A11Y-002 - Keep accessible content inside safe areas
@@ -189,7 +201,7 @@ Image(systemName: "xmark")
 **Dimension:** accessibility
 **Platform:** ios
 **Source:** [Apple HIG: Layout](https://developer.apple.com/design/human-interface-guidelines/layout)
-**Retrieved:** 2026-05-02
+**Retrieved:** 2026-11-07
 
 **Check.** Flag focusable controls or essential text placed under unsafe edges, overlays, home indicator areas, or system bars.
 

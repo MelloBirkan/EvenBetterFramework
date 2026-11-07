@@ -2,12 +2,12 @@
 corpus_version: development
 domain: haptics
 platform: ios
-last_reviewed: 2026-05-06
+last_reviewed: 2026-11-07
 ---
 
 # iOS SwiftUI Haptics Corpus
 
-Canonical EvenBetter iOS corpus clauses for this conformance domain. Each H2 heading is a stable clause ID used by analyzer, validator, fixer, and benchmark outputs.
+Canonical EvenBetter iOS corpus clauses for this conformance domain. Each H2 heading is a stable clause ID used by the analyze, validate and repair skills and by benchmark outputs.
 
 ## HAPT-UX-001 - Match sensoryFeedback variant to its documented event
 
@@ -15,7 +15,7 @@ Canonical EvenBetter iOS corpus clauses for this conformance domain. Each H2 hea
 **Dimension:** ux
 **Platform:** ios
 **Source:** [Apple HIG: Playing haptics](https://developer.apple.com/design/human-interface-guidelines/playing-haptics)
-**Retrieved:** 2026-05-06
+**Retrieved:** 2026-11-07
 
 **Check.** Flag `.sensoryFeedback(.error, ...)`, `.sensoryFeedback(.success, ...)`, `.sensoryFeedback(.warning, ...)`, or any other `SensoryFeedback` variant played for an event whose semantics do not match the documented meaning. Examples: `.error` triggered when a save succeeds, `.success` triggered when a request fails, `.selection` triggered for a non-selection state change, `.impact` triggered without an accompanying visual collision or snap.
 
@@ -35,7 +35,7 @@ Text(saveStatus)
 **Dimension:** ux
 **Platform:** ios
 **Source:** [Apple HIG: Playing haptics](https://developer.apple.com/design/human-interface-guidelines/playing-haptics#Best-practices)
-**Retrieved:** 2026-05-06
+**Retrieved:** 2026-11-07
 
 **Check.** Flag the same logical outcome fired with different haptic variants in different views or flows (for example, "task completed" plays `.success` in one screen, `.impact` in another, and `.selection` elsewhere).
 
@@ -59,7 +59,7 @@ Text(status)
 **Dimension:** ux
 **Platform:** ios
 **Source:** [Apple HIG: Feedback](https://developer.apple.com/design/human-interface-guidelines/feedback)
-**Retrieved:** 2026-05-06
+**Retrieved:** 2026-11-07
 
 **Check.** Flag state changes that fire `.sensoryFeedback` or `CHHapticEngine` playback without a visible UI confirmation (banner, alert, label update, animated state change, color/icon change) and without an audio cue. Especially flag success, warning, and error notifications that have no on-screen counterpart.
 
@@ -81,7 +81,7 @@ HStack {
 **Dimension:** ux
 **Platform:** ios
 **Source:** [Apple Developer: Preparing your app to play haptics](https://developer.apple.com/documentation/corehaptics/preparing-your-app-to-play-haptics)
-**Retrieved:** 2026-05-06
+**Retrieved:** 2026-11-07
 
 **Check.** Flag `CHHapticEngine()` initialization, `try engine.start()`, or `try engine.makePlayer(with:)` paths that do not first inspect `CHHapticEngine.capabilitiesForHardware().supportsHaptics` and do not provide a non-haptic fallback when the capability is `false`.
 

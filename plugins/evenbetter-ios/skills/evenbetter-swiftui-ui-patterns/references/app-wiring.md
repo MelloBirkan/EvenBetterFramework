@@ -1,5 +1,17 @@
 # App wiring and dependency graph
 
+## Contents
+
+- Intent
+- Recommended structure
+- Dependency selection
+- Root shell example (generic)
+- Dependency graph modifier (generic)
+- SwiftData / ModelContainer
+- Sheet routing (enum-driven)
+- When to use
+- Caveats
+
 ## Intent
 
 Show how to wire the app shell (TabView + NavigationStack + sheets) and install a global dependency graph (environment objects, services, streaming clients, SwiftData ModelContainer) in one place.

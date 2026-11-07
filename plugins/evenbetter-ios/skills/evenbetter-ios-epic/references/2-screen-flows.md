@@ -1,5 +1,15 @@
 # 2 Screen Flows
 
+## Contents
+
+- Role
+- Process
+- Core-Flow Interview
+- Drafting Gate
+- HTML Output Structure (iOS preview styles, per-step preview rules, SwiftUI mapping block rules)
+- Flow Design Rules
+- Next Step
+
 ## Role
 
 Design multi-screen user journeys and interaction flows at the product level.
@@ -8,14 +18,14 @@ Design multi-screen user journeys and interaction flows at the product level.
 
 1. Read `.evenbetter/<epic-name>/ios-ux-brief.md`.
 2. Explore current app flows and navigation if the project already exists.
-3. Read `question-patterns.md`, especially `2 Screen Flows`, and use multiple-choice questions for flow decisions. Ask roughly 3-10 questions in this phase when needed to close cross-screen assumptions, edge cases, and unspoken flow expectations. For app-scale work, expect multiple rounds and exceed 10 total questions when the flow map is still ambiguous.
+3. Read `references/question-patterns.md`, especially `2 Screen Flows`, and use multiple-choice questions for flow decisions. Ask roughly 3-10 questions in this phase when needed to close cross-screen assumptions, edge cases, and unspoken flow expectations. For app-scale work, expect multiple rounds and exceed 10 total questions when the flow map is still ambiguous.
 4. Run the core-flow interview below before drafting. Ask flow-by-flow questions for every primary flow; do not rely on a single generic navigation question.
 5. Think through entry, each action, visible feedback, navigation, completion, cancellation, and recovery for each flow.
-6. Write `.evenbetter/<epic-name>/screen-flows.html` using the structure in `HTML Output Structure` below. The HTML replaces the previous Markdown spec — do not also write `screen-flows.md`.
+6. Write `.evenbetter/<epic-name>/screen-flows.html` using the structure in `HTML Output Structure` below. Write only this HTML file. It replaces the older Markdown spec, so do not also write a `screen-flows.md`.
 
 ## Core-Flow Interview
 
-Use closed questions from `question-patterns.md`. Keep each round to 1-3 questions, then continue with another round when answers expose new gaps.
+Use closed questions from `references/question-patterns.md`. Keep each round to 1-3 questions, then continue with another round when answers expose new gaps.
 
 ### Round 1: Flow Inventory
 
@@ -49,7 +59,7 @@ Ask this round before drafting when more than one screen or more than one user s
 
 ## Drafting Gate
 
-Do not write `screen-flows.html` until every primary flow has:
+Write `screen-flows.html` only after every primary flow has:
 
 - Purpose and owning root or entry point.
 - Screens involved and presentation style for each meaningful step.
@@ -61,7 +71,7 @@ Do not write `screen-flows.html` until every primary flow has:
 
 ## HTML Output Structure
 
-`screen-flows.html` is one self-contained file. No external CSS, no external JS, no remote fonts. Use system fonts (`-apple-system, "SF Pro Text", system-ui, sans-serif`). Buttons, controls, and inputs must look like iOS but do not need to be interactive. Pixel-perfect fidelity is not the goal — recognizability is.
+`screen-flows.html` is one self-contained file. No external CSS, no external JS, no remote fonts. Use system fonts (`-apple-system, "SF Pro Text", system-ui, sans-serif`). Buttons, controls, and inputs should look like iOS but do not need to be interactive. Aim for screens a reviewer recognizes at a glance, not pixel-perfect ones.
 
 For each meaningful screen state, render a `.device-frame` containing a `.ios-screen` that visually approximates the corresponding iOS surface using HTML and CSS alone (no images, no remote assets). Use CSS shapes or inline `<svg>` for icons. Use real copy from the spec, not Lorem Ipsum.
 
@@ -75,7 +85,7 @@ Minimum structure:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Screen Flows — <epic name></title>
+  <title>Screen Flows: <epic name></title>
   <style>
     /* See "iOS Preview Styles" below. Keep all CSS in this single <style> block. */
   </style>
@@ -107,7 +117,7 @@ Minimum structure:
 
       <ol class="flow-steps">
         <li>
-          <h3>Step 1 — <screen name></h3>
+          <h3>Step 1: <screen name></h3>
           <p>User action and system response in plain prose.</p>
 
           <figure class="preview">
@@ -125,7 +135,7 @@ Minimum structure:
                 <div class="tab-bar"><!-- if this surface lives under a TabView --></div>
               </div>
             </div>
-            <figcaption>Step 1 — default state</figcaption>
+            <figcaption>Step 1: default state</figcaption>
           </figure>
 
           <details class="swiftui-mapping">
@@ -157,7 +167,7 @@ Minimum structure:
 Include a single `<style>` block. The goal is an iOS-like silhouette, not a real device shell. Keep it lightweight. Adjust visuals as needed but keep the class names so previews stay consistent across flows:
 
 - `body` uses a neutral background and the system font stack above.
-- `.device-frame` is a phone-shaped container: about 390×844 logical units, rounded corners around 44px, 1px outer border, soft shadow. It exists only to bound the screen — do not draw a notch, dynamic island, or speaker.
+- `.device-frame` is a phone-shaped container: about 390×844 logical units, rounded corners around 44px, 1px outer border, soft shadow. It only bounds the screen, so do not draw a notch, Dynamic Island, or speaker.
 - `.ios-screen` fills the frame, has a white (or `#000` in dark variants) background, and uses flex/column layout so `.status-bar`, `.nav-bar`, `.screen-content`, and optional `.tab-bar` stack from top to bottom.
 - `.status-bar` is a thin top row with time on the left and signal/battery shapes on the right. Keep it minimal; it is a recognition cue, not real chrome.
 - `.nav-bar` is a row with a back-style leading button, a centered or large title, and an optional trailing button. Use the large-title style by default (title appears below the row) and switch to the inline style when the spec dictates.

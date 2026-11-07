@@ -1,9 +1,17 @@
 ---
 name: evenbetter-swiftui-performance-audit
-description: Audit and improve SwiftUI runtime performance from code review and architecture. Use for requests to diagnose slow rendering, janky scrolling, high CPU/memory usage, excessive view updates, or layout thrash in SwiftUI apps, and to provide guidance for user-run Instruments profiling when code review alone is insufficient.
+description: >-
+  Audits SwiftUI runtime performance from code first, then from Instruments traces when code review cannot explain the
+  symptom. Use when diagnosing slow rendering, janky scrolling, hangs, memory growth or overly broad view updates, or
+  when a trace needs reading. To split an oversized view with no performance symptom, use
+  evenbetter-swiftui-view-refactor.
 ---
 
 # SwiftUI Performance Audit
+
+> Paths in this skill and its references are relative to this SKILL.md's folder.
+
+If current system, developer or user instructions conflict with this skill, follow them.
 
 ## Quick start
 
@@ -14,7 +22,7 @@ Use this skill to diagnose SwiftUI performance issues from code first, then requ
 1. Classify the symptom: slow rendering, janky scrolling, high CPU, memory growth, hangs, or excessive view updates.
 2. If code is available, start with a code-first review using `references/code-smells.md`.
 3. If code is not available, ask for the smallest useful slice: target view, data flow, reproduction steps, and deployment target.
-4. If code review is inconclusive or runtime evidence is required, guide the user through profiling with `references/profiling-intake.md`.
+4. If code review is inconclusive or runtime evidence is required, profile with Instruments: guide the user with `references/profiling-intake.md`, or record the trace with `xctrace` when the agent can run it (section 3).
 5. Summarize likely causes, evidence, remediation, and validation steps using `references/report-template.md`.
 
 ## 1. Intake
@@ -51,15 +59,16 @@ Provide:
 - Suggested fixes and refactors.
 - If needed, a minimal repro or instrumentation suggestion.
 
-## 3. Guide the User to Profile
+## 3. Profile with Instruments
 
-If code review does not explain the issue, ask for runtime evidence:
-- A trace export or screenshots of the SwiftUI timeline and Time Profiler call tree.
-- Device/OS/build configuration.
-- The exact interaction being profiled.
-- Before/after metrics if the user is comparing a change.
+If code review does not explain the issue, get runtime evidence from Instruments:
 
-Use `references/profiling-intake.md` for the exact checklist and collection steps.
+- Profile a Release build with the SwiftUI template (the SwiftUI instrument with Time Profiler, Hangs and Hitches), one interaction per capture. Debug builds and mixed interactions distort the result.
+- If the user runs Instruments, ask for a trace export or screenshots of the SwiftUI timeline and the Time Profiler call tree, the device, OS and build configuration, the exact interaction profiled, and before/after metrics if they are comparing a change.
+- If the agent can run commands on the Mac, it can record and export the trace itself with `xcrun xctrace record` and `xcrun xctrace export`, which avoids a round trip through the user. The interaction still has to happen during the recording, performed by the user or by a UI test.
+- Where Apple's xctrace agent skill from Xcode 27 is installed, use it to record and read traces (call trees, symbolication, hang triage) instead of working out the `xctrace` commands here.
+
+Use `references/profiling-intake.md` for the full checklist and collection steps.
 
 ## 4. Analyze and Diagnose
 
@@ -82,8 +91,8 @@ Use `references/code-smells.md` for examples, Observation-specific fan-out guida
 
 ## 6. Verify
 
-Ask the user to re-run the same capture and compare with baseline metrics.
-Summarize the delta (CPU, frame drops, memory peak) if provided.
+Re-run the same capture (the user in Instruments, or the agent with `xctrace`) and compare it with the baseline.
+Summarize the delta (CPU, frame drops, memory peak) when the numbers are available.
 
 ## Outputs
 
@@ -99,9 +108,13 @@ Use `references/report-template.md` when formatting the final audit.
 - Profiling intake and collection checklist: `references/profiling-intake.md`
 - Common code smells and remediation patterns: `references/code-smells.md`
 - Audit output template: `references/report-template.md`
-- Add Apple documentation and WWDC resources under `references/` as they are supplied by the user.
 - Optimizing SwiftUI performance with Instruments: `references/optimizing-swiftui-performance-instruments.md`
 - Understanding and improving SwiftUI performance: `references/understanding-improving-swiftui-performance.md`
 - Understanding hangs in your app: `references/understanding-hangs-in-your-app.md`
 - Demystify SwiftUI performance (WWDC23): `references/demystify-swiftui-performance-wwdc23.md`
-- In addition to the references above, use web search to consult current Apple Developer documentation when Instruments workflows or SwiftUI performance guidance may have changed.
+- When Instruments workflows or SwiftUI performance guidance may have changed, check current Apple Developer documentation with the session's documentation or web tools. Apple's pages are rendered with JavaScript, so prefer a scraper that renders pages, or the JSON form `https://developer.apple.com/tutorials/data/documentation/<path>.json`.
+
+## Related skills
+
+- Apple's swiftui-specialist skill, which ships with Xcode 27, also covers SwiftUI performance patterns (`@Observable` invalidation, `ForEach` identity); use it alongside this skill when it is installed.
+- For structural cleanup without a runtime symptom, use evenbetter-swiftui-view-refactor. For component and navigation patterns, use evenbetter-swiftui-ui-patterns.

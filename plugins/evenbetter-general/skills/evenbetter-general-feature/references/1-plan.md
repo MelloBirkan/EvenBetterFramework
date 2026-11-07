@@ -1,10 +1,24 @@
 # 1 plan
 
-> Converted from a former Claude Code command. Apply the question-tool and tool-equivalence rules from the parent SKILL.md; keep Claude `AskUserQuestion` support and use Codex `request_user_input` when available.
+> This stage follows the question tooling, tool equivalents and artifact rules in SKILL.md.
+
+## Contents
+
+- Interactive Process Required
+- Role
+- Core Philosophy
+- Adaptive Planning
+- Tools
+- Artifacts
+- Processing User Request
+- Planning Gate
+- Plan Template
+- Next Step
+- Acceptance Criteria
 
 ## Interactive Process Required
 
-This workflow command requires step-by-step collaboration. Do not skip clarification for efficiency.
+This stage requires step-by-step collaboration. Do not skip clarification for efficiency.
 
 ## Role
 
@@ -58,9 +72,9 @@ Use your judgment. The right plan is the shortest one that captures all the deci
 
 ## Tools
 
-- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available for all interview and clarification questions. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the parent SKILL.md limits.
+- Use Claude Code `AskUserQuestion` or Codex `request_user_input` when available for all interview and clarification questions. In Claude, present 2-4 distinct options per question ("Other" is added automatically) and ask up to 4 questions per round. In Codex, follow the SKILL.md limits.
 - Use `Glob`, `Grep`, and `Read` tools to analyze the existing codebase — architecture patterns, constraints, and integration points.
-- Use MCP tools to look up relevant documentation and references when making decisions: `ref_search_documentation` / `ref_read_url` for library, framework, and API docs (primary source), `web_search_exa` or `tavily_search` for general research on patterns, trade-offs, or unfamiliar technologies.
+- Look up documentation when a decision depends on it, with the tools the session has: the Ref `ref_search_documentation` and `ref_read_url` tools for library, framework and API docs (the primary source) when the Ref server is connected, and a search tool such as Exa `web_search_exa`, Tavily `tavily_search` or the host's web search for patterns, trade-offs or unfamiliar technologies.
 
 ## Artifacts
 
@@ -70,16 +84,17 @@ All artifacts live in `.evenbetter/<feature-folder>/`. Scan `.evenbetter/` to fi
 
 1. Internalize the problem from the gathered requirements. Understand what we're solving and why.
 2. Analyze the existing codebase thoroughly — architecture patterns, technical constraints, integration points. Ground all recommendations in what you actually observe, not assumptions about how systems typically work.
-3. Read `question-patterns.md`, especially `1 Plan`.
+3. Read `references/question-patterns.md`, especially `1 Plan`.
 4. Determine which plan sections are relevant based on the nature of the work (see Adaptive Planning above).
 5. Think through the high-level approach before clarifying with the user.
 
-Thoroughly think through your mental model:
+   Thoroughly think through your mental model:
 
-    - Trace a request through the proposed approach end-to-end
-    - Change a requirement — what ripples through the design?
-    - Inject failures at each point — what breaks, what recovers?
-    - For product-facing work: trace the user journey — entry point, each action, each response, exit
+   - Trace a request through the proposed approach end-to-end
+   - Change a requirement: what ripples through the design?
+   - Inject failures at each point: what breaks, what recovers?
+   - For product-facing work: trace the user journey: entry point, each action, each response, exit
+
 6. Surface assumptions and use interview questions to align on the approach.
 
 Present your proposed direction, key assumptions, and anything that surfaced during step 5. Align on the overall approach before diving into sections. Ask roughly 3-10 multiple-choice questions in this phase when needed to close behavior, data, integration, failure-handling, and acceptance assumptions. Multiple rounds of clarification are expected.
@@ -94,7 +109,7 @@ Trace through this section's implications. What are the key decisions? What has 
 
 Interview the user:
 
-Surface key decisions and uncertainties to the user as multiple-choice interview questions, using the option banks in `question-patterns.md`. Don't assume — get input on choices that shape the plan. Iterate until you have shared understanding.
+Surface key decisions and uncertainties to the user as multiple-choice interview questions, using the option banks in `references/question-patterns.md`. Don't assume. Get input on choices that shape the plan. Iterate until you have shared understanding.
 
 Then document:
 
@@ -173,16 +188,16 @@ Define new components and their integration with existing architecture:
 5. No code repository structure should be documented
 6. No business logic implementation details
 
-Note: Keep the plan structured and readable. Code snippets only for schemas and interfaces. You MUST NOT include code snippets for business logic or implementation details.
+Note: Keep the plan structured and readable. Use code snippets only for schemas and interfaces. Leave out code for business logic and implementation details: the plan records decisions, and that code goes stale as soon as implementation starts.
 
-Note: Draft only the relevant sections. DO NOT draft sections that aren't applicable to this work.
+Note: Draft only the sections that apply to this work, because filling an unneeded section means inventing decisions the user never made.
 
 ## Next Step
 
 Present the following options to the user:
 
-1. `$evenbetter-general-feature 2-plan-validation` — stress-test the plan's critical decisions before committing to implementation (recommended when the plan introduces new patterns, crosses service boundaries, has non-trivial failure modes, mixes product/technical decisions, or deviates from existing codebase patterns)
-2. `$evenbetter-general-feature 3-ticket-breakdown` — break the plan into implementation tickets (acceptable when the plan extends existing patterns with low risk and the user has confirmed all critical decisions)
+1. The `2-plan-validation` stage: stress-test the plan's critical decisions before committing to implementation (recommended when the plan introduces new patterns, crosses service boundaries, has non-trivial failure modes, mixes product/technical decisions, or deviates from existing codebase patterns)
+2. The `3-ticket-breakdown` stage: break the plan into implementation tickets (acceptable when the plan extends existing patterns with low risk and the user has confirmed all critical decisions)
 
 ## Acceptance Criteria
 

@@ -23,21 +23,24 @@ struct MediaPreviewRow: View {
     ScrollView(.horizontal, showsIndicators: false) {
       HStack {
         ForEach(attachments) { attachment in
-          LazyImage(url: attachment.previewURL) { state in
-            if let image = state.image {
-              image.resizable().aspectRatio(contentMode: .fill)
-            } else {
-              ProgressView()
-            }
-          }
-          .frame(width: 120, height: 120)
-          .clipped()
-          .onTapGesture {
+          Button {
             quickLook.prepareFor(
               selectedMediaAttachment: attachment,
               mediaAttachments: attachments
             )
+          } label: {
+            LazyImage(url: attachment.previewURL) { state in
+              if let image = state.image {
+                image.resizable().aspectRatio(contentMode: .fill)
+              } else {
+                ProgressView()
+              }
+            }
+            .frame(width: 120, height: 120)
+            .clipped()
           }
+          .buttonStyle(.plain)
+          .accessibilityLabel(attachment.description ?? "Attachment")
         }
       }
     }
