@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: routing-trap-multi-screen-feature
+description: 'Trap: a ''feature'' that spans four linked screens goes to evenbetter-ios-epic, not evenbetter-ios-feature.'
+tags: [routing]
+runs: 3
+execution:
+  max_turns: 4
+  timeout_seconds: 180
+  allowed_tools: [Skill]
+  append_system_prompt: 'This session is a routing check for the installed skills. Choose the one skill that best fits the user''s request and load it with the Skill tool. Once it has loaded, stop: do not follow its instructions, open files, run commands or ask questions. Reply with one line that names the skill you loaded.'
+  prompt: 'I want to add a journaling feature to my iPhone app: a timeline, an entry editor, a photo picker flow and a search screen, all linked together. Help me plan it.'
+graders:
+  - name: loads-evenbetter-ios-epic
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-ios-epic"'
+  - name: skips-evenbetter-ios-feature
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-ios-feature"'
+    min: 0
+    max: 0

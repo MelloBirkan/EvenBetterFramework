@@ -7,7 +7,7 @@ Use this checklist for `5-ux-implementation-review` and whenever a user asks for
 - Read `.evenbetter/<feature-name>/ios-ux-plan.md` and relevant `UX-TICKET-NNN.md` files.
 - Inspect changed SwiftUI/iOS code with `git diff`, paths from tickets, or user-provided files.
 - Review screenshots when available. If missing, request only the states needed to resolve visual uncertainty.
-- Consult `official-sources.md` for current Apple links and relevant local iOS skills.
+- Consult `references/official-sources.md` for current Apple links and relevant local iOS skills.
 
 ## Severity
 
@@ -22,10 +22,10 @@ Use this checklist for `5-ux-implementation-review` and whenever a user asks for
 - Information hierarchy: primary content appears first in reading order and remains clear at large text sizes.
 - Navigation: screen title, back/close affordance, tab/sheet/push behavior, and destination after completion are clear.
 - Actions: primary, secondary, cancel, and destructive roles are visually distinct and placed consistently.
-- Touch targets: interactive controls have at least a 44x44 pt hit region on iOS unless a standard component guarantees it.
+- Touch targets: interactive controls have at least a 44x44 pt hit region on iOS unless a standard component guarantees it (corpus clauses LAY-UI-001 and LAY-A11Y-001 in `../../corpus/ios/layout-interaction.md`). WCAG 2.2 sets a lower floor, 24x24 CSS px, in SC 2.5.8 Target Size (Minimum) at Level AA; 2.5.5 is the AAA criterion.
 - Feedback: loading, disabled, success, error, and empty states are visible and do not rely on color alone.
 - Gestures: important actions have a visible non-gesture alternative.
-- Layout: safe areas, Dynamic Island, keyboard, orientation, and iPad size changes do not obscure controls.
+- Layout: safe areas, Dynamic Island, keyboard, orientation, and iPad or iPhone Duo size changes do not obscure controls.
 - Color: semantic/system colors are preferred; custom colors handle light, dark, and increased contrast contexts.
 - Typography: system text styles or scalable custom fonts support Dynamic Type and minimize truncation.
 
@@ -39,11 +39,13 @@ Use this checklist for `5-ux-implementation-review` and whenever a user asks for
 - Dynamic Type at accessibility sizes avoids overlap, clipped text, and lost primary actions.
 - Switch Control, Voice Control, keyboard, and pointer interaction are not blocked by custom gestures.
 - Motion-heavy transitions respect Reduce Motion or have a calmer fallback.
+- Haptics accompany a visible state change and are not the only signal; use `evenbetter-ios-haptics` to check the feedback type.
 
 ## Code Review
 
 - Prefer native SwiftUI controls before custom controls.
 - Avoid giant views, inline side effects, and unstable root branch swapping; use `evenbetter-swiftui-view-refactor` if needed.
+- Use `evenbetter-swiftui-accessibility` when a finding needs a corpus accessibility clause and its correct-code example.
 - Use `evenbetter-swiftui-ui-patterns` for NavigationStack, sheets, forms, controls, theming, and async state.
 - Add accessibility modifiers at the smallest useful view boundary.
 - Avoid hard-coded colors, font sizes, and layout constants that break Dynamic Type or contrast.

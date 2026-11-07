@@ -1,0 +1,4 @@
+interface:
+  display_name: "EB iOS Haptics"
+  short_description: "Match iOS haptics to Apple's HIG feedback tiers"
+  default_prompt: "Use $evenbetter-ios-haptics to review this app's haptic feedback and match each event to the right SensoryFeedback variant."

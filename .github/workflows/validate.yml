@@ -1,0 +1,70 @@
+name: Validate skills and plugins
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: JSON files parse
+        run: |
+          jq . .claude-plugin/marketplace.json \
+            .agents/plugins/marketplace.json \
+            plugins/evenbetter-ios/corpus/index.json \
+            plugins/evenbetter-ios/.claude-plugin/plugin.json \
+            plugins/evenbetter-ios/.codex-plugin/plugin.json \
+            plugins/evenbetter-general/.claude-plugin/plugin.json \
+            plugins/evenbetter-general/.codex-plugin/plugin.json \
+            plugins/evenbetter-ios/.mcp.json > /dev/null
+
+      - name: Skill, manifest and corpus checks
+        run: |
+          pip install pyyaml
+          python3 scripts/check-skills.py
+
+      - name: Whitespace
+        if: github.event_name == 'pull_request'
+        run: git diff --check "${{ github.event.pull_request.base.sha }}" HEAD
+
+      - name: Claude Code plugin validation
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          export CLAUDE_CONFIG_DIR="$(mktemp -d)"
+          for t in . plugins/evenbetter-ios plugins/evenbetter-general; do
+            claude plugin validate --json "$t" > "$RUNNER_TEMP/validate.json" || true
+            # The missing version is expected while the project has no release process.
+            jq -e '(.manifest.errors | length) == 0
+              and ([.manifest.warnings[] | select(.path | test("version$") | not)] | length) == 0
+              and ([.contents[]? | (.errors + .warnings)[]] | length) == 0' "$RUNNER_TEMP/validate.json" \
+              || { echo "claude plugin validate failed for $t"; cat "$RUNNER_TEMP/validate.json"; exit 1; }
+          done
+
+      - name: Codex install in a throwaway home
+        run: |
+          npm install -g @openai/codex
+          export CODEX_HOME="$(mktemp -d)"
+          codex plugin marketplace add "$GITHUB_WORKSPACE"
+          codex plugin add evenbetter-ios@evenbetter
+          codex plugin add evenbetter-general@evenbetter
+          codex plugin list > "$RUNNER_TEMP/codex-plugins.txt"
+          cat "$RUNNER_TEMP/codex-plugins.txt"
+          grep -Eq '^evenbetter-ios@evenbetter +installed, enabled' "$RUNNER_TEMP/codex-plugins.txt"
+          grep -Eq '^evenbetter-general@evenbetter +installed, enabled' "$RUNNER_TEMP/codex-plugins.txt"

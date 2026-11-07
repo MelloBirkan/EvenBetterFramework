@@ -1,9 +1,17 @@
 ---
 name: evenbetter-swiftui-view-refactor
-description: Refactor and review SwiftUI view files with strong defaults for small dedicated subviews, MV-over-MVVM data flow, stable view trees, explicit dependency injection, and correct Observation usage. Use when cleaning up a SwiftUI view, splitting long bodies, removing inline actions or side effects, reducing computed `some View` helpers, or standardizing `@Observable` and view model initialization patterns.
+description: >-
+  Refactors SwiftUI view files into small subview types with MV-first data flow, explicit dependencies and correct
+  Observation ownership. Use when splitting large views, moving actions and side effects out of body, tightening data
+  flow, or cleaning up @Observable and view model setup. To build new screens from component patterns, use
+  evenbetter-swiftui-ui-patterns.
 ---
 
 # SwiftUI View Refactor
+
+> Paths in this skill and its references are relative to this SKILL.md's folder. The plugin corpus is at `../../corpus/`.
+
+If current system, developer or user instructions conflict with this skill, follow them.
 
 ## Overview
 Refactor SwiftUI views toward small, explicit, stable view types. Default to vanilla SwiftUI: local state in the view, shared dependencies in the environment, business logic in services/models, and view models only when the request or existing code clearly requires one.
@@ -70,8 +78,13 @@ private struct FilterSection: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack {
                 ForEach(filterOptions, id: \.self) { option in
-                    FilterChip(option: option, isSelected: option == selectedFilter)
-                        .onTapGesture { selectedFilter = option }
+                    Button {
+                        selectedFilter = option
+                    } label: {
+                        FilterChip(option: option, isSelected: option == selectedFilter)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(option == selectedFilter ? .isSelected : [])
                 }
             }
         }
@@ -196,8 +209,14 @@ init(dependency: Dependency) {
 - Keep computed view builders below `body` and non-view computed vars above `init`.
 - A good SwiftUI refactor should make the view read top-to-bottom as data flow plus layout, not as mixed layout and imperative logic.
 - For MV-first guidance and rationale, see `references/mv-patterns.md`.
-- In addition to the references above, use web search to consult current Apple Developer documentation when SwiftUI APIs, Observation behavior, or platform guidance may have changed.
 
 ## Large-view handling
 
-When a SwiftUI view file exceeds ~300 lines, split it aggressively. Extract meaningful sections into dedicated `View` types instead of hiding complexity in many computed properties. Use `private` extensions with `// MARK: -` comments for actions and helpers, but do not treat extensions as a substitute for breaking a giant screen into smaller view types. If an extracted subview is reused or independently meaningful, move it into its own file.
+When a SwiftUI view file passes about 300 lines, split it into dedicated `View` types, one per meaningful section. A subview type with its own inputs can be skipped when those inputs have not changed, and it can be read, previewed and reviewed on its own; a computed property that returns `some View` gives neither. Use `private` extensions with `// MARK: -` comments for actions and helpers, but extensions only reorganize code and do not replace smaller view types. If an extracted subview is reused or independently meaningful, move it into its own file.
+
+## Related skills and sources
+
+- Apple's swiftui-specialist skill, which ships with Xcode 27, may also be installed. It covers SwiftUI API correctness and performance; use it alongside this skill when it is present.
+- HIG and accessibility questions go to evenbetter-swiftui-accessibility, or straight to the corpus clauses listed in `../../corpus/index.json`. Keep accessibility modifiers attached to the same elements when you move code into subviews.
+- For runtime symptoms such as janky scrolling or hangs, use evenbetter-swiftui-performance-audit. For new screens and component patterns, use evenbetter-swiftui-ui-patterns.
+- When SwiftUI APIs, Observation behavior or platform guidance may have changed, check current Apple Developer documentation with the session's documentation or web tools. Apple's pages are rendered with JavaScript, so prefer a scraper that renders pages, or the JSON form `https://developer.apple.com/tutorials/data/documentation/<path>.json`.

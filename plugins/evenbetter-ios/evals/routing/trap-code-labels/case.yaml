@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: routing-trap-code-labels
+description: 'Trap: adding accessibility labels in code goes to evenbetter-swiftui-accessibility, not evenbetter-accessibility-nutrition-labels.'
+tags: [routing]
+runs: 3
+execution:
+  max_turns: 4
+  timeout_seconds: 180
+  allowed_tools: [Skill]
+  append_system_prompt: 'This session is a routing check for the installed skills. Choose the one skill that best fits the user''s request and load it with the Skill tool. Once it has loaded, stop: do not follow its instructions, open files, run commands or ask questions. Reply with one line that names the skill you loaded.'
+  prompt: 'Add accessibility labels to the icon-only buttons in my SwiftUI toolbar so VoiceOver says what they do.'
+graders:
+  - name: loads-evenbetter-swiftui-accessibility
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-swiftui-accessibility"'
+  - name: skips-evenbetter-accessibility-nutrition-labels
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-accessibility-nutrition-labels"'
+    min: 0
+    max: 0

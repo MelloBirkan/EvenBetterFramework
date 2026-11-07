@@ -1,4 +1,4 @@
 interface:
-  display_name: "iOS Debugger Agent"
-  short_description: "Debug iOS apps on Simulator"
-  default_prompt: "Use $evenbetter-ios-debugger-agent to build, launch, and inspect the current iOS app on the booted simulator."
+  display_name: "EB iOS Debugger"
+  short_description: "Run, drive and debug an iOS app on the Simulator"
+  default_prompt: "Use $evenbetter-ios-debugger-agent to build this app, run it on a simulator and report what happens on screen and in the logs."

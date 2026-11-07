@@ -3,25 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title x-text="'Evenbetter Audit Report — ' + data.project_name">Evenbetter Audit Report</title>
+    <title x-text="'EvenBetter Audit Report: ' + data.project_name">EvenBetter Audit Report</title>
+
+    <!-- Records CDN scripts that fail to load (offline, blocked) so the fallback view can explain it. -->
+    <script>window.__ebCdnFailed = [];</script>
 
     <!-- Tailwind CSS v4 Browser -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" onerror="window.__ebCdnFailed.push('Tailwind CSS')"></script>
 
     <!-- Alpine.js Collapse Plugin (must load before Alpine) -->
-    <script defer src="https://unpkg.com/@alpinejs/collapse"></script>
+    <script defer src="https://unpkg.com/@alpinejs/collapse" onerror="window.__ebCdnFailed.push('Alpine.js Collapse')"></script>
 
     <!-- Alpine.js -->
-    <script defer src="https://unpkg.com/alpinejs"></script>
+    <script defer src="https://unpkg.com/alpinejs" onerror="window.__ebCdnFailed.push('Alpine.js')"></script>
 
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest" onerror="window.__ebCdnFailed.push('Lucide icons')"></script>
 
     <!-- Highlight.js -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" class="dark-syntax">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css" class="light-syntax" disabled>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/swift.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" onerror="window.__ebCdnFailed.push('highlight.js')"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/swift.min.js" onerror="window.__ebCdnFailed.push('highlight.js Swift')"></script>
 
     <!-- Google Fonts - Bold Modern Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -359,6 +362,61 @@
             background: var(--accent-muted) !important;
             color: var(--accent-hover) !important;
         }
+
+        /* Plain fallback view, shown when Alpine.js cannot load. It uses no CDN styles. */
+        #eb-fallback { display: none; }
+        html.eb-fallback-mode body > :not(#eb-fallback) { display: none !important; }
+        html.eb-fallback-mode body::before { display: none; }
+        html.eb-fallback-mode #eb-fallback {
+            display: block;
+            max-width: 60rem;
+            margin: 0 auto;
+            padding: 2rem 1.25rem 4rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            color: #1A1206;
+            background: #F2EBE1;
+        }
+        html.eb-fallback-mode body { background: #F2EBE1; }
+        #eb-fallback h1 { font-size: 1.6rem; margin: 0 0 0.25rem; }
+        #eb-fallback h2 { font-size: 1.15rem; margin: 0 0 0.5rem; }
+        #eb-fallback .eb-notice {
+            border: 2px solid #8A5A00;
+            background: #FFF4D6;
+            color: #3D2800;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin: 1rem 0 1.5rem;
+        }
+        #eb-fallback .eb-meta { color: #524738; font-size: 0.9rem; margin: 0.25rem 0; }
+        #eb-fallback .eb-finding {
+            border: 1px solid rgba(87, 65, 40, 0.28);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0 0 1rem;
+            background: #FBF8F3;
+        }
+        #eb-fallback .eb-tag {
+            display: inline-block;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.8rem;
+            border: 1px solid rgba(87, 65, 40, 0.35);
+            border-radius: 4px;
+            padding: 0 0.35rem;
+            margin: 0 0.35rem 0.35rem 0;
+        }
+        #eb-fallback h3 { font-size: 0.85rem; margin: 0.9rem 0 0.25rem; text-transform: uppercase; letter-spacing: 0.04em; }
+        #eb-fallback pre {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            background: #1C1917;
+            color: #FAFAF9;
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+        #eb-fallback a { color: #0B5E49; }
     </style>
 </head>
 <body class="min-h-screen antialiased selection:bg-[var(--accent)] selection:text-black">
@@ -534,7 +592,8 @@
                     </div>
                     <div>
                         <h3 class="font-display font-bold text-sm" style="color: var(--text-primary);">Scan Context</h3>
-                        <p class="text-xs font-mono" style="color: var(--text-muted);">Project analysis details</p>
+                        <p class="text-xs font-mono" style="color: var(--text-muted);"
+                           x-text="(data.scan_context?.notes?.length ? data.scan_context.notes.length + (data.scan_context.notes.length === 1 ? ' audit note, ' : ' audit notes, ') : '') + 'project analysis details'">Project analysis details</p>
                     </div>
                 </div>
                 <button class="w-8 h-8 flex items-center justify-center rounded-lg" style="background: var(--bg-tertiary);">
@@ -634,6 +693,20 @@
                                   x-text="'+' + (data.scan_context.custom_utilities.length - 6) + ' more'"></span>
                         </div>
                     </div>
+
+                    <!-- Audit Notes (evidence limits, corpus drift, problems outside the corpus) -->
+                    <div class="mt-4 p-3 rounded-lg" style="background: var(--bg-tertiary);"
+                         x-show="data.scan_context?.notes?.length > 0">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i data-lucide="notebook-pen" class="w-4 h-4" style="color: var(--accent);"></i>
+                            <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--text-muted);">Audit Notes</span>
+                        </div>
+                        <ul class="space-y-1 list-disc pl-5">
+                            <template x-for="(note, noteIndex) in (data.scan_context?.notes || [])" :key="noteIndex">
+                                <li class="text-sm" style="color: var(--text-primary);" x-text="note"></li>
+                            </template>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </section>
@@ -648,7 +721,7 @@
                 <input type="text" x-model="searchQuery"
                        class="block w-full pl-10 pr-3 py-2.5 rounded-lg text-sm font-mono transition-all focus:outline-none focus:ring-2"
                        style="background: var(--bg-tertiary); border: 1px solid var(--border); color: var(--text-primary); --tw-ring-color: var(--accent);"
-                       placeholder="Search files, WCAG criteria, issues...">
+                       placeholder="Search files, clause IDs, WCAG criteria, issues...">
             </div>
 
             <!-- Active Filters Display -->
@@ -783,6 +856,22 @@
                                         <i :data-lucide="getSeverityIcon(issue.severity)" class="w-3 h-3"></i>
                                         <span x-text="issue.severity"></span>
                                     </span>
+                                    <span x-show="issue.clause_id"
+                                          data-testid="clause-id"
+                                          class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider"
+                                          style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-strong);"
+                                          title="Primary corpus clause">
+                                        <i data-lucide="book-open" class="w-3 h-3"></i>
+                                        <span x-text="issue.clause_id"></span>
+                                    </span>
+                                    <template x-for="related in (issue.related_clause_ids || [])" :key="related">
+                                        <span data-testid="related-clause-id"
+                                              class="px-2 py-0.5 rounded text-[10px] font-mono tracking-wider"
+                                              style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px dashed var(--border-strong);"
+                                              title="Related clause fixed by the same change">
+                                            + <span x-text="related"></span>
+                                        </span>
+                                    </template>
                                     <a x-show="issue.hig_reference_url"
                                        :href="issue.hig_reference_url"
                                        target="_blank"
@@ -791,7 +880,7 @@
                                        class="hig-badge px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider"
                                        style="background: var(--bg-tertiary); color: var(--accent);">
                                         <i data-lucide="external-link" class="w-3 h-3"></i>
-                                        Apple HIG
+                                        <span x-text="(issue.hig_reference_url || '').includes('/design/') ? 'Apple HIG' : 'Apple Docs'">Apple HIG</span>
                                     </a>
                                     <span x-show="issue.wcag_criteria"
                                           class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider"
@@ -807,6 +896,17 @@
                                         <span x-text="issue.repair?.status"></span>
                                         <span x-show="issue.repair?.path" class="opacity-70">(<span x-text="issue.repair?.path"></span>)</span>
                                     </span>
+                                    <!-- Runtime verdict from evenbetter-accessibility-tests; untested shows nothing. -->
+                                    <template x-if="hasRuntimeVerdict(issue)">
+                                        <span data-testid="runtime-status"
+                                              :data-runtime-status="issue.runtime.status"
+                                              class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider"
+                                              :style="getRuntimeStyle(issue.runtime.status)"
+                                              :title="issue.runtime.evidence || ''">
+                                            <i :data-lucide="getRuntimeIcon(issue.runtime.status)" class="w-3 h-3"></i>
+                                            <span x-text="getRuntimeLabel(issue.runtime.status)"></span>
+                                        </span>
+                                    </template>
                                 </div>
 
                                 <!-- Title -->
@@ -869,6 +969,33 @@
                                        x-text="'Changed: ' + (issue.repair?.changed_files || []).join(', ')"></p>
                                 </div>
                             </div>
+
+                            <!-- Runtime Check -->
+                            <template x-if="hasRuntimeVerdict(issue)">
+                                <div data-testid="runtime-detail"
+                                     class="mt-4 rounded-lg p-3 flex items-start gap-3"
+                                     style="background: var(--bg-tertiary); border: 1px solid var(--border);">
+                                    <i :data-lucide="getRuntimeIcon(issue.runtime.status)" class="w-4 h-4 mt-0.5 flex-shrink-0"
+                                       :style="'color: ' + getRuntimeColor(issue.runtime.status)"></i>
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-mono uppercase tracking-wider" :style="'color: ' + getRuntimeColor(issue.runtime.status)">
+                                            <span x-text="getRuntimeLabel(issue.runtime.status)"></span>
+                                            <span x-show="issue.runtime.checked_at" class="opacity-70">
+                                                &middot; <span data-testid="runtime-checked-at" x-text="issue.runtime.checked_at"></span>
+                                            </span>
+                                        </p>
+                                        <p x-show="issue.runtime.evidence" class="text-sm mt-1" style="color: var(--text-secondary);"
+                                           x-text="issue.runtime.evidence"></p>
+                                        <p x-show="(issue.runtime.configs || []).length" class="text-xs font-mono mt-1" style="color: var(--text-muted);"
+                                           x-text="'Configurations: ' + (issue.runtime.configs || []).join(', ')"></p>
+                                        <p x-show="(issue.runtime.tests || []).length" data-testid="runtime-tests"
+                                           class="text-xs font-mono mt-1 break-all" style="color: var(--text-muted);"
+                                           x-text="'Tests: ' + (issue.runtime.tests || []).join(', ')"></p>
+                                        <p x-show="issue.runtime.result_bundle" class="text-xs font-mono mt-1 break-all" style="color: var(--text-muted);"
+                                           x-text="'Result bundle: ' + issue.runtime.result_bundle"></p>
+                                    </div>
+                                </div>
+                            </template>
 
                             <!-- Current Code (Problematic) -->
                             <div class="mt-6 rounded-lg overflow-hidden" style="background: var(--bg-tertiary); border: 1px solid rgba(255, 71, 87, 0.3);">
@@ -949,7 +1076,7 @@
                                         <p class="text-sm font-mono break-words whitespace-pre-wrap" style="color: var(--text-secondary);" x-text="issue.ai_fix_prompt"></p>
                                         <p class="mt-3 text-xs flex items-center gap-1" style="color: var(--text-muted);">
                                             <i data-lucide="lightbulb" class="w-3 h-3"></i>
-                                            Paste this into Claude Code, Cursor, or Copilot to auto-fix
+                                            Paste this into an AI coding agent such as Claude Code or Codex to apply the recommended fix
                                         </p>
                                     </div>
                                 </div>
@@ -963,7 +1090,7 @@
         <!-- Footer -->
         <footer class="mt-16 pt-8 border-t text-center" style="border-color: var(--border);">
             <p class="font-mono text-xs" style="color: var(--text-muted);">
-                Generated by <span class="font-bold" style="color: var(--accent);">Evenbetter</span> — iOS HIG &amp; Accessibility Analyzer
+                Generated by <span class="font-bold" style="color: var(--accent);">EvenBetter</span>, the iOS HIG and accessibility analyzer
             </p>
         </footer>
     </main>
@@ -988,7 +1115,7 @@
     </div>
 
     <script>
-        // Inject report data — populated by evenbetter-analyze stage 3-report.
+        // Report data: written by evenbetter-analyze stage 3-report, corrected in place by evenbetter-validate.
         const reportData = __EVENBETTER_REPORT_DATA__;
 
         function reportApp() {
@@ -1014,8 +1141,8 @@
                         this.darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
                     }
 
-                    // Initialize issues with expanded state and a repair ledger.
-                    // Reports written before the four-state workflow have neither.
+                    // Initialize issues with expanded state, a repair ledger and a runtime block.
+                    // Reports written before the four-state workflow or the runtime checks lack them.
                     this.data.issues = this.data.issues.map(issue => ({
                         ...issue,
                         expanded: false,
@@ -1027,6 +1154,15 @@
                             changed_files: [],
                             note: '',
                             ...(issue.repair || {})
+                        },
+                        runtime: {
+                            status: 'untested',
+                            checked_at: '',
+                            configs: [],
+                            tests: [],
+                            evidence: '',
+                            result_bundle: '',
+                            ...(issue.runtime || {})
                         }
                     }));
 
@@ -1108,7 +1244,9 @@
                                 issue.title.toLowerCase().includes(query) ||
                                 issue.description.toLowerCase().includes(query) ||
                                 issue.file_path.toLowerCase().includes(query) ||
-                                (issue.wcag_criteria || '').includes(query)
+                                (issue.wcag_criteria || '').includes(query) ||
+                                (issue.clause_id || '').toLowerCase().includes(query) ||
+                                (issue.related_clause_ids || []).some(id => id.toLowerCase().includes(query))
                             );
                         }
 
@@ -1164,7 +1302,7 @@
                         return 'Run evenbetter-validate to re-check these findings. Repair is blocked until the report is validated.';
                     }
                     if (this.repairTally.deferred > 0) {
-                        return 'Some repairs are waiting on a product, copy, navigation, or design decision — see the deferred findings below.';
+                        return 'Some repairs are waiting on a product, copy, navigation or design decision. See the deferred findings below.';
                     }
                     if (this.repairTally.applied > 0) {
                         return 'Repairs were applied. Re-run evenbetter-validate to confirm each one closed its finding.';
@@ -1211,6 +1349,48 @@
                         return 'background: var(--bg-tertiary); color: var(--text-muted); border: 1px solid var(--border);';
                     }
                     return `background: var(--bg-tertiary); color: ${color}; border: 1px solid ${color};`;
+                },
+
+                hasRuntimeVerdict(issue) {
+                    const status = issue.runtime?.status;
+                    return Boolean(status) && status !== 'untested';
+                },
+
+                getRuntimeLabel(status) {
+                    const labels = {
+                        confirmed: 'Confirmed at runtime',
+                        refuted: 'Refuted at runtime',
+                        inconclusive: 'Inconclusive',
+                        not_testable: 'Not testable'
+                    };
+                    return Object.prototype.hasOwnProperty.call(labels, status) ? labels[status] : String(status);
+                },
+
+                getRuntimeColor(status) {
+                    const colors = {
+                        confirmed: 'var(--critical)',
+                        refuted: 'var(--low)',
+                        inconclusive: 'var(--medium)'
+                    };
+                    return colors[status] || 'var(--text-muted)';
+                },
+
+                getRuntimeIcon(status) {
+                    const icons = {
+                        confirmed: 'bug',
+                        refuted: 'shield-check',
+                        inconclusive: 'circle-help',
+                        not_testable: 'circle-slash'
+                    };
+                    return icons[status] || 'circle-dashed';
+                },
+
+                getRuntimeStyle(status) {
+                    const color = this.getRuntimeColor(status);
+                    if (status === 'not_testable' || !status) {
+                        return 'background: var(--bg-tertiary); color: var(--text-muted); border: 1px dashed var(--border-strong);';
+                    }
+                    return `background: var(--bg-tertiary); color: ${color}; border: 1px dashed ${color};`;
                 },
 
                 getSeverityIcon(severity) {
@@ -1285,6 +1465,140 @@
                 }
             }
         }
+    </script>
+
+    <!-- Plain fallback view. Shown when Alpine.js or Tailwind cannot load (offline, blocked CDN),
+         so the findings stay readable. Kept in its own script so a problem above cannot stop it. -->
+    <div id="eb-fallback"></div>
+    <script>
+        (function () {
+            var shown = false;
+            // Untested has no label, so it shows nothing.
+            var RUNTIME_LABELS = {
+                confirmed: 'Confirmed at runtime',
+                refuted: 'Refuted at runtime',
+                inconclusive: 'Inconclusive',
+                not_testable: 'Not testable'
+            };
+
+            function add(parent, tag, text, className) {
+                var node = document.createElement(tag);
+                if (text !== undefined && text !== null && text !== '') node.textContent = String(text);
+                if (className) node.className = className;
+                parent.appendChild(node);
+                return node;
+            }
+
+            function codeBlock(parent, label, text) {
+                if (!text) return;
+                add(parent, 'h3', label);
+                add(add(parent, 'pre'), 'code', text);
+            }
+
+            function render() {
+                if (shown) return;
+                shown = true;
+                var root = document.getElementById('eb-fallback');
+                var failed = (window.__ebCdnFailed || []).join(', ');
+                var data = (typeof reportData !== 'undefined' && reportData) ? reportData : null;
+
+                add(root, 'h1', 'EvenBetter audit report' + (data && data.project_name ? ': ' + data.project_name : ''));
+                var notice = add(root, 'p', null, 'eb-notice');
+                notice.setAttribute('role', 'status');
+                notice.textContent = 'The interactive report could not load its scripts' +
+                    (failed ? ' (' + failed + ')' : '') +
+                    ', probably because this computer is offline or the CDN is blocked. ' +
+                    'This plain view shows the same findings. Reload when you are online for the full report.';
+
+                if (!data) {
+                    add(root, 'p', 'The report data could not be read either. Run evenbetter-analyze again to rewrite this file.', 'eb-notice');
+                    return;
+                }
+
+                var wf = data.workflow || {};
+                var summary = data.summary || {};
+                add(root, 'p', 'Framework: ' + (data.framework || '') + '. WCAG target: ' + (data.wcag_level || '') +
+                    '. Scanned: ' + (data.scan_date || '') + '.', 'eb-meta');
+                add(root, 'p', 'Workflow state: ' + (wf.state || 'analyzed') +
+                    (wf.validated_at ? ', validated ' + wf.validated_at : '') +
+                    (wf.repaired_at ? ', repaired ' + wf.repaired_at : '') + '.', 'eb-meta');
+                add(root, 'p', (summary.total || 0) + ' findings: ' + (summary.critical || 0) + ' critical, ' +
+                    (summary.high || 0) + ' high, ' + (summary.medium || 0) + ' medium, ' + (summary.low || 0) + ' low.', 'eb-meta');
+                if (data.project_path) add(root, 'p', 'Project: ' + data.project_path, 'eb-meta');
+
+                var notes = (data.scan_context && data.scan_context.notes) || [];
+                if (notes.length) {
+                    add(root, 'h2', 'Audit notes');
+                    var list = add(root, 'ul');
+                    notes.forEach(function (note) { add(list, 'li', note); });
+                }
+
+                var issues = data.issues || [];
+                if (!issues.length) {
+                    add(root, 'p', 'No HIG or accessibility issues were detected during this scan.');
+                }
+                issues.forEach(function (issue) {
+                    var card = add(root, 'article', null, 'eb-finding');
+                    card.id = 'fallback-' + issue.id;
+                    add(card, 'h2', (issue.id || '') + ' ' + (issue.title || ''));
+                    var tags = add(card, 'p');
+                    add(tags, 'span', String(issue.severity || '').toUpperCase(), 'eb-tag');
+                    var clause = add(tags, 'span', issue.clause_id, 'eb-tag');
+                    clause.setAttribute('data-testid', 'fallback-clause-id');
+                    (issue.related_clause_ids || []).forEach(function (related) {
+                        var tag = add(tags, 'span', '+ ' + related, 'eb-tag');
+                        tag.setAttribute('data-testid', 'fallback-related-clause-id');
+                        tag.title = 'Related clause fixed by the same change';
+                    });
+                    if (issue.wcag_criteria) add(tags, 'span', 'WCAG ' + issue.wcag_criteria + (issue.wcag_level ? ' (' + issue.wcag_level + ')' : ''), 'eb-tag');
+                    if (issue.repair && issue.repair.status && issue.repair.status !== 'pending') add(tags, 'span', 'repair: ' + issue.repair.status, 'eb-tag');
+                    var runtime = issue.runtime || {};
+                    var runtimeLabel = Object.prototype.hasOwnProperty.call(RUNTIME_LABELS, runtime.status) ? RUNTIME_LABELS[runtime.status] : '';
+                    if (runtimeLabel) {
+                        var runtimeTag = add(tags, 'span', runtimeLabel, 'eb-tag');
+                        runtimeTag.setAttribute('data-testid', 'fallback-runtime-status');
+                        runtimeTag.setAttribute('data-runtime-status', runtime.status);
+                    }
+                    add(card, 'p', (issue.file_path || '') + ':' + (issue.line_number || ''), 'eb-meta');
+                    add(card, 'p', issue.description);
+                    if (typeof issue.hig_reference_url === 'string' && issue.hig_reference_url.indexOf('https://') === 0) {
+                        var link = add(add(card, 'p'), 'a', 'Apple source: ' + issue.hig_reference_url);
+                        link.href = issue.hig_reference_url;
+                        link.rel = 'noopener noreferrer';
+                        link.target = '_blank';
+                    }
+                    if (issue.repair && issue.repair.note) add(card, 'p', 'Repair note: ' + issue.repair.note, 'eb-meta');
+                    if (runtimeLabel) {
+                        var detail = add(card, 'p', runtimeLabel + (runtime.checked_at ? ' (' + runtime.checked_at + ')' : '') +
+                            (runtime.evidence ? ': ' + runtime.evidence : '.'), 'eb-meta');
+                        detail.setAttribute('data-testid', 'fallback-runtime-detail');
+                        if (runtime.configs && runtime.configs.length) add(card, 'p', 'Configurations: ' + runtime.configs.join(', '), 'eb-meta');
+                        if (runtime.tests && runtime.tests.length) {
+                            add(card, 'p', 'Tests: ' + runtime.tests.join(', '), 'eb-meta').setAttribute('data-testid', 'fallback-runtime-tests');
+                        }
+                        if (runtime.result_bundle) add(card, 'p', 'Result bundle: ' + runtime.result_bundle, 'eb-meta');
+                    }
+                    codeBlock(card, 'Current code', issue.code_snippet);
+                    codeBlock(card, 'Minimal fix', issue.minimal_fix);
+                    codeBlock(card, 'Recommended fix', issue.recommended_fix);
+                    codeBlock(card, 'AI fix prompt', issue.ai_fix_prompt);
+                });
+                document.documentElement.classList.add('eb-fallback-mode');
+            }
+
+            function needsFallback() {
+                var failed = window.__ebCdnFailed || [];
+                return !window.Alpine || failed.indexOf('Tailwind CSS') !== -1 || failed.indexOf('Alpine.js') !== -1;
+            }
+
+            window.addEventListener('load', function () {
+                if (needsFallback()) render();
+            });
+            // A CDN that hangs instead of failing never fires load; give it a few seconds.
+            document.addEventListener('DOMContentLoaded', function () {
+                setTimeout(function () { if (needsFallback()) render(); }, 8000);
+            });
+        })();
     </script>
 </body>
 </html>

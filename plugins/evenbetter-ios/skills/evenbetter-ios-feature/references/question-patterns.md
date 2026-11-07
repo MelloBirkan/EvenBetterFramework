@@ -58,6 +58,10 @@ Use these patterns when a HIG-sensitive choice appears:
   - Inline loading and disabled action
   - Progress view in content
   - Toast/banner for transient confirmation
+- Haptic feedback:
+  - System `.sensoryFeedback` for success, error, or selection events
+  - No haptics on this screen
+  - Custom Core Haptics pattern for one signature interaction
 - Text scaling:
   - Reflow to vertical layout at accessibility sizes
   - Preserve compact layout with truncation fallback
@@ -88,6 +92,6 @@ When findings need a decision, ask closed choices:
   - Apply to shared component
   - Apply as design-system rule
 - Evidence:
+  - Recommended: Wait for requested screenshots when visual behavior is central
   - Proceed with code-only review
-  - Wait for requested screenshots
-  - Run simulator review if available
+  - Capture the states on the simulator with evenbetter-ios-debugger-agent, and confirm accessibility findings at runtime with evenbetter-accessibility-tests

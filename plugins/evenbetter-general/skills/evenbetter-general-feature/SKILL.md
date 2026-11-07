@@ -1,9 +1,12 @@
 ---
 name: evenbetter-general-feature
-description: Platform-agnostic feature workflow for smaller scoped work. Use when the user wants to gather feature requirements, create or revise an adaptive feature plan, break it into implementation tickets, execute tickets, validate implementation against the plan, or check plan and ticket consistency without a platform-specific design system such as Apple HIG or Material Design 3. Trigger on general feature workflow, feature planning, ticket breakdown, implementation validation, revise requirements, cross-artifact validation, or former slash-command style requests such as feature stages.
+description: >-
+  Runs a staged, question-driven workflow for one scoped feature on any stack, such as an API, web app or CLI: clarifying questions, a plan and its stress test, tickets, execution and a review against the plan. Use when the user asks to plan a change together before any code is written, or to ticket, build or review one feature, refactor or bug fix. For multi-flow product work use evenbetter-general-epic; for iOS use evenbetter-ios-feature.
 ---
 
 # evenbetter-general-feature
+
+Paths in this skill and its references are relative to this SKILL.md's folder.
 
 ## Operating model
 
@@ -22,44 +25,50 @@ Use this skill as a staged, question-driven feature workflow for platform-agnost
 - Ground recommendations in the actual codebase before planning or reviewing implementation.
 - Keep artifacts in `.evenbetter/<feature-name>/`, reusing an existing EvenBetter feature folder when the target is clear.
 - Treat the feature plan as the source of truth and tickets as derivatives.
-- Load only the reference for the current stage plus `question-patterns.md` when option banks would help close gaps faster.
+- Load only the reference for the current stage, plus `references/question-patterns.md` when its option banks would close gaps faster.
 
-Former slash-command names in the references are aliases. Interpret `/feature:1-plan` as "use `$evenbetter-general-feature` with stage `1-plan`."
+A stage name given as the argument (for example `1-plan`) selects that stage.
+
+The `2-plan-validation` stage reviews the plan before any code is written. It is not the evenbetter-validate skill, which checks an evenbetter-analyze audit report for an iOS project.
 
 ## Question tooling
 
-For all interviews, clarification rounds, refinement choices, and user decisions, use the best available user-question mechanism:
+Ask with the host's structured question tool when it has one:
 
-- Claude Code: use `AskUserQuestion` with 2-4 mutually exclusive options per question. Up to 4 questions per round.
-- Codex Plan mode: use `request_user_input` when it is available. Ask 1-3 short questions per round, give 2-3 mutually exclusive choices per question, put the recommended choice first when there is one, and rely on the client-added "Other" option.
-- Codex Default mode or any environment without a structured question tool: ask concise plain-text questions and wait for the user. Do not simulate a tool call.
-- Cursor or other agents with an ask-question tool: use the native structured question tool with mutually exclusive options.
+- Claude Code: `AskUserQuestion`, with 2-4 mutually exclusive options per question and up to 4 questions per round.
+- Codex in Plan mode: `request_user_input`, with 1-3 short questions of 2-3 options each, the recommended option first and marked "(Recommended)". The client adds "Other". Plan mode is read-only, so present results in a `<proposed_plan>` block and ask the user to switch to Default mode before writing `.evenbetter/` files or editing code.
+- Codex in Default mode: ask one concise closed question with numbered options in plain text, then wait. Use `request_user_input` instead if the session offers it.
+- Other agents: use their structured question tool, or ask one closed question with numbered options.
+- When nobody can answer, because the user said they will not be around or asked you to go ahead without questions, or because the run is one-shot and non-interactive (such as `claude -p`, `codex exec`, CI or a scheduled task), do not end the turn on a clarifying question. Take the recommended option, say which one you took, and record it as an assumption in the artifact or the final reply. Never assume an approval the user has not given, such as accepting a plan or starting to edit code: finish the current stage and end with what waits on the person. Any exception this skill names elsewhere still applies.
 
-Keep each round focused. Multiple clarification rounds per phase are expected. Use the first questions in a phase to close gaps and assumptions, then use later rounds to cover edge cases, failure states, integration risks, data conflicts, security/permissions, and cross-spec consistency. Prefer returning to `0-trigger-workflow` over carrying unresolved assumptions forward.
+Keep each round focused. Multiple clarification rounds per phase are expected. Ask only the current round's questions. Leave later topics for their own round, with options, instead of listing them as open questions at the end. Use the first questions in a phase to close gaps and assumptions, then use later rounds to cover edge cases, failure states, integration risks, data conflicts, security/permissions, and cross-spec consistency. Prefer returning to `0-trigger-workflow` over carrying unresolved assumptions forward.
 
 ## Tool equivalents
 
-The reference files were converted from Claude Code commands and may mention Claude tool names. Apply these equivalents in Codex:
+The references use Claude Code tool names. In Codex, use these equivalents, and do not simulate a tool the session does not have:
 
-| Claude command instruction | Codex equivalent |
+| Claude Code | Codex |
 | --- | --- |
-| `AskUserQuestion` | `request_user_input` when available, otherwise concise plain-text questions |
-| `Glob`, `Grep`, `Read` | `rg --files`, `rg`, and shell file reads such as `sed` or `nl` |
+| `AskUserQuestion` | `request_user_input` (Plan mode, or Default mode when enabled); otherwise a closed plain-text question |
+| `Glob`, `Grep`, `Read` | `rg --files`, `rg`, and shell reads such as `sed -n` or `nl` through `exec_command` |
+| `Edit`, `Write` | `apply_patch` (Default mode only) |
 | `Bash` | `exec_command` |
-| `TaskCreate`, `TaskUpdate` | `update_plan` |
-| `Agent` | `spawn_agent` only when current instructions allow delegation and the user has explicitly permitted agent work; otherwise do the work locally |
-| `ref_search_documentation`, `ref_read_url` | use the available Ref MCP tools if present; otherwise use official docs or web search when current instructions require current or source-backed information |
-| `web_search_exa`, `tavily_search` | use the available web-search mechanism, preferring primary sources for technical claims |
+| `TaskCreate`, `TaskUpdate` | `update_plan` (Default mode only; in Plan mode keep the steps in `<proposed_plan>`) |
+| `WebSearch`, `WebFetch` | `web_search`, or a configured MCP search or fetch tool such as Firecrawl, Tavily or Exa; `curl` through `exec_command` where network access is allowed |
+| `ref_search_documentation`, `ref_read_url` | any documentation MCP the session has; otherwise official documentation through the web tools above |
+| `Agent` | `spawn_agent`, then `wait_agent` |
 
-If current system or developer instructions conflict with a converted reference, follow the current higher-priority instruction.
+A stage that says to delegate is itself the request to delegate. Codex agents share one working directory, so run tickets in parallel only when their files do not overlap.
+
+If current system, developer or user instructions conflict with this skill, follow them.
 
 ## Stage selection
 
-Infer the stage from the user request. If the user gives no stage and there is no active `.evenbetter` feature, start with `0-trigger-workflow`. If there are multiple feature folders and the correct one is unclear, ask the user which one to use.
+Infer the stage from the user request. If the user gives no stage and there is no active `.evenbetter` feature, start with `0-trigger-workflow`, which opens with a scope check that can hand the request to evenbetter-general-epic or evenbetter-ios-feature. If there are multiple feature folders and the correct one is unclear, ask the user which one to use.
 
 | Stage | Reference | Use when |
 | --- | --- | --- |
-| `0-trigger-workflow` | `references/0-trigger-workflow.md` | Turn an initial feature request into clarified requirements and create the `.evenbetter/<feature-name>/` folder. |
+| `0-trigger-workflow` | `references/0-trigger-workflow.md` | Check the request's size, turn it into clarified requirements, and create the `.evenbetter/<feature-name>/` folder. |
 | `1-plan` | `references/1-plan.md` | Create the adaptive plan in `.evenbetter/<feature-name>/plan.md`. |
 | `2-plan-validation` | `references/2-plan-validation.md` | Stress-test the plan before ticketing or implementation. |
 | `3-ticket-breakdown` | `references/3-ticket-breakdown.md` | Convert the plan into story-sized tickets. |
@@ -76,12 +85,13 @@ Infer the stage from the user request. If the user gives no stage and there is n
 - Store tickets at `.evenbetter/<feature-name>/tickets/TICKET-NNN.md`.
 - Update existing artifacts surgically. Preserve decisions that still hold.
 - When a stage says to ask for confirmation or alignment, do that before writing or revising artifacts.
+- Write artifacts only when the session can edit files. In Codex Plan mode, show the draft in a `<proposed_plan>` block and ask the user to switch to Default mode to save it.
 
 ## Research rules
 
 Ground technical recommendations in the actual codebase before proposing architecture. Use current, primary documentation when API behavior, library constraints, platform rules, or framework guidance might matter.
 
-When documentation research is needed, prefer official docs through Ref MCP if available. If using web search, compare dates and source authority, and cite sources when reporting externally.
+For documentation, prefer official sources, read through a documentation MCP server such as Ref when the session has one. If you use web search, compare dates and source authority, and cite sources when reporting externally.
 
 ## Anti-patterns
 

@@ -2,6 +2,19 @@
 
 Use these as starting points when deciding what to expose first.
 
+Contents:
+
+- 1) Open-app handoff intent
+- 2) Inline background action intent
+- 3) Paired open-app and inline variants
+- 4) Fixed choice via `AppEnum`
+- 5) Entity-backed selection via `AppEntity`
+- 6) Query dependency between parameters
+- 7) Widget configuration intent
+- 8) Shortcut phrase design
+
+The run-mode lines below depend on the deployment target. `supportedModes` is iOS 26 and later, and `openAppWhenRun`, deprecated from iOS 26, stays correct below it. See the run-mode table in `references/code-templates.md`.
+
 ## 1) Open-app handoff intent
 
 Best for:
@@ -13,7 +26,8 @@ Best for:
 
 Pattern:
 
-- `openAppWhenRun = true`
+- iOS 26 or later: `supportedModes = .foreground`; below iOS 26: `openAppWhenRun = true`
+- keep the intent in the app target, since `openAppWhenRun = true` raises an error in an app extension
 - collect lightweight input in the intent
 - store one handled-intent payload in a central router or handoff service
 - let the app scene translate that payload into tabs, sheets, routes, or windows
@@ -28,15 +42,16 @@ Example:
 
 Best for:
 
-- quick create/update actions
-- send, archive, mark, favorite, or toggle operations
+- quick create or update actions
+- send, archive, mark, favorite or toggle operations
 - actions that can finish without the main app UI
 
 Pattern:
 
-- `openAppWhenRun = false`
+- iOS 26 or later: `supportedModes = .background`; below iOS 26: leave `openAppWhenRun` out, since it defaults to `false`
 - perform the operation directly in `perform()`
 - return dialog or snippet feedback so the result feels complete in Shortcuts or Siri
+- keep a snippet under the HIG's 400-point height limit and let its view, not the dialogue text, carry the result
 
 Example:
 
@@ -97,7 +112,7 @@ Pattern:
 
 - expose only the fields needed for display and lookup
 - add `suggestedEntities()` for picker UX
-- add `defaultResult()` only when there is a genuinely helpful default
+- add `defaultResult()` only when there is a helpful default
 - keep network or database fetch logic inside the query type, not the view layer
 
 Example:
@@ -150,9 +165,11 @@ Best for:
 
 Pattern:
 
-- keep phrases short and verb-led
+- keep phrases short and verb-led, and include the app name in each
 - expose one or two canonical phrases, then add only a few natural variants
+- use at most one optional parameter, with values people can say without seeing a list
 - use precise `shortTitle` and `systemImageName`
+- prefer an app schema over a custom phrase when the action fits one of Apple's app schema domains
 
 Example:
 

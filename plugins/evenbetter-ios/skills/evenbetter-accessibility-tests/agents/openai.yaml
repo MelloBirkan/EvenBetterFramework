@@ -1,0 +1,4 @@
+interface:
+  display_name: "EB iOS Accessibility Tests"
+  short_description: "Runtime accessibility UI tests for iOS apps"
+  default_prompt: "Use $evenbetter-accessibility-tests to write and run accessibility UI tests for this app and record the results in the EvenBetter report."

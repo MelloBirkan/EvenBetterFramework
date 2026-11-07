@@ -1,0 +1,41 @@
+schema_version: "1.1"
+name: behaviour-repair
+description: evenbetter-repair applies a validated report's fixes to PlantCare, with the label and destructive-role fixes landing in Swift, and stamps the report repaired.
+expected_outcome: The trash control in PlantDetailView becomes a labelled Button with role .destructive, the toolbar plus gets a label, copy and behaviour choices without an answer are deferred, and the report ends in state repaired with applied entries in the ledger.
+tags: [behaviour]
+runs: 3
+execution:
+  max_turns: 150
+  timeout_seconds: 2400
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: loads-evenbetter-repair
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-repair"'
+  - name: ledger-names-detail-view
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"changed_files"\s*:\s*\[[^\]]*"PlantCare/Views/PlantDetailView\.swift"'
+  - name: trash-labelled
+    type: regex
+    target: {source: file, path: PlantCare/Views/PlantDetailView.swift}
+    pattern: 'accessibilityLabel\(\s*(?:Text\(\s*)?"Delete|(?:Label|Button)\(\s*"Delete[^"]*"\s*,\s*systemImage:\s*"trash"'
+  - name: trash-destructive-role
+    type: regex
+    target: {source: file, path: PlantCare/Views/PlantDetailView.swift}
+    pattern: 'Button\(\s*role:\s*\.destructive|Button\(\s*"[^"]*"\s*,\s*systemImage:\s*"trash"\s*,\s*role:\s*\.destructive'
+  - name: plus-labelled
+    type: regex
+    target: {source: file, path: PlantCare/Views/PlantListView.swift}
+    pattern: 'accessibilityLabel\(\s*(?:Text\(\s*)?"Add|(?:Label|Button)\(\s*"Add[^"]*"\s*,\s*systemImage:\s*"plus"'
+  - name: state-repaired
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"state"\s*:\s*"repaired"'
+  - name: ledger-has-applied
+    type: regex
+    target: {source: file, path: .evenbetter/plant-care/evenbetter-analyze-report.html}
+    pattern: '"status"\s*:\s*"applied"'

@@ -6,9 +6,11 @@ Use haptics sparingly to reinforce user actions (tab selection, refresh, success
 
 ## Core patterns
 
+- On iOS 17 and later, prefer `.sensoryFeedback(_:trigger:)` on the view whose state changes, for example `.sensoryFeedback(.success, trigger: didSave)`. It needs no generator objects (corpus clause LAY-UX-002). Use the manager below when the project targets earlier versions or already centralizes UIKit feedback generators.
 - Centralize haptic triggers in a `HapticManager` or similar utility.
 - Gate haptics behind user preferences and hardware support.
 - Use distinct types for different UX moments (selection vs. notification vs. refresh).
+- Pair each haptic with a visible change, because some people turn haptics off and some devices have none (HAPT-UX-003). For choosing the feedback type per event, use evenbetter-ios-haptics.
 
 ## Example: simple haptic manager
 

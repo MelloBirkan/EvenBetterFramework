@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: routing-trap-feature-not-epic
+description: 'Trap: one menu action with a full plan, tickets and review goes to evenbetter-general-feature, not evenbetter-general-epic.'
+tags: [routing]
+runs: 3
+execution:
+  max_turns: 4
+  timeout_seconds: 180
+  allowed_tools: [Skill]
+  append_system_prompt: 'This session is a routing check for the installed skills. Choose the one skill that best fits the user''s request and load it with the Skill tool. Once it has loaded, stop: do not follow its instructions, open files, run commands or ask questions. Reply with one line that names the skill you loaded.'
+  prompt: 'Add a ''Duplicate project'' action to the project menu in our Vue dashboard. I want it done properly: a plan, tickets, then the build and a review.'
+graders:
+  - name: loads-evenbetter-general-feature
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-general:)?evenbetter-general-feature"'
+  - name: skips-evenbetter-general-epic
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-general:)?evenbetter-general-epic"'
+    min: 0
+    max: 0

@@ -1,52 +1,58 @@
 # 1 Load
 
+Contents: Role, Process, Reading the data by hand, Required fields, Backfilling older reports, Output of this stage.
+
 ## Role
 
-Locate the existing EvenBetter audit report and extract the `reportData` object so stage `2-validate` has a structured findings list to re-check.
+Find the existing EvenBetter report, extract its embedded data, and list the contract problems it already has, so stage `2-validate` has a findings list and a to-do list to work through.
 
 ## Process
 
 1. Resolve the project root. Default to the current working directory.
 2. Find the report. Look in this order and stop at the first hit:
-   - A path the user supplied explicitly.
-   - `.evenbetter/<project-name>/evenbetter-analyze-report.html` derived from the project folder in kebab-case.
-   - The single `evenbetter-analyze-report.html` under `.evenbetter/*/` if exactly one exists.
-3. If multiple `.evenbetter/*/evenbetter-analyze-report.html` files exist and the user did not specify one, ask a closed question listing the candidates and their last-modified times. Do not guess.
-4. If no report exists, stop and tell the user to run `evenbetter-analyze` first. Validation has nothing to validate.
-5. Read the HTML file as text. Do not parse the markup — the only payload that matters lives inside the `<script>` block at the bottom of the document.
-6. Extract the `reportData` JS literal:
-   - Anchor on the exact prefix `const reportData = ` (note the single space on each side of `=`).
-   - Walk forward from the first `{` after the prefix using a brace counter that respects string literals (`"` and `'`) and escaped characters. Stop when the counter returns to `0`. The character immediately after must be `;`.
-   - The substring from the opening `{` through the matching `}` is the report payload, inclusive.
-7. Parse the payload as JSON. The template guarantees the literal is JSON-compatible; if parsing fails, the report has been hand-edited and validation must stop with a clear error message that names the file and the failing offset.
-8. Hold the parsed object in memory under the variable name `report`. Hold the original HTML text under `html`. Both are needed by stage `3-update`.
-9. Capture two anchors for the rewrite:
-   - `prefix_index` — the byte offset where the literal `{` begins (immediately after `const reportData = `).
-   - `suffix_index` — the byte offset of the matching `}`, exclusive. The character at `suffix_index` must be `;`.
+   - A path the user gave.
+   - `.evenbetter/[project]/evenbetter-analyze-report.html`, where `[project]` is the kebab-case name of the project folder.
+   - The only `evenbetter-analyze-report.html` directly under `.evenbetter/*/`, if there is exactly one.
 
-## Validation before continuing
+   Files under `.evenbetter/[project]/history/` are archived reports that evenbetter-analyze moved aside. Never load or edit them.
+3. If several reports match and the user did not name one, ask one closed question that lists each candidate with its folder and `scan_date`, the newest `scan_date` first as the recommended option. Do not guess.
+4. If there is no report, stop and tell the user to run the evenbetter-analyze skill first.
+5. Extract the data. With `python3`, run `python3 [script] extract [report]` and save its output to a temporary file outside the project, for example one made with `mktemp`. `[script]` is `../../scripts/evenbetter_report.py`, resolved against the SKILL.md folder. Exit status 2 means the file cannot be read as a report (no anchor, an unreplaced template placeholder, or data that is not valid JSON): stop and pass its message to the user. Without `python3`, follow Reading the data by hand below.
+6. List the contract problems with `python3 [script] check [report]`. Without `--state`, it checks the report against its own `workflow.state`. Each output line names a finding `id` and a field, for example a missing `related_clause_ids`, a level AAA criterion in an AA report, a snippet with `// ...` in it, or two twin clauses split across findings. Keep these lines as the to-do list for stage 2. A `warning:` line about findings without a runtime block is not a to-do: the backfill below handles it. Without `python3`, run the Pre-write checks in `../evenbetter-analyze/references/3-report.md` by hand and note every failure the same way, except the last two, which hold only for a fresh scan. In their place, check the `workflow` block against the report's own `workflow.state`, as the helper does: for `analyzed`, empty stamps, every tally 0 and every `repair` pending and empty; for `validated`, `validated_at` set, `kept + adjusted` equal to the number of findings and no `applied` finding; for `repaired`, `repaired_at` set and not earlier than `validated_at`, each repair tally equal to its ledger count and at least one `applied` finding. Check each `runtime` block for its shape only. A recorded repair outcome or runtime verdict is not a to-do.
+7. Check the project root. Each `file_path` is relative to `project_path`. If `project_path` is not a directory on this machine but the files resolve under the current root, the repository moved: use the current root, and tell stage 2 to set `project_path` to it and to rewrite the absolute paths in every `ai_fix_prompt`. If the files resolve under neither root, stop and ask the user to run validation from the project root.
 
-After loading, sanity-check the `report` object so stage `2-validate` operates on a well-formed input:
+## Reading the data by hand
 
-- `report.issues` is an array. Empty is allowed; the report may legitimately have zero findings.
-- Each issue has `id`, `clause_id`, `title`, `description`, `severity`, `hig_reference_url`, `file_path`, `line_number`, `code_snippet`, `minimal_fix`, `recommended_fix`, `ai_fix_prompt`, `language`.
-- `report.summary` exists and contains `total`, `critical`, `high`, `medium`, `low`.
-- `report.workflow` exists and contains `state`, `validated_at`, `validation`, `repaired_at`, and `repair`.
-- `report.project_path` resolves to a directory on disk. If it does not, fall back to the current working directory and record that the report was generated against a different root — relative `file_path` values still resolve against `report.project_path` first, then against the current root.
+Only when `python3` is not available:
 
-If a check fails, do not silently repair the report. Stop and report the missing fields to the user. The fix belongs in `evenbetter-analyze`, not here.
+1. Read the report as text. Do not parse the markup; the data sits in the `<script>` block near the end of the file.
+2. Find the line that contains `const reportData = `. It appears exactly once. The data starts at the `{` right after it.
+3. Walk forward from that `{`, counting `{` and `}` that sit outside strings. JSON strings are always in double quotes, so a `'` never starts a string, and inside a string a backslash skips the character after it. Stop when the count returns to 0. The next character must be `;`.
+4. Parse the text from the opening `{` through the matching `}` as JSON. The sequences `<\/`, `\u003c!--`, `\u2028` and `\u2029` are ordinary JSON escapes for `</`, `<!--` and the two line-separator characters, so a JSON parser reads them with no special handling. If parsing fails, the file was edited by hand: stop and name the file and the position where parsing failed.
+5. Keep the whole HTML text and the start and end positions of the data. Stage 3 replaces exactly that range when it writes by hand.
 
-The `workflow` and per-issue `repair` blocks are the one exception: they postdate the original report schema, so a report generated before the four-state contract legitimately lacks them. Backfill them in memory rather than failing:
+## Required fields
 
-- Missing `report.workflow` becomes `{"state": "analyzed", "validated_at": "", "validation": {"kept": 0, "adjusted": 0, "removed": 0}, "repaired_at": "", "repair": {"applied": 0, "deferred": 0, "skipped": 0, "failed": 0}}`.
-- A missing per-issue `repair` becomes `{"status": "pending", "path": "", "owner": "", "applied_at": "", "changed_files": [], "note": ""}`.
+Stop and ask the user to run evenbetter-analyze again when the data is not an object, `issues` is not an array, or any finding lacks `id`, `clause_id`, `file_path`, `line_number` or `code_snippet`. Without those fields a finding cannot be found in the code or tied to a clause, and validation never invents a clause for a finding.
 
-Backfilling is what makes an older report repairable: stage `3-update` writes the block out, and `evenbetter-repair`'s gate then passes. Do not backfill a `validated` state — the backfilled state is always `analyzed`, and this run is what earns the promotion.
+Everything else that is missing or wrong is a to-do for stage 2, not a reason to stop. An empty `issues` array is valid; the pass still runs and stamps the report.
+
+## Backfilling older reports
+
+Reports written before the current contract can lack some blocks. Fill them in memory, then carry on:
+
+- A missing `workflow` becomes `{"state": "analyzed", "validated_at": "", "validation": {"kept": 0, "adjusted": 0, "removed": 0}, "repaired_at": "", "repair": {"applied": 0, "deferred": 0, "skipped": 0, "failed": 0}}`.
+- A missing finding `repair` becomes `{"status": "pending", "path": "", "owner": "", "applied_at": "", "changed_files": [], "note": ""}`.
+- A missing `related_clause_ids` becomes `[]`.
+- A missing finding `runtime` becomes `{"status": "untested", "checked_at": "", "configs": [], "tests": [], "evidence": "", "result_bundle": ""}`, placed right after `repair`. The helper's `update` adds the same block on its own when it is missing.
+
+A backfill alone does not count as an adjustment. Stage 3 writes the backfilled blocks out, which is what lets evenbetter-repair accept an older report. Never backfill a `validated` state; the backfilled state is always `analyzed`, and this pass is what promotes it.
 
 ## Output of this stage
 
-Stage `1-load` produces three artifacts in memory:
+Held in memory for the next stages:
 
-- `report` — parsed JS object literal containing `project_name`, `project_path`, `framework`, `wcag_level`, `scan_date`, `workflow`, `summary`, `issues`, and `scan_context`, with `workflow` and every issue's `repair` block backfilled if the report predates them.
-- `html` — full original HTML text, byte-for-byte.
-- `(prefix_index, suffix_index)` — the slice that bounds the JS literal inside `html`. These are the only positions stage `3-update` is allowed to mutate.
+- The report data, with any backfills applied.
+- The to-do list from the check.
+- The absolute path of the report, and the project root the file paths resolve against.
+- When working by hand, the original HTML text and the start and end positions of the data.

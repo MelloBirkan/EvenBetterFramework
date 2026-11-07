@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: routing-trap-static-audit
+description: 'Trap: a source-only accessibility audit with no simulator goes to evenbetter-analyze, not evenbetter-accessibility-tests.'
+tags: [routing]
+runs: 3
+execution:
+  max_turns: 4
+  timeout_seconds: 180
+  allowed_tools: [Skill]
+  append_system_prompt: 'This session is a routing check for the installed skills. Choose the one skill that best fits the user''s request and load it with the Skill tool. Once it has loaded, stop: do not follow its instructions, open files, run commands or ask questions. Reply with one line that names the skill you loaded.'
+  prompt: 'I don''t have a Mac or a simulator handy. Just read my SwiftUI source and tell me which accessibility rules it breaks, with file and line for each.'
+graders:
+  - name: loads-evenbetter-analyze
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-analyze"'
+  - name: skips-evenbetter-accessibility-tests
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-accessibility-tests"'
+    min: 0
+    max: 0

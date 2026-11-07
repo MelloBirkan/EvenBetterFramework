@@ -1,4 +1,4 @@
 interface:
-  display_name: "SwiftUI UI Patterns"
-  short_description: "Apply practical SwiftUI UI patterns"
-  default_prompt: "Use $evenbetter-swiftui-ui-patterns to design or refactor this SwiftUI UI with strong default patterns."
+  display_name: "EB SwiftUI UI Patterns"
+  short_description: "Apply practical SwiftUI component patterns"
+  default_prompt: "Use $evenbetter-swiftui-ui-patterns to build or refactor this SwiftUI screen with sound navigation, state and component patterns."

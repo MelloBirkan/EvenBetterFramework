@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: routing-analyze
+description: 'A whole-app HIG and accessibility audit request loads evenbetter-analyze.'
+tags: [routing]
+runs: 3
+execution:
+  max_turns: 4
+  timeout_seconds: 180
+  allowed_tools: [Skill]
+  append_system_prompt: 'This session is a routing check for the installed skills. Choose the one skill that best fits the user''s request and load it with the Skill tool. Once it has loaded, stop: do not follow its instructions, open files, run commands or ask questions. Reply with one line that names the skill you loaded.'
+  prompt: 'Could you go through my SwiftUI app and check it against Apple''s guidelines? I''m worried about VoiceOver, Dynamic Type and contrast, and I''d like a proper report of everything that''s off.'
+graders:
+  - name: loads-evenbetter-analyze
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:evenbetter-ios:)?evenbetter-analyze"'

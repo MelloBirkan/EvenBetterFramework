@@ -10,7 +10,7 @@ Provide a clean, scalable theming approach that keeps view code semantic and con
 - Inject theme at the app root and read it via `@Environment(Theme.self)` in views.
 - Prefer semantic colors (`primaryBackground`, `secondaryBackground`, `label`, `tint`) instead of raw colors.
 - Keep user-facing theme controls in a dedicated settings screen.
-- Apply Dynamic Type scaling through custom fonts or `.font(.scaled...)`.
+- Apply Dynamic Type through system text styles such as `.body` and `.headline`, or through `Font.custom(_:size:relativeTo:)` for a custom face (corpus clauses TYPO-UI-001 and TYPO-UI-002).
 
 ## Example: Theme object
 
@@ -19,10 +19,9 @@ Provide a clean, scalable theming approach that keeps view code semantic and con
 @Observable
 final class Theme {
   var tintColor: Color = .blue
-  var primaryBackground: Color = .white
-  var secondaryBackground: Color = .gray.opacity(0.1)
+  var primaryBackground: Color = Color(.systemBackground)
+  var secondaryBackground: Color = Color(.secondarySystemBackground)
   var labelColor: Color = .primary
-  var fontSizeScale: Double = 1.0
 }
 ```
 
@@ -62,7 +61,7 @@ struct ProfileView: View {
 
 - Keep theme values semantic and minimal; avoid duplicating system colors.
 - Store user-selected theme values in persistent storage if needed.
-- Ensure contrast between text and backgrounds.
+- Check text and background pairs for readable contrast in light, dark and Increase Contrast (corpus clause CLR-A11Y-001). Fixed `.white` or `.black` backgrounds do not adapt to dark mode (CLR-UI-002).
 
 ## Pitfalls
 

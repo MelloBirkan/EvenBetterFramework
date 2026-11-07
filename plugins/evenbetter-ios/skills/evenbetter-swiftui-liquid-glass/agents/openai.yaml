@@ -1,4 +1,4 @@
 interface:
-  display_name: "SwiftUI Liquid Glass"
-  short_description: "Build SwiftUI Liquid Glass features"
-  default_prompt: "Use $evenbetter-swiftui-liquid-glass to implement or review a SwiftUI feature using Liquid Glass APIs."
+  display_name: "EB SwiftUI Liquid Glass"
+  short_description: "Build and review SwiftUI Liquid Glass UI"
+  default_prompt: "Use $evenbetter-swiftui-liquid-glass to review this SwiftUI feature's Liquid Glass usage and fix what breaks Apple's guidance."

@@ -1,18 +1,26 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "evenbetter-ios",
-  "description": "EvenBetter skills for iOS product workflows, SwiftUI implementation, Apple HIG, accessibility, and the four-state analyze / validate / repair audit workflow.",
+  "displayName": "EvenBetter iOS",
+  "description": "EvenBetter skills for iOS: feature and epic planning, SwiftUI build guides, an analyze, validate and repair audit against Apple's HIG and WCAG 2.2, runtime accessibility tests, Accessibility Nutrition Labels and App Store launch.",
   "author": {
     "name": "EvenBetter",
-    "url": "https://github.com/MelloBirkan/EvenBetterFramework"
+    "url": "https://evenbetter.mellofattura.com"
   },
+  "homepage": "https://evenbetter.mellofattura.com",
   "repository": "https://github.com/MelloBirkan/EvenBetterFramework",
-  "mcpServers": "./.mcp.claude.json",
+  "license": "MIT",
+  "supportUrl": "https://github.com/MelloBirkan/EvenBetterFramework/issues",
+  "icon": "./assets/icon.png",
+  "mcpServers": "./.mcp.json",
   "keywords": [
     "evenbetter",
     "ios",
     "swiftui",
     "accessibility",
     "hig",
-    "repair"
+    "wcag",
+    "xcuitest",
+    "app-store"
   ]
 }
