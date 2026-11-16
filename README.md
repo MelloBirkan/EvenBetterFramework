@@ -180,7 +180,7 @@ Every clause was checked again on 2026-11-07 against the current HIG, which Appl
 
 ## Research
 
-EvenBetter is the subject of *Curated Agent Skills for Context-Aware Intelligent Support in iOS UX and Accessibility*, by Marcello Gonzatto Birkan, Daniela Brazolin Flauto and Valéria Farinazzo Martins (Universidade Presbiteriana Mackenzie). The paper was accepted at the 8th Workshop on Intelligent Interactive Systems (8WoSI²), part of the 12th Ibero-American Conference on Human-Computer Interaction (12JIHC'26) in Talca, Chile. The [project website](https://evenbetter.mellofattura.com) covers the study in Portuguese.
+EvenBetter is the subject of *Curated Agent Skills for Context-Aware Intelligent Support in iOS UX and Accessibility*, by Marcello Gonzatto Birkan, Daniela Brazolin Flauto and Valéria Farinazzo Martins (Universidade Presbiteriana Mackenzie). Marcello and Daniela presented the paper on 10 November 2026 at the 8th Workshop on Intelligent Interactive Systems (8WoSI²), part of the 12th Ibero-American Conference on Human-Computer Interaction (12JIHC'26), at the Universidad de Talca in Chile. The [slides](https://evenbetter-slides.mellofattura.com/jiihc) are online. The [project website](https://evenbetter.mellofattura.com) covers the study in Portuguese.
 
 Ten iOS developers took part in a formative study. They explored the website, planned an app with an EvenBetter skill and read an audit report. They rated the workflow with a mean System Usability Scale score of 79.5 (median 81.25). All ten read the report's totals correctly, and eight ran analyze and then validate in the right order. The study looked at whether developers could understand and use the workflow. It didn't check whether every finding was technically correct, so treat a report as material for review rather than an accessibility certification.
 
@@ -193,7 +193,7 @@ The paper describes 17 skills. `evenbetter-repair` came later, and `evenbetter-a
   booktitle = {8{\textdegree} Workshop en Sistemas Interactivos Inteligentes (8WoSI{\textsuperscript{2}}), 12{\textdegree} Jornadas Iberoamericanas de Interacci{\'o}n Humano-Computadora (12JIHC'26)},
   address   = {Talca, Chile},
   year      = {2026},
-  note      = {Accepted paper}
+  note      = {Presented on 10 November 2026}
 }
 ```
 
